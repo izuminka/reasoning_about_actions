@@ -1,0 +1,291 @@
+Type-checking pick-up
+...action passes type checking.
+Type-checking put-down
+...action passes type checking.
+Type-checking stack
+...action passes type checking.
+Type-checking unstack
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/asp/v12.redo/blocksworld-typed/instances30_final/template/instance-2/template/asp.plan.pddl
+Plan to validate:
+
+Plan size: 28
+1:
+(unstack b4 b3)
+ 
+2:
+(put-down b4)
+ 
+3:
+(unstack b5 b7)
+ 
+4:
+(stack b5 b3)
+ 
+5:
+(unstack b7 b1)
+ 
+6:
+(stack b7 b1)
+ 
+7:
+(unstack b2 b6)
+ 
+8:
+(stack b2 b5)
+ 
+9:
+(unstack b7 b1)
+ 
+10:
+(stack b7 b4)
+ 
+11:
+(pick-up b1)
+ 
+12:
+(stack b1 b2)
+ 
+13:
+(unstack b7 b4)
+ 
+14:
+(stack b7 b1)
+ 
+15:
+(pick-up b4)
+ 
+16:
+(put-down b4)
+ 
+17:
+(pick-up b6)
+ 
+18:
+(put-down b6)
+ 
+19:
+(pick-up b6)
+ 
+20:
+(put-down b6)
+ 
+21:
+(unstack b7 b1)
+ 
+22:
+(put-down b7)
+ 
+23:
+(pick-up b6)
+ 
+24:
+(stack b6 b1)
+ 
+25:
+(pick-up b7)
+ 
+26:
+(stack b7 b6)
+ 
+27:
+(pick-up b4)
+ 
+28:
+(stack b4 b7)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (clear b4)
+Deleting (handempty)
+Deleting (on b4 b3)
+Adding (holding b4)
+Adding (clear b3)
+
+Checking next happening (time 2)
+Deleting (holding b4)
+Adding (clear b4)
+Adding (handempty)
+Adding (ontable b4)
+
+Checking next happening (time 3)
+Deleting (clear b5)
+Deleting (handempty)
+Deleting (on b5 b7)
+Adding (holding b5)
+Adding (clear b7)
+
+Checking next happening (time 4)
+Deleting (holding b5)
+Deleting (clear b3)
+Adding (clear b5)
+Adding (handempty)
+Adding (on b5 b3)
+
+Checking next happening (time 5)
+Deleting (clear b7)
+Deleting (handempty)
+Deleting (on b7 b1)
+Adding (holding b7)
+Adding (clear b1)
+
+Checking next happening (time 6)
+Deleting (holding b7)
+Deleting (clear b1)
+Adding (clear b7)
+Adding (handempty)
+Adding (on b7 b1)
+
+Checking next happening (time 7)
+Deleting (clear b2)
+Deleting (handempty)
+Deleting (on b2 b6)
+Adding (holding b2)
+Adding (clear b6)
+
+Checking next happening (time 8)
+Deleting (holding b2)
+Deleting (clear b5)
+Adding (clear b2)
+Adding (handempty)
+Adding (on b2 b5)
+
+Checking next happening (time 9)
+Deleting (clear b7)
+Deleting (handempty)
+Deleting (on b7 b1)
+Adding (holding b7)
+Adding (clear b1)
+
+Checking next happening (time 10)
+Deleting (holding b7)
+Deleting (clear b4)
+Adding (clear b7)
+Adding (handempty)
+Adding (on b7 b4)
+
+Checking next happening (time 11)
+Deleting (ontable b1)
+Deleting (clear b1)
+Deleting (handempty)
+Adding (holding b1)
+
+Checking next happening (time 12)
+Deleting (holding b1)
+Deleting (clear b2)
+Adding (clear b1)
+Adding (handempty)
+Adding (on b1 b2)
+
+Checking next happening (time 13)
+Deleting (clear b7)
+Deleting (handempty)
+Deleting (on b7 b4)
+Adding (holding b7)
+Adding (clear b4)
+
+Checking next happening (time 14)
+Deleting (holding b7)
+Deleting (clear b1)
+Adding (clear b7)
+Adding (handempty)
+Adding (on b7 b1)
+
+Checking next happening (time 15)
+Deleting (ontable b4)
+Deleting (clear b4)
+Deleting (handempty)
+Adding (holding b4)
+
+Checking next happening (time 16)
+Deleting (holding b4)
+Adding (clear b4)
+Adding (handempty)
+Adding (ontable b4)
+
+Checking next happening (time 17)
+Deleting (ontable b6)
+Deleting (clear b6)
+Deleting (handempty)
+Adding (holding b6)
+
+Checking next happening (time 18)
+Deleting (holding b6)
+Adding (clear b6)
+Adding (handempty)
+Adding (ontable b6)
+
+Checking next happening (time 19)
+Deleting (ontable b6)
+Deleting (clear b6)
+Deleting (handempty)
+Adding (holding b6)
+
+Checking next happening (time 20)
+Deleting (holding b6)
+Adding (clear b6)
+Adding (handempty)
+Adding (ontable b6)
+
+Checking next happening (time 21)
+Deleting (clear b7)
+Deleting (handempty)
+Deleting (on b7 b1)
+Adding (holding b7)
+Adding (clear b1)
+
+Checking next happening (time 22)
+Deleting (holding b7)
+Adding (clear b7)
+Adding (handempty)
+Adding (ontable b7)
+
+Checking next happening (time 23)
+Deleting (ontable b6)
+Deleting (clear b6)
+Deleting (handempty)
+Adding (holding b6)
+
+Checking next happening (time 24)
+Deleting (holding b6)
+Deleting (clear b1)
+Adding (clear b6)
+Adding (handempty)
+Adding (on b6 b1)
+
+Checking next happening (time 25)
+Deleting (ontable b7)
+Deleting (clear b7)
+Deleting (handempty)
+Adding (holding b7)
+
+Checking next happening (time 26)
+Deleting (holding b7)
+Deleting (clear b6)
+Adding (clear b7)
+Adding (handempty)
+Adding (on b7 b6)
+
+Checking next happening (time 27)
+Deleting (ontable b4)
+Deleting (clear b4)
+Deleting (handempty)
+Adding (holding b4)
+
+Checking next happening (time 28)
+Deleting (holding b4)
+Deleting (clear b7)
+Adding (clear b4)
+Adding (handempty)
+Adding (on b4 b7)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 28 
+
+Successful plans:
+Value: 28
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/asp/v12.redo/blocksworld-typed/instances30_final/template/instance-2/template/asp.plan.pddl 28 
+

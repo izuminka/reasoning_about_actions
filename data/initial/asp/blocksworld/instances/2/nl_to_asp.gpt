@@ -1,0 +1,167 @@
+Convert natural language text to ASP (Answer Set Programming, a logic programming language) without losing any essential information and using a proper ASP syntax.
+
+ASP syntax details:
+ASP requires to not use "-" in functions, replace it with "_". Example: predicate "in-city" takes 2 variables "place" and "city", in ASP it would be pfluent(in_city(P, C)) :- place(P), city(C).
+Types should be lowercased and objects in the types should be lowercased. Example: "A234" and "A1" are types of "AIRPLANE", in ASP it would be airplane(a234; a1).
+Objects in fluents should be lowercased. Example: "BHH1hdhdb" is at "sJdn", in ASP it would be at(bhh1hdhdb, sjdn).
+A period must be placed after the end of the line, before "\n"
+Negation of the predicate should be encapsulated in neg(). Example "obj" is not in "sdnj", in ASP it would be neg(in(obj, sdnj))
+
+
+natural language text to ASP 1
+INPUT
+
+select and match relevant types and predicates from below to generate OUTPUT:
+
+% I have the following types:
+place(P) :- location(P).
+location(P) :- location(P).
+physobj(P) :- package(P).
+package(P) :- package(P).
+physobj(T) :-vehicle(T).
+vehicle(T) :- vehicle(T).
+place(P) :- city(P).
+city(P) :- city(P).
+vehicle(T) :- truck(T).
+truck(T) :- truck(T).
+aircraft(A) :- aircraft(A).
+
+% I have the following predicates:
+pfluent(fuel_level(A, F)) :- aircraft(A), flevel(F).
+pfluent(intruck(P, T)) :- physobj(P), truck(T).
+pfluent(intruck(P, T)) :- package(P), truck(T).
+pfluent(in(P, V)) :- package(P), vehicle(V).
+pfluent(has(P)) :- package(P).
+pfluent(in_city(P, C)) :- place(P), city(C).
+pfluent(light_on).
+pfluent(at(PH, P)) :- physobj(PH), place(P).
+pfluent(next(F1, F2)) :- flevel(F1), flevel(F2), F1!=F2.
+pfluent(combine(P, Y, Z)) :- package(P), package(Y), P != Y, package(Z), P != Z, Y != Z.
+
+
+% Objects:
+apn1 is a type of airplane,  apt1 and l5-0 are types of an airport,  pos1 and l5-1 are types of locations,  cit1 and cit2 are types of cities,  tru1 and tru2 are types of trucks,  obj11, obj12, obj13, obj21, obj22, and obj23 are types of packages.
+
+% Initial State:
+apn1 is located at l5-0,  tru1 is located at pos1,  obj11 is located at pos1,  obj12 is located at pos1,  obj13 is located at pos1,  tru2 is located at l5-1,  obj21 is located at l5-1,  obj22 is located at l5-1,  obj23 is located at l5-1,  pos1 is located in city cit1,  apt1 is located in city cit1,  l5-1 is located in city cit2,  and l5-0 is located in city cit2.
+
+% Goal State:
+obj11 located at apt1,  obj23 located at pos1,  obj13 located at apt1,  and obj21 located at pos1.
+
+
+OUTPUT
+
+% Objects:
+airplane(apn1).
+airport(apt1; l5_0).
+location(pos1; l5_1; pos3).
+city(cit1; cit2).
+truck(tru1; tru2).
+package(obj11; obj12; obj13; obj21; obj22; obj23).
+
+% Initial State:
+init(at(apn1, l5_0); 
+at(tru1, pos1); 
+at(obj11, pos1); 
+at(obj12, pos1); 
+at(obj13, pos1); 
+at(tru2, l5_1); 
+at(obj21, l5_1); 
+at(obj22, l5_1); 
+at(obj23, l5_1); 
+in_city(pos1, cit1); 
+in_city(apt1, cit1); 
+in_city(l5_1, cit2); 
+in_city(l5_0, cit2); 
+on(obj13, obj11);
+on(obj22, obj23);
+onbottom(obj12)).
+
+% Goal State:
+goal(at(obj11, apt1); 
+at(obj23, pos1); 
+at(obj13, apt1); 
+at(obj21, pos1)).
+
+
+natural language text to ASP 2
+INPUT
+
+select and match relevant types and predicates from below to generate OUTPUT:
+
+
+% I have the following types:
+object(B) :- block(B).
+block(B) :- block(B).
+
+% I have the following predicates:
+pfluent(on(B1, B2)) :- block(B1), block(B2), B1 != B2.
+pfluent(ontable(B)) :- block(B).
+pfluent(clear(B)) :- block(B).
+pfluent(handempty).
+pfluent(holding(B)) :- block(B).
+
+% I have the following actions and restrictions:
+action(action_pick_up(B)) :- block(B).
+cond(cond_exec_pick_up(B)) :- block(B).
+exec(action_pick_up(B), cond_exec_pick_up(B)) :- block(B).
+cond(cond_causes_pick_up(B)) :- block(B).
+
+action(action_put_down(B)) :- block(B).
+cond(cond_exec_put_down(B)) :- block(B).
+exec(action_put_down(B), cond_exec_put_down(B)) :- block(B).
+cond(cond_causes_put_down(B)) :- block(B).
+
+action(action_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+cond(cond_exec_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+exec(action_stack(B1, B2), cond_exec_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+cond(cond_causes_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+
+action(action_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+cond(cond_exec_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+exec(action_unstack(B1, B2), cond_exec_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+cond(cond_causes_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+
+% Action Pick up preconditions
+in(clear(B), cond_exec_pick_up(B)) :- block(B).
+in(ontable(B), cond_exec_pick_up(B)) :- block(B).
+in(handempty, cond_exec_pick_up(B)) :- block(B).
+
+% Action Pick up effects
+causes(action_pick_up(B), neg(ontable(B)), cond_causes_pick_up(B)) :- block(B).
+causes(action_pick_up(B), neg(clear(B)), cond_causes_pick_up(B)) :- block(B).
+causes(action_pick_up(B), neg(handempty), cond_causes_pick_up(B)) :- block(B).
+causes(action_pick_up(B), holding(B), cond_causes_pick_up(B)) :- block(B).
+
+% Action Put down preconditions
+in(holding(B), cond_exec_put_down(B)) :- block(B).
+
+% Action Put down effects
+causes(action_put_down(B), neg(holding(B)), cond_causes_put_down(B)) :- block(B).
+causes(action_put_down(B), clear(B), cond_causes_put_down(B)) :- block(B).
+causes(action_put_down(B), handempty, cond_causes_put_down(B)) :- block(B).
+causes(action_put_down(B), ontable(B), cond_causes_put_down(B)) :- block(B).
+
+% Action Stack preconditions
+in(holding(B1), cond_exec_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+in(clear(B2), cond_exec_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+
+% Action Stack effects
+causes(action_stack(B1, B2), neg(holding(B1)), cond_causes_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_stack(B1, B2), neg(clear(B2)), cond_causes_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_stack(B1, B2), clear(B1), cond_causes_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_stack(B1, B2), handempty, cond_causes_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_stack(B1, B2), on(B1, B2), cond_causes_stack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+
+% Action Unstack preconditions
+in(on(B1, B2), cond_exec_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+in(clear(B1), cond_exec_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+in(handempty, cond_exec_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+
+% Action Unstack effects
+causes(action_unstack(B1, B2), holding(B1), cond_causes_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_unstack(B1, B2), clear(B2), cond_causes_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_unstack(B1, B2), neg(clear(B1)), cond_causes_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_unstack(B1, B2), neg(handempty), cond_causes_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+causes(action_unstack(B1, B2), neg(on(B1, B2)), cond_causes_unstack(B1, B2)) :- block(B1), block(B2), B1 != B2.
+
