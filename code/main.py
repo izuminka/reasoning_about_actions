@@ -1,35 +1,20 @@
-import os, traceback
-import re
-import time
-import json
+import os
+from clyngor.inline import ASP_last_model
 
 ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = './ASP'
 TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
 
 
-def tmp_name():
-    return str(time.time()).replace('.', '_')
-
-
-def rm_tmp_file(file_name):
-    os.system(f"rm {file_name}")
-
-
-def execute_asp(paths, time_limit=ASP_EXECUTION_TIME_LIMIT):
-    if not os.path.isdir(TMP_ASP_EXEC_PATH):
-        os.makedirs(TMP_ASP_EXEC_PATH)
-    solution_save_path = os.path.join(TMP_ASP_EXEC_PATH, f'{tmp_name()}.lp.sol')
-    try:
-        # --outf=0 -V0 --out-atomf=%s. --quiet=1,2,2 | head -n1 | tr ' ' '\n'
-        os.system(f"clingo --outf=2 --opt-mode=OptN --time-limit={time_limit} {paths.join(' ')} > {solution_save_path}")
-        with open(solution_save_path) as f:
-            asp_json = json.load(f)
-        rm_tmp_file(solution_save_path)
-        return asp_json
-    except Exception as e:
-        print(e)
-        print(traceback.format_exc(), '\n')
+def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
+    asp_code = []
+    for path in paths:
+        with open(path, 'r') as f:
+            asp_code.append(f.read())
+    asp_code = separator.join(asp_code)
+    if additional_asp_code:
+        asp_code += f"{separator}{additional_asp_code}"
+    return asp_code
 
 
 class DataGenerator:
@@ -47,14 +32,15 @@ class DataGenerator:
             asp = f.read()
         return asp
 
-    def __init__(self, asp_domain_path, asp_instane_init_path, asp_instane_objects_path):
+    def __init__(self, asp_domain_path, asp_instance_init_path, asp_instance_objects_path):
         self.domain_path = asp_domain_path
         self.asp_domain = self.open_asp(self.domain_path)
 
-        self.asp_inst_init_path = asp_instane_init_path
-        self.asp_inst_objects_path = asp_instane_objects_path
+        self.asp_inst_init_path = asp_instance_init_path
+        self.asp_inst_objects_path = asp_instance_objects_path
 
-        self.initial_state = self.asp_string_state_to_set(self.asp_inst_init_path, prefix='init(')
+        self.initial_state = self.asp_string_state_to_set(self.open_asp(self.asp_inst_init_path), prefix='init(')
+        self.objects = self.open_asp(self.asp_inst_objects_path)
 
         self.data = []
         # data format
@@ -67,24 +53,30 @@ class DataGenerator:
         # TODO test
 
         current_state_asp_str = self.set_to_asp_string_state(current_state_set)
-        tmp_current_state_path = os.path.join(ASP_CODE_PATH, f'{tmp_name()}.lp')
-        with open(tmp_current_state_path, 'w') as f:
-            f.write(current_state_asp_str)
-
         show_actions_path = os.path.join(ASP_CODE_PATH, 'show_actions.lp')
-        paths = [current_state_asp_str, show_actions_path, self.domain_path, self.asp_inst_objects_path]
-        asp_json = execute_asp(paths, time_limit=ASP_EXECUTION_TIME_LIMIT)
-        rm_tmp_file(tmp_current_state_path)
+        paths = [show_actions_path, self.domain_path, self.asp_inst_objects_path]
+        asp_code = assemble_asp_code(paths, additional_asp_code=current_state_asp_str)
 
-        actions = asp_json['Call'][0]['Witnesses']['Value'][0]
-        return actions
+        return [action[0] for _, action in ASP_last_model(asp_code)]
 
     def next_state(self, current_state, action):
-        # TODO ASP code to determine next state, or return empty if not feasable
+        # TODO test
+
+        action_occurs = f"occurs({action}, 1)."
+        current_state_asp_str = self.set_to_asp_string_state(current_state)
+        additional_asp_code = '\n' + '\n'.join([action_occurs, current_state_asp_str])
+
+        next_state_path = os.path.join(ASP_CODE_PATH, 'next_state.lp')
+        paths = [self.domain_path, self.asp_inst_objects_path, next_state_path]
+        asp_code = assemble_asp_code(paths, additional_asp_code=additional_asp_code)
         next_state = set()
+        for prefix, contents in ASP_last_model(asp_code):
+            if prefix == 'not_exec':
+                return set()
+            next_state.add(contents[0])
         return next_state
 
-    def asp_string_state_to_set(self, state_str, prefix='init('):
+    def asp_string_state_to_set(self, state_str, prefix=CURRENT_STATE_PREFIX):
         # string_state is a sting with "prefix(fluent1, fluent2, ...)
         state_str = state_str.replace("\n", "")
         state_str = state_str.replace(prefix, "")
@@ -92,10 +84,10 @@ class DataGenerator:
         return set(state_str.split(';'))
 
     def set_to_asp_string_state(self, state_set, prefix=CURRENT_STATE_PREFIX):
-        return prefix + list(state_set).join(';') + ').'
+        return prefix + ';'.join(list(state_set)) + ').'
 
     def generate_data(self, plan_sequence):
-        current_state = self.asp_string_state_to_set(self.initial_state)
+        current_state = self.asp_string_state_to_set(self.initial_state, 'init(')
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in self.all_actions(current_state):
