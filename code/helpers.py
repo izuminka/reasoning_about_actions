@@ -1,3 +1,6 @@
+# INIT_REGEX = re.compile(r'(init\((.|\n)+\)\.)')
+# GOAL_REGEX = re.compile(r'(goal\((.|\n)+\)\.)')
+
 # @staticmethod
 # def extract_instance_state(instance_str, state_type):
 #     if state_type == "init":
