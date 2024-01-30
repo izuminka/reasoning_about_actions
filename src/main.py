@@ -1,8 +1,15 @@
+
+import os
+import sys
+CODE_PATH = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(CODE_PATH)
+
 import os
 from clyngor.inline import ASP_last_model
 
+
 ASP_EXECUTION_TIME_LIMIT = 10
-ASP_CODE_PATH = './ASP'
+ASP_CODE_PATH = f'{CODE_PATH}/ASP'
 TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
 
 
@@ -50,20 +57,21 @@ class DataGenerator:
         # }, ...]
 
     def all_actions(self, current_state_set):
-        # TODO test
+        if not current_state_set:
+            return set()
 
         current_state_asp_str = self.set_to_asp_string_state(current_state_set)
         show_actions_path = os.path.join(ASP_CODE_PATH, 'show_actions.lp')
         paths = [show_actions_path, self.domain_path, self.asp_inst_objects_path]
         asp_code = assemble_asp_code(paths, additional_asp_code=current_state_asp_str)
 
-        return [action[0] for _, action in ASP_last_model(asp_code)]
+        return set([action[0] for _, action in ASP_last_model(asp_code)])
 
-    def next_state(self, current_state, action):
+    def next_state(self, current_state_set, action):
         # TODO test
 
         action_occurs = f"occurs({action}, 1)."
-        current_state_asp_str = self.set_to_asp_string_state(current_state)
+        current_state_asp_str = self.set_to_asp_string_state(current_state_set)
         additional_asp_code = '\n' + '\n'.join([action_occurs, current_state_asp_str])
 
         next_state_path = os.path.join(ASP_CODE_PATH, 'next_state.lp')
