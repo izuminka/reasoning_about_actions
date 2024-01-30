@@ -1,48 +1,26 @@
 import os, traceback
 
-ASP_EXECUTION_TIME_LIMIT = 60
-
-
-def assemble_asp(domain_path, instance_path, asp_general_path):
-    asp_script = ''
-
-    with open(asp_general_path) as f:
-        general_asp = f.read()
-    asp_script += '% GENERAL -------------------- \n\n'
-    asp_script += general_asp + '\n\n'
-
-    with open(domain_path) as f:
-        domain = f.read()
-    asp_script += '% DOMAIN  --------------------\n\n'
-    asp_script += domain + '\n\n'
-
-    with open(instance_path) as f:
-        instance = f.read()
-    asp_script += '% OBJECTS & INIT/GOAL --------------------\n\n'
-    asp_script += instance
-
-    return asp_script
-
-
-def execute_asp(asp_path, solution_save_path, time_limit=ASP_EXECUTION_TIME_LIMIT):
-    try:
-        # --outf=0 -V0 --out-atomf=%s. --quiet=1,2,2 | head -n1 | tr ' ' '\n'
-        os.system(f"clingo --outf=2 --opt-mode=OptN --time-limit={time_limit} {asp_path} > {solution_save_path}")
-    except Exception as e:
-        print(e)
-        print(traceback.format_exc(), '\n')
-
-
-
-
 
 class DataGenerator:
-    def __init__(self, asp_domain_path, asp_init_goal):
-        self.domain_path = asp_domain_path
-        # TODO define ASP domain
-        # TODO define ASP instance
+    """ Generate data about actions for a given domain, instance and plan sequence"""
 
-        self.instance_path = asp_init_goal
+    PART_OF_PLAN_KEY = "part_of_plan?"
+    FEASIBLE_KEY = "feasible?"
+    FLUENTS_KEY = "fluents"
+
+    @staticmethod
+    def open_asp(asp_path):
+        with open(asp_path) as f:
+            asp = f.read()
+        return asp
+
+    def __init__(self, asp_domain_path, asp_instance_path):
+        self.domain_path = asp_domain_path
+        self.asp_domain = self.open_asp(self.domain_path)
+
+        self.asp_instance_path = asp_instance_path
+        self.asp_instance = self.open_asp(self.asp_instance_path)
+        # TODO define objects
         # TODO define initial_state
         # TODO define final_state
 
@@ -54,7 +32,7 @@ class DataGenerator:
         # }, ...]
 
     def all_actions(self, current_state):
-        # TODO ASP code to list all possible and imporssible actions
+        # TODO ASP code to list all possible and impossible actions for a given state
         return []
 
     def is_action_feasable(self, current_state, action):
@@ -62,19 +40,21 @@ class DataGenerator:
         # return True/False
         return True
 
+    def fluents_of_state(self, state):
+        # TODO ASP code to list all fluents of a given state
+        return []
+
     def generate_data(self, plan_sequence, initial_state):
         for i in range(len(plan_sequence)):
             current_state = initial_state
             data_for_step_i = {}
             for action in self.all_actions(current_state):
-                action_data = {"part_of_plan?": action == plan_sequence[i],
-                               "feasable?": self.is_action_feasable(current_state, action)}
-                if action_data["feasable?"]:
-                    # TODO
-                    # generate state, save fluents
-                    action_data["fluents"] = []
+                action_data = {self.PART_OF_PLAN_KEY: action == plan_sequence[i],
+                               self.FEASIBLE_KEY: self.is_action_feasable(current_state, action)}
+                if action_data[self.FEASIBLE_KEY]:
+                    action_data[self.FLUENTS_KEY] = self.fluents_of_state(current_state)
                 else:
-                    action_data["fluents"] = None
+                    action_data[self.FLUENTS_KEY] = None
                 data_for_step_i[action] = action_data
             self.data.append(data_for_step_i)
         return self.data
