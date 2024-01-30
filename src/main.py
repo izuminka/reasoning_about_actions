@@ -68,8 +68,6 @@ class DataGenerator:
         return set([action[0] for _, action in ASP_last_model(asp_code)])
 
     def next_state(self, current_state_set, action):
-        # TODO test
-
         action_occurs = f"occurs({action}, 1)."
         current_state_asp_str = self.set_to_asp_string_state(current_state_set)
         additional_asp_code = '\n' + '\n'.join([action_occurs, current_state_asp_str])
@@ -95,7 +93,7 @@ class DataGenerator:
         return prefix + ';'.join(list(state_set)) + ').'
 
     def generate_data(self, plan_sequence):
-        current_state = self.asp_string_state_to_set(self.initial_state, 'init(')
+        current_state = self.initial_state
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in self.all_actions(current_state):

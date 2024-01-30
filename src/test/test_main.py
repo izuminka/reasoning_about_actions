@@ -32,5 +32,24 @@ class TestStringMethods(unittest.TestCase):
         expected_state = {'handempty', 'ontable(b1)', 'holding(b2)'}
         self.assertNotEqual(expected_state, self.DG.next_state(self.DG.initial_state, action))
 
+    def test_pipeline(self):
+        plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)']
+        data = self.DG.generate_data(plan_sequence)
+        self.assertEqual(len(data), len(plan_sequence))
+
+        part_of_plan_actions = []
+        for i, states in enumerate(data):
+            for action, d in states.items():
+                self.assertTrue('action_' in action)
+                if d[DataGenerator.FEASIBLE_KEY]:
+                    self.assertNotEqual(set(), d[DataGenerator.FLUENTS_KEY])
+                else:
+                    self.assertEqual(set(), d[DataGenerator.FLUENTS_KEY])
+
+                if action == plan_sequence[i]:
+                    self.assertTrue(d[DataGenerator.PART_OF_PLAN_KEY])
+                    part_of_plan_actions.append(action)
+        self.assertEqual(part_of_plan_actions, plan_sequence)
+
 if __name__ == '__main__':
     unittest.main()
