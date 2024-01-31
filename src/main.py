@@ -1,12 +1,11 @@
-
 import os
 import sys
-CODE_PATH = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(CODE_PATH)
-
+import jsonlines
 import os
 from clyngor.inline import ASP_last_model
 
+CODE_PATH = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(CODE_PATH)
 
 ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = f'{CODE_PATH}/ASP'
@@ -22,6 +21,12 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
     if additional_asp_code:
         asp_code += f"{separator}{additional_asp_code}"
     return asp_code
+
+
+def open_jsonl(path):
+    with jsonlines.open(path, 'r') as r:
+        data = [obj for obj in r]
+    return data
 
 
 class DataGenerator:
@@ -78,9 +83,9 @@ class DataGenerator:
         next_state = set()
         for prefix, contents in ASP_last_model(asp_code):
             if prefix == 'not_exec':
-                return set()
+                return []
             next_state.add(contents[0])
-        return next_state
+        return list(next_state)
 
     def asp_string_state_to_set(self, state_str, prefix=CURRENT_STATE_PREFIX):
         # string_state is a sting with "prefix(fluent1, fluent2, ...)
@@ -94,6 +99,8 @@ class DataGenerator:
 
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
+        self.data.append({'action_init': {self.PART_OF_PLAN_KEY: True,
+                                          self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in self.all_actions(current_state):
@@ -104,3 +111,7 @@ class DataGenerator:
             self.data.append(data_for_step_i)
             current_state = self.next_state(current_state, plan_sequence[i])
         return self.data
+
+    def save_data(self, save_path):
+        with jsonlines.open(save_path, 'w') as w:
+            w.write_all(self.data)
