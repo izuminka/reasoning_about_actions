@@ -1,4 +1,3 @@
-import os
 import sys
 import jsonlines
 import os
@@ -37,6 +36,7 @@ class DataGenerator:
     FLUENTS_KEY = "fluents"
 
     CURRENT_STATE_PREFIX = "current_state("
+    INIT_ACTION_KEY = 'action_init'
 
     @staticmethod
     def open_asp(asp_path):
@@ -99,8 +99,8 @@ class DataGenerator:
 
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
-        self.data.append({'action_init': {self.PART_OF_PLAN_KEY: True,
-                                          self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
+        self.data.append({self.INIT_ACTION_KEY: {self.PART_OF_PLAN_KEY: True,
+                                            self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in self.all_actions(current_state):

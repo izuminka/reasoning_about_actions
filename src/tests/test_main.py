@@ -2,9 +2,10 @@ from ..main import *
 import unittest
 import shutil
 
-
 TESTS_DIR = CODE_PATH + '/tests'
 TMP_DIR = TESTS_DIR + '/tmp'
+
+
 class TestStringMethods(unittest.TestCase):
     DG = DataGenerator(CODE_PATH + '/tests/asp/domains/blocksworld/domain.lp',
                        CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/init.lp',
@@ -19,6 +20,7 @@ class TestStringMethods(unittest.TestCase):
     def setUp(self):
         if not os.path.isdir(TMP_DIR):
             os.makedirs(TMP_DIR)
+
     def tearDown(self):
         if os.path.isdir(TMP_DIR):
             shutil.rmtree(TMP_DIR)
@@ -45,14 +47,14 @@ class TestStringMethods(unittest.TestCase):
     def test_pipeline(self):
         plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)']
         data = self.DG.generate_data(plan_sequence)
-        self.assertEqual(len(data), len(plan_sequence)+1)
+        self.assertEqual(len(data), len(plan_sequence) + 1)
 
         part_of_plan_actions = []
-        for i, states in enumerate(data[1:]): # data[0] is the init condition
+        for i, states in enumerate(data[1:]):  # data[0] is the init condition
             for action, d in states.items():
                 self.assertTrue('action_' in action)
                 if d[DataGenerator.FEASIBLE_KEY]:
-                    self.assertTrue(len(d[DataGenerator.FLUENTS_KEY])>0)
+                    self.assertTrue(len(d[DataGenerator.FLUENTS_KEY]) > 0)
                 else:
                     self.assertEqual([], d[DataGenerator.FLUENTS_KEY])
 
@@ -64,7 +66,7 @@ class TestStringMethods(unittest.TestCase):
     def test_save_data_validate(self):
         plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)']
         data = self.DG.generate_data(plan_sequence)
-        save_path = TMP_DIR+'/data.jsonl'
+        save_path = TMP_DIR + '/data.jsonl'
         self.DG.save_data(save_path)
 
         data_from_file = open_jsonl(save_path)
