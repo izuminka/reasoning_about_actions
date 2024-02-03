@@ -28,7 +28,7 @@ def open_jsonl(path):
     return data
 
 
-class DataGenerator:
+class StatesActionsGenerator:
     """ Generate data about actions for a given domain, instance and plan sequence"""
 
     PART_OF_PLAN_KEY = "part_of_plan?"

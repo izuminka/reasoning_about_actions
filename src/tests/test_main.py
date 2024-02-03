@@ -1,4 +1,4 @@
-from ..main import *
+from ..states_actions_generator import *
 import unittest
 import shutil
 
@@ -7,9 +7,9 @@ TMP_DIR = TESTS_DIR + '/tmp'
 
 
 class TestStringMethods(unittest.TestCase):
-    DG = DataGenerator(CODE_PATH + '/tests/asp/domains/blocksworld/domain.lp',
-                       CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/init.lp',
-                       CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/objects.lp')
+    DG = StatesActionsGenerator(CODE_PATH + '/tests/asp/domains/blocksworld/domain.lp',
+                                CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/init.lp',
+                                CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/objects.lp')
 
     # from the initial condition
     init_state = {'handempty', 'ontable(b1)', 'on(b2, b1)', 'clear(b2)'}
@@ -53,13 +53,13 @@ class TestStringMethods(unittest.TestCase):
         for i, states in enumerate(data[1:]):  # data[0] is the init condition
             for action, d in states.items():
                 self.assertTrue('action_' in action)
-                if d[DataGenerator.FEASIBLE_KEY]:
-                    self.assertTrue(len(d[DataGenerator.FLUENTS_KEY]) > 0)
+                if d[StatesActionsGenerator.FEASIBLE_KEY]:
+                    self.assertTrue(len(d[StatesActionsGenerator.FLUENTS_KEY]) > 0)
                 else:
-                    self.assertEqual([], d[DataGenerator.FLUENTS_KEY])
+                    self.assertEqual([], d[StatesActionsGenerator.FLUENTS_KEY])
 
                 if action == plan_sequence[i]:
-                    self.assertTrue(d[DataGenerator.PART_OF_PLAN_KEY])
+                    self.assertTrue(d[StatesActionsGenerator.PART_OF_PLAN_KEY])
                     part_of_plan_actions.append(action)
         self.assertEqual(part_of_plan_actions, plan_sequence)
 
