@@ -1,4 +1,4 @@
-from ..states_actions_generator import *
+from ..states_actions_generation import *
 import unittest
 import shutil
 
@@ -6,7 +6,7 @@ TESTS_DIR = CODE_PATH + '/tests'
 TMP_DIR = TESTS_DIR + '/tmp'
 
 
-class TestStringMethods(unittest.TestCase):
+class TestStateActionsGeneration(unittest.TestCase):
     DG = StatesActionsGenerator(CODE_PATH + '/tests/asp/domains/blocksworld/domain.lp',
                                 CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/init.lp',
                                 CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/objects.lp')

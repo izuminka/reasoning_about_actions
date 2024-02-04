@@ -1,32 +1,11 @@
-import sys
-import jsonlines
-import os
-from clyngor.inline import ASP_last_model
-
-CODE_PATH = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(CODE_PATH)
-
-ASP_EXECUTION_TIME_LIMIT = 10
-ASP_CODE_PATH = f'{CODE_PATH}/ASP'
-TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
+from common import *
 
 
-def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
-    asp_code = []
-    for path in paths:
-        with open(path, 'r') as f:
-            asp_code.append(f.read())
-    asp_code = separator.join(asp_code)
-    if additional_asp_code:
-        asp_code += f"{separator}{additional_asp_code}"
-    return asp_code
-
-
-def open_jsonl(path):
-    with jsonlines.open(path, 'r') as r:
-        data = [obj for obj in r]
-    return data
-
+def open_asp_action_sequence(plan_path):
+    with open(plan_path) as f:
+        plan_sequence_asp = f.read()
+    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)], key=lambda x:x[0])
+    return [p for _,p in plan_sequence]
 
 class StatesActionsGenerator:
     """ Generate data about actions for a given domain, instance and plan sequence"""
@@ -84,7 +63,8 @@ class StatesActionsGenerator:
         for prefix, contents in ASP_last_model(asp_code):
             if prefix == 'not_exec':
                 return []
-            next_state.add(contents[0])
+            if contents[0]:
+                next_state.add(contents[0])
         return list(next_state)
 
     def asp_string_state_to_set(self, state_str, prefix=CURRENT_STATE_PREFIX):
@@ -92,7 +72,10 @@ class StatesActionsGenerator:
         state_str = state_str.replace("\n", "")
         state_str = state_str.replace(prefix, "")
         state_str = state_str.replace(").", "")
-        return set(state_str.split(';'))
+        state = set(state_str.split(';'))
+        if "" in state:
+            state.remove("")
+        return state
 
     def set_to_asp_string_state(self, state_set, prefix=CURRENT_STATE_PREFIX):
         return prefix + ';'.join(list(state_set)) + ').'
@@ -100,7 +83,7 @@ class StatesActionsGenerator:
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
         self.data.append({self.INIT_ACTION_KEY: {self.PART_OF_PLAN_KEY: True,
-                                            self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
+                                                 self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in self.all_actions(current_state):
