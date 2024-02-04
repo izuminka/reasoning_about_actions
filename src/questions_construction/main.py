@@ -5,22 +5,25 @@ import uuid
 
 
 class DomainMainMethods:
-    def __init__(self, data):
-        with open(data, 'r') as f:
-            self.data = f.readlines()
-        self.data = [json.loads(x) for x in self.data]
+    def __init__(self, actions_states_jsonl):
+        with open(actions_states_jsonl, 'r') as f:
+            self.actions_states = f.readlines()
+        self.actions_states = [json.loads(x) for x in self.actions_states] # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
         self.instance_id = ''  # TODO add instance id
-        optimal_sequence = []
-        for timestep in self.data[1:]: # first is the null action
-            for action, value in timestep.items():
-                if value['part_of_plan?']:
-                    optimal_sequence.append(action)
-        self.plan_length_max = len(optimal_sequence)
-        self.optimal_sequence = optimal_sequence
+        self.given_plan_sequence = self.extract_given_plan_sequence()
+        self.plan_length_max = len(self.given_plan_sequence) - 1 # since i=0 is a NULL action
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
         self.fluents_from_executable_actions = self.extract_fluents_from_executable_actions()
         self.fluents_from_optimal_sequence = self.extract_fluents_from_optimal_sequence()
+
+    def extract_given_plan_sequence(self):
+        given_plan_sequence = []
+        for timestep in self.actions_states: # first is the null action
+            for action, value in timestep.items():
+                if value['part_of_plan?']:
+                    given_plan_sequence.append(action)
+        return given_plan_sequence
 
     def get_random_inexecutable_sequence(self, plan_length):
         # Checking whether any inexecutable actions are present till the sequence length
@@ -32,7 +35,7 @@ class DomainMainMethods:
         if all_empty:
             return None
 
-        optimal_sequence = self.optimal_sequence[1:plan_length + 1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
+        optimal_sequence = self.given_plan_sequence[:plan_length]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
         index = random.randint(0, plan_length - 1)  # This contains index of the inexecutable action
         while not self.inexecutable_actions[index + 1]:  # If no inexecutable action exists for that location
             index = random.randint(0, plan_length - 1)
@@ -40,7 +43,7 @@ class DomainMainMethods:
         sequence = optimal_sequence[:index] + [inexecutable_action]
         while len(sequence) < plan_length:
             sequence += [random.choice(
-                self.optimal_sequence[random.randint(0, self.plan_length_max-1)])]  # Adding sequence from randomly generated optimal plan
+                self.given_plan_sequence[random.randint(0, self.plan_length_max - 1)])]  # Adding sequence from randomly generated optimal plan
         return sequence, index
 
     def extract_executable_actions(self):
@@ -49,7 +52,7 @@ class DomainMainMethods:
             in the optimal sequence"""
 
         exeutable_actions = []
-        for timestep in self.data:  # timestep is a dictionary with action as key and value as another dictionary
+        for timestep in self.actions_states:  # timestep is a dictionary with action as key and value as another dictionary
             timestep_executable_actions = []
             for action, value in timestep.items():
                 if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
@@ -61,7 +64,7 @@ class DomainMainMethods:
         """This function extracts the inexecutable actions from the entire plan"""
 
         inexecutable_actions = []
-        for timestep in self.data:
+        for timestep in self.actions_states:
             timestep_inexecutable_actions = []
             for action, value in timestep.items():
                 if not value['part_of_plan?'] and not value['feasible?'] and len(value['fluents']) == 0:
@@ -75,7 +78,7 @@ class DomainMainMethods:
             are not in the optimal plan from the entire plan"""
 
         fluents_from_executable_actions = []
-        for timestep in self.data:
+        for timestep in self.actions_states:
             timestep_fluents_from_executable_actions = []
             for action, value in timestep.items():
                 if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
@@ -89,7 +92,7 @@ class DomainMainMethods:
         """This function extracts the fluents from the optimal sequence"""
 
         fluents_from_optimal_sequence = []
-        for timestep in self.data:
+        for timestep in self.actions_states:
             timestep_fluents_from_optimal_sequence = []
             for action, value in timestep.items():
                 if value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
@@ -100,7 +103,7 @@ class DomainMainMethods:
         return fluents_from_optimal_sequence
 
     def print_all(self):
-        print(self.optimal_sequence)
+        print(self.given_plan_sequence)
         print(self.executable_actions)
         print(self.inexecutable_actions)
         print(self.fluents_from_executable_actions)
@@ -121,7 +124,7 @@ class DomainQuestionGen(DomainMainMethods):
             'id': uuid.uuid4(),
             'domain_name': self.domain_name,
             'instance_id': self.instance_id,
-            'action_sequence': self.optimal_sequence,
+            'action_sequence': self.given_plan_sequence,
             'question_type': question_type,
             'question': question,
             'answer': answer}
@@ -274,7 +277,7 @@ class DomainQuestionGen(DomainMainMethods):
         # TODO implement
         pass
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # all_questions = []
     # for domain_class in domain_list:
     #     for instance_jsonl in instance_list:
