@@ -40,14 +40,10 @@ class StatesActionsGenerator:
         #   action(var2, var5): {"fluents": [fluent1, fluent2, ...], "feasable": True/False, "part_of_plan": True/False}
         # }, ...]
 
-    def all_actions(self, current_state_set):
-        if not current_state_set:
-            return set()
-
-        current_state_asp_str = self.set_to_asp_string_state(current_state_set)
+    def all_actions(self):
         show_actions_path = os.path.join(ASP_CODE_PATH, 'show_actions.lp')
         paths = [show_actions_path, self.domain_path, self.asp_inst_objects_path]
-        asp_code = assemble_asp_code(paths, additional_asp_code=current_state_asp_str)
+        asp_code = assemble_asp_code(paths)
 
         return set([action[0] for _, action in ASP_last_model(asp_code)])
 
@@ -82,11 +78,12 @@ class StatesActionsGenerator:
 
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
+        all_actions = self.all_actions()
         self.data.append({self.INIT_ACTION_KEY: {self.PART_OF_PLAN_KEY: True,
                                                  self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
-            for action in self.all_actions(current_state):
+            for action in all_actions:
                 data_for_step_i[action] = {
                     self.PART_OF_PLAN_KEY: action == plan_sequence[i],
                     self.FLUENTS_KEY: self.next_state(current_state, action)}

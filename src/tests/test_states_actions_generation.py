@@ -30,9 +30,7 @@ class TestStateActionsGeneration(unittest.TestCase):
         self.assertEqual(self.DG.objects, 'block(b1; b2).')
 
     def test_all_actions(self):
-        self.assertEqual(set(), self.DG.all_actions(set()))
-
-        actions = self.DG.all_actions(self.DG.initial_state)
+        actions = self.DG.all_actions()
         self.assertEqual(actions, self.infeasible_actions.union(self.feasible_actions))
 
     def test_next_state_infeasible_actions(self):
