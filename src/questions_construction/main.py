@@ -5,11 +5,11 @@ import uuid
 
 
 class DomainMainMethods:
-    def __init__(self, actions_states_jsonl):
-        with open(actions_states_jsonl, 'r') as f:
-            self.actions_states = f.readlines()
-        self.actions_states = [json.loads(x) for x in self.actions_states] # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
-        self.instance_id = ''  # TODO add instance id
+    def __init__(self, states_actions_jsonl, instance_id):
+        with open(states_actions_jsonl, 'r') as f:
+            self.states_actions = f.readlines()
+        self.states_actions = [json.loads(x) for x in self.states_actions] # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
+        self.instance_id = instance_id
         self.given_plan_sequence = self.extract_given_plan_sequence()
         self.plan_length_max = len(self.given_plan_sequence) - 1 # since i=0 is a NULL action
         self.executable_actions = self.extract_executable_actions()
@@ -19,7 +19,7 @@ class DomainMainMethods:
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
-        for timestep in self.actions_states: # first is the null action
+        for timestep in self.states_actions: # first is the null action
             for action, value in timestep.items():
                 if value['part_of_plan?']:
                     given_plan_sequence.append(action)
@@ -52,7 +52,7 @@ class DomainMainMethods:
             in the optimal sequence"""
 
         exeutable_actions = []
-        for timestep in self.actions_states:  # timestep is a dictionary with action as key and value as another dictionary
+        for timestep in self.states_actions:  # timestep is a dictionary with action as key and value as another dictionary
             timestep_executable_actions = []
             for action, value in timestep.items():
                 if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
@@ -64,7 +64,7 @@ class DomainMainMethods:
         """This function extracts the inexecutable actions from the entire plan"""
 
         inexecutable_actions = []
-        for timestep in self.actions_states:
+        for timestep in self.states_actions:
             timestep_inexecutable_actions = []
             for action, value in timestep.items():
                 if not value['part_of_plan?'] and not value['feasible?'] and len(value['fluents']) == 0:
@@ -78,7 +78,7 @@ class DomainMainMethods:
             are not in the optimal plan from the entire plan"""
 
         fluents_from_executable_actions = []
-        for timestep in self.actions_states:
+        for timestep in self.states_actions:
             timestep_fluents_from_executable_actions = []
             for action, value in timestep.items():
                 if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
@@ -92,7 +92,7 @@ class DomainMainMethods:
         """This function extracts the fluents from the optimal sequence"""
 
         fluents_from_optimal_sequence = []
-        for timestep in self.actions_states:
+        for timestep in self.states_actions:
             timestep_fluents_from_optimal_sequence = []
             for action, value in timestep.items():
                 if value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
@@ -119,10 +119,13 @@ class DomainQuestionGen(DomainMainMethods):
     def __init__(self, data):
         super().__init__(data)
 
-    def qa_object(self, question_type, question, answer):
+    def domain_name(self):
+        raise ('Implement it in the child class')
+
+    def qa_data_object(self, question_type, question, answer):
         return {
             'id': uuid.uuid4(),
-            'domain_name': self.domain_name,
+            'domain_name': self.domain_name(),
             'instance_id': self.instance_id,
             'action_sequence': self.given_plan_sequence,
             'question_type': question_type,
@@ -198,12 +201,11 @@ class DomainQuestionGen(DomainMainMethods):
         questions = [
             f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
             f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
-        ]
-        # TODO add more question variations (if needed)
+        ]# TODO add more question variations (if needed)
         question = self.question_phrasing_choice(questions)
         answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
 
-        return self.qa_object(self.composite_question_1.__name__, question, answer)
+        return self.qa_data_object(self.composite_question_1.__name__, question, answer)
 
     def composite_question_2(self, plan_length):
         # TODO implement

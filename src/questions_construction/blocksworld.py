@@ -6,9 +6,11 @@ import re
 class Blocksworld(DomainQuestionGen):
     def __init__(self, data):
         super().__init__(data)
-        self.domain_name = 'blocksworld'
         #TODO add domain description
-    
+
+    def domain_name(self):
+        return 'blocksworld'
+
     def fluent_to_natual_language(self, fluent):
         #TODO add logic to convert fluents to natural language
         return fluent
