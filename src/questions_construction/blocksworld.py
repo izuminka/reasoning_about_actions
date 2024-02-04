@@ -1,6 +1,6 @@
 from collections import defaultdict
 import random
-from helpers import DomainQuestionGen
+from main import DomainQuestionGen
 import re
 
 class Blocksworld(DomainQuestionGen):
@@ -31,6 +31,7 @@ class Blocksworld(DomainQuestionGen):
             #TODO handle made up actions
             # action_nlp = ''
             # return f'action_nlp block {b1} from block {b2}'
+            # use self.out_of_domain_action_name for translation
             raise('action is not defined')
 
 

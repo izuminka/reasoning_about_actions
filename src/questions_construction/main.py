@@ -9,12 +9,13 @@ class DomainMainMethods:
         with open(data, 'r') as f:
             self.data = f.readlines()
         self.data = [json.loads(x) for x in self.data]
+        self.instance_id = ''  # TODO add instance id
         optimal_sequence = []
-        for timestep in self.data:
+        for timestep in self.data[1:]: # first is the null action
             for action, value in timestep.items():
                 if value['part_of_plan?']:
                     optimal_sequence.append(action)
-        self.instance_id = ''  # TODO add instance id
+        self.plan_length_max = len(optimal_sequence)
         self.optimal_sequence = optimal_sequence
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
@@ -31,8 +32,7 @@ class DomainMainMethods:
         if all_empty:
             return None
 
-        optimal_sequence = self.optimal_sequence[
-                           1:plan_length + 1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
+        optimal_sequence = self.optimal_sequence[1:plan_length + 1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
         index = random.randint(0, plan_length - 1)  # This contains index of the inexecutable action
         while not self.inexecutable_actions[index + 1]:  # If no inexecutable action exists for that location
             index = random.randint(0, plan_length - 1)
@@ -40,7 +40,7 @@ class DomainMainMethods:
         sequence = optimal_sequence[:index] + [inexecutable_action]
         while len(sequence) < plan_length:
             sequence += [random.choice(
-                self.optimal_sequence[random.randint(1, 20)])]  # Adding sequence from randomly generated optimal plan
+                self.optimal_sequence[random.randint(0, self.plan_length_max-1)])]  # Adding sequence from randomly generated optimal plan
         return sequence, index
 
     def extract_executable_actions(self):
@@ -108,6 +108,7 @@ class DomainMainMethods:
 
 
 class DomainQuestionGen(DomainMainMethods):
+    """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
     QUESTION_MULTIPLICITY = 5
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
     ACTION_JOIN_STR = ', '
@@ -131,6 +132,13 @@ class DomainQuestionGen(DomainMainMethods):
     def action_to_natural_language(self, action):
         raise ('Implement it in the child class')
 
+    def out_of_domain_action_name(self):
+        #TODO create an out of domain action name. Has to be random, has to take random number of arguments,
+        # ex: crane_lift(car1, structure2)
+        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
+        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
+        pass
+
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
 
@@ -138,8 +146,9 @@ class DomainQuestionGen(DomainMainMethods):
         match = re.search(self.OBJ_IN_PAREN_REGEX, obj)
         return match.group(1).split(',')
 
-    def unique_questions(self, question_generator, plan_length, multiplicity):
-        # TODO implement dedup!!
+    @staticmethod
+    def unique_questions(question_generator, plan_length, multiplicity):
+        # TODO implement dedup
         results = []
         for i in range(multiplicity):
             results.append(question_generator(plan_length))
@@ -166,13 +175,15 @@ class DomainQuestionGen(DomainMainMethods):
                 self.sub_question_14,
                 self.sub_question_15]
 
-    def create_questions(self, plan_length, multiplicity=QUESTION_MULTIPLICITY):
+    def create_questions(self, multiplicity=QUESTION_MULTIPLICITY):
         results = []
-        for question_constructor in self.question_constructors():
-            results.append(self.unique_questions(question_constructor, plan_length, multiplicity))
+        for plan_length in range(1, self.plan_length_max + 1):
+            for question_constructor in self.question_constructors():
+                results += self.unique_questions(question_constructor, plan_length, multiplicity)
         return results
 
-    def question_phrasing_coice(self, questions):
+    @staticmethod
+    def question_phrasing_choice(questions):
         # return random.choice(questions)
         return questions[0]  # TODO add random choice
 
@@ -185,7 +196,8 @@ class DomainQuestionGen(DomainMainMethods):
             f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
             f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
         ]
-        question = self.question_phrasing_coice(questions)
+        # TODO add more question variations (if needed)
+        question = self.question_phrasing_choice(questions)
         answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
 
         return self.qa_object(self.composite_question_1.__name__, question, answer)
@@ -261,3 +273,14 @@ class DomainQuestionGen(DomainMainMethods):
     def sub_question_15(self, plan_length):
         # TODO implement
         pass
+
+if __name__ == '__main__':
+    # all_questions = []
+    # for domain_class in domain_list:
+    #     for instance_jsonl in instance_list:
+    #         domain_instance = domain_class(instance_jsonl)
+    #         all_questions += domain_instance.create_questions()
+    # # TODO add batching
+    # with open('questions.jsonl', 'w') as f:
+    #     for question in all_questions:
+    #         f.write(json.dumps(question) + '\n')
