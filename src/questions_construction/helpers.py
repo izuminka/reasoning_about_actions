@@ -12,7 +12,7 @@ class DomainMainMethods:
         optimal_sequence = []
         for timestep in self.data:
             for action, value in timestep.items():
-                if value['part_of_plan?'] == True:
+                if value['part_of_plan?']:
                     optimal_sequence.append(action)
         self.instance_id = ''  # TODO add instance id
         self.optimal_sequence = optimal_sequence
@@ -31,7 +31,8 @@ class DomainMainMethods:
         if all_empty:
             return None
 
-        optimal_sequence = self.optimal_sequence[1:plan_length + 1] # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
+        optimal_sequence = self.optimal_sequence[
+                           1:plan_length + 1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
         index = random.randint(0, plan_length - 1)  # This contains index of the inexecutable action
         while not self.inexecutable_actions[index + 1]:  # If no inexecutable action exists for that location
             index = random.randint(0, plan_length - 1)
@@ -51,7 +52,7 @@ class DomainMainMethods:
         for timestep in self.data:  # timestep is a dictionary with action as key and value as another dictionary
             timestep_executable_actions = []
             for action, value in timestep.items():
-                if value['part_of_plan?'] == False and value['feasible?'] == True and len(value['fluents']) > 0:
+                if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
                     timestep_executable_actions.append(action)
             exeutable_actions.append(timestep_executable_actions)
         return exeutable_actions
@@ -63,7 +64,7 @@ class DomainMainMethods:
         for timestep in self.data:
             timestep_inexecutable_actions = []
             for action, value in timestep.items():
-                if value['part_of_plan?'] == False and value['feasible?'] == False and len(value['fluents']) == 0:
+                if not value['part_of_plan?'] and not value['feasible?'] and len(value['fluents']) == 0:
                     timestep_inexecutable_actions.append(action)
             inexecutable_actions.append(timestep_inexecutable_actions)
         return inexecutable_actions
@@ -77,7 +78,7 @@ class DomainMainMethods:
         for timestep in self.data:
             timestep_fluents_from_executable_actions = []
             for action, value in timestep.items():
-                if value['part_of_plan?'] == False and value['feasible?'] == True and len(value['fluents']) > 0:
+                if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
                     # timestep_fluents_from_executable_actions.append(value['fluents'])
                     for fluent in value['fluents']:
                         timestep_fluents_from_executable_actions.append(fluent)
@@ -91,7 +92,7 @@ class DomainMainMethods:
         for timestep in self.data:
             timestep_fluents_from_optimal_sequence = []
             for action, value in timestep.items():
-                if value['part_of_plan?'] == True and value['feasible?'] == True and len(value['fluents']) > 0:
+                if value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
                     # timestep_fluents_from_optimal_sequence.append(value['fluents'])
                     for fluent in value['fluents']:
                         timestep_fluents_from_optimal_sequence.append(fluent)
@@ -171,10 +172,9 @@ class DomainQuestionGen(DomainMainMethods):
             results.append(self.unique_questions(question_constructor, plan_length, multiplicity))
         return results
 
-
     def question_phrasing_coice(self, questions):
         # return random.choice(questions)
-        return questions[0] # TODO add random choice
+        return questions[0]  # TODO add random choice
 
     def composite_question_1(self, plan_length):
         inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
