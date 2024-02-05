@@ -17,16 +17,20 @@ class Blocksworld(DomainQuestionGen):
     
     def action_to_natural_language(self, action):
         # TODO test
-        if 'pick_up(' in action:
+        # if 'pick_up(' in action:
+        if re.match(r'action_pick_up\(\w+\)', action):
             block_name = self.extract_single_variable(action)
             return f'pickup block {block_name}'
-        elif 'put_down(' in action:
+        # elif 'put_down(' in action:
+        elif re.match(r'action_put_down\(\w+\)', action): 
             block_name = self.extract_single_variable(action)
             return f'put down block {block_name}'
-        elif 'stack(' in action:
+        # elif 'stack(' in action:
+        elif re.match(r'action_stack\(\w+,\w+\)', action):        
             b1, b2 =  self.extract_multi_variable(action)
             return f'stack block {b1} on block {b2}'
-        elif 'unstack(' in action:
+        # elif 'unstack(' in action:
+        elif re.match(r'action_unstack\(\w+,\w+\)', action):
             b1, b2 =  self.extract_multi_variable(action)
             return f'unstack block {b1} from block {b2}'
         elif '_init' in action:

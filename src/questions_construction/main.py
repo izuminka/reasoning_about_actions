@@ -40,28 +40,28 @@ class DomainMainMethods:
             sequences_with_unknown_actions += [random.choice(self.given_plan_sequence)]
         return sequences_with_unknown_actions, unknown_action_index
         
-        pass
 
     def get_random_inexecutable_sequence(self, plan_length):
         # Checking whether any inexecutable actions are present till the sequence length
         all_empty = True
         for i in range(plan_length):
-            if self.inexecutable_actions[i + 1]:
+            if self.inexecutable_actions[i + 1]: 
                 all_empty = False
                 break
         if all_empty:
             return None
 
-        optimal_sequence = self.given_plan_sequence[1:plan_length+1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
-        index = random.randint(0, plan_length - 1)  # This contains index of the inexecutable action
+        # optimal_sequence = self.given_plan_sequence[1:plan_length+1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
+        index = random.randint(0, plan_length - 2)  # This contains index of the inexecutable action
         while not self.inexecutable_actions[index + 1]:  # If no inexecutable action exists for that location
-            index = random.randint(0, plan_length - 1)
+            index = random.randint(0, plan_length - 2)
         inexecutable_action = random.choice(self.inexecutable_actions[index + 1])
-        sequence = optimal_sequence[:index] + [inexecutable_action]
+        sequence = self.given_plan_sequence[1:plan_length+1].copy()
+        sequence.insert(index, inexecutable_action)
         while len(sequence) < plan_length:
             # sequence += [random.choice(
             #     self.given_plan_sequence[random.randint(0, self.plan_length_max - 1)])]  # Adding sequence from randomly generated optimal plan
-            sequence += [random.choice(self.given_plan_sequence)]
+            sequence.append(random.choice(self.given_plan_sequence))
         return sequence, index
 
     def extract_executable_actions(self):
@@ -73,7 +73,7 @@ class DomainMainMethods:
         for timestep in self.states_actions:  # timestep is a dictionary with action as key and value as another dictionary
             timestep_executable_actions = []
             for action, value in timestep.items():
-                if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
+                if not value['part_of_plan?'] and value['executable?'] and len(value['fluents']) > 0:
                     timestep_executable_actions.append(action)
             exeutable_actions.append(timestep_executable_actions)
         return exeutable_actions
@@ -85,7 +85,7 @@ class DomainMainMethods:
         for timestep in self.states_actions:
             timestep_inexecutable_actions = []
             for action, value in timestep.items():
-                if not value['part_of_plan?'] and not value['feasible?'] and len(value['fluents']) == 0:
+                if not value['part_of_plan?'] and not value['executable?'] and len(value['fluents']) == 0:
                     timestep_inexecutable_actions.append(action)
             inexecutable_actions.append(timestep_inexecutable_actions)
         return inexecutable_actions
@@ -99,7 +99,7 @@ class DomainMainMethods:
         for timestep in self.states_actions:
             timestep_fluents_from_executable_actions = []
             for action, value in timestep.items():
-                if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
+                if not value['part_of_plan?'] and value['executable?'] and len(value['fluents']) > 0:
                     # timestep_fluents_from_executable_actions.append(value['fluents'])
                     for fluent in value['fluents']:
                         timestep_fluents_from_executable_actions.append(fluent)
@@ -113,7 +113,7 @@ class DomainMainMethods:
         for timestep in self.states_actions:
             timestep_fluents_from_optimal_sequence = []
             for action, value in timestep.items():
-                if value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
+                if value['part_of_plan?']:
                     # timestep_fluents_from_optimal_sequence.append(value['fluents'])
                     for fluent in value['fluents']:
                         timestep_fluents_from_optimal_sequence.append(fluent)
@@ -213,15 +213,19 @@ class DomainQuestionGen(DomainMainMethods):
 
     def composite_question_1(self, plan_length):
         inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
-
         inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
             [self.action_to_natural_language(action) for action in inexecutable_sequence])
+        # print(inexecutable_sequence_nlp)
+        # exit()
         questions = [
             f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
             f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
         ]# TODO add more question variations (if needed)
         question = self.question_phrasing_choice(questions)
-        answer = self.fluents_from_optimal_sequence[inexecutable_action_index]
+        if inexecutable_action_index == 0:
+            answer = self.fluents_from_optimal_sequence[inexecutable_action_index]
+        else:
+            answer = self.fluents_from_optimal_sequence[inexecutable_action_index]
 
         return self.qa_data_object(self.composite_question_1.__name__, question, answer)
 
@@ -234,15 +238,19 @@ class DomainQuestionGen(DomainMainMethods):
         # pass
         inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
         inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
-            [self.action_to_natural_language(inexecutable_sequence[action]) for action in range(1,len(inexecutable_sequence))])       
+            [self.action_to_natural_language(inexecutable_sequence[action]) for action in range(len(inexecutable_sequence))])       
         # print(inexecutable_sequence)
         # break
         # sys.exit()         
         question = f"""Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, how many actions are performed before we encounter an inexecutable action?"""
-        answer = inexecutable_action_index
+        if inexecutable_action_index == 0:
+            answer = 0
+        else:
+            answer = inexecutable_action_index
         # pass
+        print(inexecutable_action_index, answer)
         return self.qa_data_object(self.composite_question_3.__name__,question,answer) 
-        return f"""question: {question} answer: {answer}"""
+
 
     def composite_question_4(self, plan_length):
         # TODO implement
@@ -253,7 +261,7 @@ class DomainQuestionGen(DomainMainMethods):
             answer = self.fluents_from_optimal_sequence[unknown_action_index]
         else:
             answer = self.fluents_from_optimal_sequence[unknown_action_index]
-        # answer = self.fluents_from_optimal_sequence[unknown_action_index - 1]
+        print(unknown_action_index, answer)
         return self.qa_data_object(self.composite_question_4.__name__,question,answer)
 
     def sub_question_1(self, plan_length):
