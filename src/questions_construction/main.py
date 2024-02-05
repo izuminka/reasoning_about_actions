@@ -16,8 +16,6 @@ class DomainMainMethods:
         self.plan_length_max = len(self.given_plan_sequence) - 1  # since i=0 is a NULL action
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
-        self.fluents_from_executable_actions = self.extract_fluents_from_executable_actions()
-        self.fluents_from_optimal_sequence = self.extract_fluents_from_optimal_sequence()
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
@@ -27,17 +25,16 @@ class DomainMainMethods:
                     given_plan_sequence.append(action)
         return given_plan_sequence
 
+    def is_action_executable(self, state_info):
+        return state_info[EXECUTABLE_ACTION_BOOL_KEY] and len(state_info[FLUENTS_KEY]) > 0
+
     def extract_actions(self, is_executable):
         """extracts the executable actions for each time step"""
-
-        def action_executability(state_info):
-            return state_info[EXECUTABLE_ACTION_BOOL_KEY] and len(state_info[FLUENTS_KEY]) > 0
-
         actions_for_timestep = []
         for action_state_info in self.states_actions:  # timestep is a dictionary with action as key and value as another dictionary
             actions = []
             for action, value in action_state_info.items():
-                if action_executability(value) == is_executable:
+                if self.is_action_executable(value) == is_executable:
                     actions.append(action)
             actions_for_timestep.append(actions)
         return actions_for_timestep
@@ -62,45 +59,45 @@ class DomainMainMethods:
 
         optimal_sequence = self.given_plan_sequence[:plan_length]
         index = random.randint(0, plan_length - 1)  # This contains index of the inexecutable action
-        while not self.inexecutable_actions[index + 1]:  # If no inexecutable action exists for that location
+        while not self.inexecutable_actions[index]:  # If no inexecutable action exists for that location
             index = random.randint(0, plan_length - 1)
-        inexecutable_action = random.choice(self.inexecutable_actions[index + 1])
+        inexecutable_action = random.choice(self.inexecutable_actions[index])
         sequence = optimal_sequence[:index] + [inexecutable_action]
+        # fill the rest with garbage
         while len(sequence) < plan_length:
-            sequence += [random.choice(
-                self.given_plan_sequence[random.randint(0,
-                                                        self.plan_length_max - 1)])]  # Adding sequence from randomly generated optimal plan
+            # Adding sequence from randomly generated optimal plan
+            sequence += [random.choice(self.given_plan_sequence[random.randint(0, self.plan_length_max - 1)])]
         return sequence, index
 
-    def extract_fluents_from_executable_actions(self):
-        """This function extracts the fluents
-            from the executable actions which
-            are not in the optimal plan from the entire plan"""
+    # def extract_fluents_from_executable_actions(self):
+    #     """This function extracts the fluents
+    #         from the executable actions which
+    #         are not in the optimal plan from the entire plan"""
+    #
+    #     fluents_from_executable_actions = []
+    #     for timestep in self.states_actions:
+    #         timestep_fluents_from_executable_actions = []
+    #         for action, value in timestep.items():
+    #             if self.is_action_executable(value):
+    #                 # timestep_fluents_from_executable_actions.append(value[FLUENTS_KEY])
+    #                 for fluent in value[FLUENTS_KEY]:
+    #                     timestep_fluents_from_executable_actions.append(fluent)
+    #         fluents_from_executable_actions.append(timestep_fluents_from_executable_actions)
+    #     return fluents_from_executable_actions
 
-        fluents_from_executable_actions = []
-        for timestep in self.states_actions:
-            timestep_fluents_from_executable_actions = []
-            for action, value in timestep.items():
-                if not value[PART_OF_PLAN_KEY] and value[EXECUTABLE_ACTION_BOOL_KEY] and len(value[FLUENTS_KEY]) > 0:
-                    # timestep_fluents_from_executable_actions.append(value[FLUENTS_KEY])
-                    for fluent in value[FLUENTS_KEY]:
-                        timestep_fluents_from_executable_actions.append(fluent)
-            fluents_from_executable_actions.append(timestep_fluents_from_executable_actions)
-        return fluents_from_executable_actions
-
-    def extract_fluents_from_optimal_sequence(self):
-        """This function extracts the fluents from the optimal sequence"""
-
-        fluents_from_optimal_sequence = []
-        for timestep in self.states_actions:
-            timestep_fluents_from_optimal_sequence = []
-            for action, value in timestep.items():
-                if value[PART_OF_PLAN_KEY] and value[EXECUTABLE_ACTION_BOOL_KEY] and len(value[FLUENTS_KEY]) > 0:
-                    # timestep_fluents_from_optimal_sequence.append(value[FLUENTS_KEY])
-                    for fluent in value[FLUENTS_KEY]:
-                        timestep_fluents_from_optimal_sequence.append(fluent)
-            fluents_from_optimal_sequence.append(timestep_fluents_from_optimal_sequence)
-        return fluents_from_optimal_sequence
+    # def extract_fluents_from_optimal_sequence(self):
+    #     """This function extracts the fluents from the optimal sequence"""
+    #
+    #     fluents_from_optimal_sequence = []
+    #     for timestep in self.states_actions:
+    #         timestep_fluents_from_optimal_sequence = []
+    #         for action, value in timestep.items():
+    #             if value[PART_OF_PLAN_KEY] and value[EXECUTABLE_ACTION_BOOL_KEY] and len(value[FLUENTS_KEY]) > 0:
+    #                 # timestep_fluents_from_optimal_sequence.append(value[FLUENTS_KEY])
+    #                 for fluent in value[FLUENTS_KEY]:
+    #                     timestep_fluents_from_optimal_sequence.append(fluent)
+    #         fluents_from_optimal_sequence.append(timestep_fluents_from_optimal_sequence)
+    #     return fluents_from_optimal_sequence
 
     def print_all(self):
         print(self.given_plan_sequence)
