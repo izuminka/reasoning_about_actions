@@ -3,18 +3,19 @@ import random
 from main import DomainQuestionGen
 import re
 
+
 class Blocksworld(DomainQuestionGen):
-    def __init__(self, states_actions_jsonl,instance_id):
-        super().__init__(states_actions_jsonl,instance_id)
+    def __init__(self, data):
+        super().__init__(data)
         #TODO add domain description
 
     def domain_name(self):
         return 'blocksworld'
 
     def fluent_to_natual_language(self, fluent):
-        #TODO add logic to convert fluents to natural language
+        # TODO add logic to convert fluents to natural language
         return fluent
-    
+
     def action_to_natural_language(self, action):
         # TODO test
         # if 'pick_up(' in action:
@@ -25,23 +26,20 @@ class Blocksworld(DomainQuestionGen):
         elif re.match(r'action_put_down\(\w+\)', action): 
             block_name = self.extract_single_variable(action)
             return f'put down block {block_name}'
-        # elif 'stack(' in action:
-        elif re.match(r'action_stack\(\w+,\w+\)', action):        
+        elif 'stack(' in action:
             b1, b2 =  self.extract_multi_variable(action)
-            return f'stack block {b1} on block {b2}'
-        # elif 'unstack(' in action:
-        elif re.match(r'action_unstack\(\w+,\w+\)', action):
+            return f'stack block {b1} from block {b2}'
+        elif 'unstack(' in action:
             b1, b2 =  self.extract_multi_variable(action)
             return f'unstack block {b1} from block {b2}'
         elif '_init' in action:
             return 'initial state'
         else:
-            #TODO handle made up actions
+            # TODO handle made up actions
             # action_nlp = ''
             # return f'action_nlp block {b1} from block {b2}'
             # use self.out_of_domain_action_name for translation
-            # raise('action is not defined')
-            pass
+            raise('action is not defined')
 
 
         # sequence_length = 1

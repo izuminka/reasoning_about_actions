@@ -1,6 +1,6 @@
 import os
 import jsonlines
-from clyngor.inline import ASP_last_model
+from clyngor.inline import *
 
 CODE_PATH = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.dirname(CODE_PATH)
@@ -10,6 +10,10 @@ ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = f'{CODE_PATH}/ASP'
 TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
 
+INIT_ACTION_KEY = 'action_init'
+PART_OF_PLAN_KEY = "part_of_plan?"
+FLUENTS_KEY = "fluents"
+EXECUTABLE_ACTION_BOOL_KEY = 'executable?' # TODO rename
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
@@ -25,7 +29,11 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
 
 
 def execute_asp_code(asp_code):
-    return ASP_last_model(asp_code)
+    answers = set()
+    for answer in ASP(asp_code):
+        for v in answer:
+            answers.add(v)
+    return answers #ASP_one_model(asp_code)
 
 
 def open_jsonl(path):

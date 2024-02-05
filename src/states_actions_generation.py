@@ -1,21 +1,19 @@
 from common import *
+import clingo
 
 
 def open_asp_action_sequence(plan_path):
     with open(plan_path) as f:
         plan_sequence_asp = f.read()
-    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)], key=lambda x:x[0])
-    return [p for _,p in plan_sequence]
+    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)],
+                           key=lambda x: x[0])
+    return [p for _, p in plan_sequence]
+
 
 class StatesActionsGenerator:
     """ Generate data about actions for a given domain, instance and plan sequence"""
 
-    PART_OF_PLAN_KEY = "part_of_plan?"
-    FEASIBLE_KEY = "feasible?"
-    FLUENTS_KEY = "fluents"
-
     CURRENT_STATE_PREFIX = "current_state("
-    INIT_ACTION_KEY = 'action_init'
 
     @staticmethod
     def open_asp(asp_path):
@@ -45,7 +43,7 @@ class StatesActionsGenerator:
         paths = [show_actions_path, self.domain_path, self.asp_inst_objects_path]
         asp_code = assemble_asp_code(paths)
 
-        return set([action[0] for _, action in ASP_last_model(asp_code)])
+        return set([action[0] for _, action in execute_asp_code(asp_code)])
 
     def next_state(self, current_state_set, action):
         action_occurs = f"occurs({action}, 1)."
@@ -56,7 +54,7 @@ class StatesActionsGenerator:
         paths = [self.domain_path, self.asp_inst_objects_path, next_state_path]
         asp_code = assemble_asp_code(paths, additional_asp_code=additional_asp_code)
         next_state = set()
-        for prefix, contents in ASP_last_model(asp_code):
+        for prefix, contents in execute_asp_code(asp_code):
             if prefix == 'not_exec':
                 return []
             if contents[0]:
@@ -79,15 +77,16 @@ class StatesActionsGenerator:
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
         all_actions = self.all_actions()
-        self.data.append({self.INIT_ACTION_KEY: {self.PART_OF_PLAN_KEY: True,
-                                                 self.FLUENTS_KEY: list(current_state), self.FEASIBLE_KEY: True}})
+        self.data.append({INIT_ACTION_KEY: {PART_OF_PLAN_KEY: True,
+                                            FLUENTS_KEY: list(current_state),
+                                            EXECUTABLE_ACTION_BOOL_KEY: True}})
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in all_actions:
                 data_for_step_i[action] = {
-                    self.PART_OF_PLAN_KEY: action == plan_sequence[i],
-                    self.FLUENTS_KEY: self.next_state(current_state, action)}
-                data_for_step_i[action][self.FEASIBLE_KEY] = bool(data_for_step_i[action][self.FLUENTS_KEY])
+                    PART_OF_PLAN_KEY: action == plan_sequence[i],
+                    FLUENTS_KEY: self.next_state(current_state, action)}
+                data_for_step_i[action][EXECUTABLE_ACTION_BOOL_KEY] = bool(data_for_step_i[action][FLUENTS_KEY])
             self.data.append(data_for_step_i)
             current_state = self.next_state(current_state, plan_sequence[i])
         return self.data
