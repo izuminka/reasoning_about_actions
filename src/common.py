@@ -10,6 +10,9 @@ ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = f'{CODE_PATH}/ASP'
 TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
 
+ACTION_INIT = 'action_init'
+PART_OF_PLAN_KEY = "part_of_plan?"
+EXECUTABLE_ACTION_BOOL_KEY = 'feasible?' # TODO rename
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
