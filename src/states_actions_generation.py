@@ -88,10 +88,7 @@ class StatesActionsGenerator:
                     FLUENTS_KEY: self.next_state(current_state, action)}
                 data_for_step_i[action][EXECUTABLE_ACTION_BOOL_KEY] = bool(data_for_step_i[action][FLUENTS_KEY])
             self.data.append(data_for_step_i)
-            print(current_state, plan_sequence[i])
             current_state = self.next_state(current_state, plan_sequence[i])
-            print(current_state)
-            print('-----')
         return self.data
 
     def save_data(self, save_path):
