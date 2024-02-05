@@ -4,8 +4,8 @@ from main import DomainQuestionGen
 import re
 
 class Blocksworld(DomainQuestionGen):
-    def __init__(self, data):
-        super().__init__(data)
+    def __init__(self, states_actions_jsonl,instance_id):
+        super().__init__(states_actions_jsonl,instance_id)
         #TODO add domain description
 
     def domain_name(self):
@@ -25,16 +25,19 @@ class Blocksworld(DomainQuestionGen):
             return f'put down block {block_name}'
         elif 'stack(' in action:
             b1, b2 =  self.extract_multi_variable(action)
-            return f'stack block {b1} from block {b2}'
+            return f'stack block {b1} on block {b2}'
         elif 'unstack(' in action:
             b1, b2 =  self.extract_multi_variable(action)
             return f'unstack block {b1} from block {b2}'
+        elif '_init' in action:
+            return 'initial state'
         else:
             #TODO handle made up actions
             # action_nlp = ''
             # return f'action_nlp block {b1} from block {b2}'
             # use self.out_of_domain_action_name for translation
-            raise('action is not defined')
+            # raise('action is not defined')
+            pass
 
 
         # sequence_length = 1

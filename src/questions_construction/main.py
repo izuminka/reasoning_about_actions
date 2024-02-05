@@ -2,6 +2,7 @@ import json
 import random
 import re
 import uuid
+import sys
 
 
 class DomainMainMethods:
@@ -24,6 +25,22 @@ class DomainMainMethods:
                 if value['part_of_plan?']:
                     given_plan_sequence.append(action)
         return given_plan_sequence
+    
+    def get_sequence_with_unknown_actions(self, plan_length):
+        list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
+        unique_blocks = [block for action in self.given_plan_sequence for block in re.findall(r'\((.*?)\)', action)]
+        unique_blocks = [block.split(',') for block in unique_blocks]
+        unique_blocks = list({block for sublist in unique_blocks for block in sublist})
+        random_paranthesis = f"""({random.choice(unique_blocks)}, {random.choice(unique_blocks)})"""
+        random_action = f"""{random.choice(list_of_unknown_actions)}{random_paranthesis}"""
+        unknown_action_index = random.randint(0,plan_length-1)
+        sequences_with_unknown_actions = self.given_plan_sequence[1:plan_length+1].copy()
+        sequences_with_unknown_actions.insert(unknown_action_index,random_action)
+        while len(sequences_with_unknown_actions)<plan_length:
+            sequences_with_unknown_actions += [random.choice(self.given_plan_sequence)]
+        return sequences_with_unknown_actions, unknown_action_index
+        
+        pass
 
     def get_random_inexecutable_sequence(self, plan_length):
         # Checking whether any inexecutable actions are present till the sequence length
@@ -35,15 +52,16 @@ class DomainMainMethods:
         if all_empty:
             return None
 
-        optimal_sequence = self.given_plan_sequence[:plan_length]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
+        optimal_sequence = self.given_plan_sequence[1:plan_length+1]  # 1:plan_length + 1 because the first elemnt is the null action that points to the initial state
         index = random.randint(0, plan_length - 1)  # This contains index of the inexecutable action
         while not self.inexecutable_actions[index + 1]:  # If no inexecutable action exists for that location
             index = random.randint(0, plan_length - 1)
         inexecutable_action = random.choice(self.inexecutable_actions[index + 1])
         sequence = optimal_sequence[:index] + [inexecutable_action]
         while len(sequence) < plan_length:
-            sequence += [random.choice(
-                self.given_plan_sequence[random.randint(0, self.plan_length_max - 1)])]  # Adding sequence from randomly generated optimal plan
+            # sequence += [random.choice(
+            #     self.given_plan_sequence[random.randint(0, self.plan_length_max - 1)])]  # Adding sequence from randomly generated optimal plan
+            sequence += [random.choice(self.given_plan_sequence)]
         return sequence, index
 
     def extract_executable_actions(self):
@@ -116,8 +134,8 @@ class DomainQuestionGen(DomainMainMethods):
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
     ACTION_JOIN_STR = ', '
 
-    def __init__(self, data):
-        super().__init__(data)
+    def __init__(self,states_actions_jsonl,instance_id):
+        super().__init__(states_actions_jsonl, instance_id)
 
     def domain_name(self):
         raise ('Implement it in the child class')
@@ -203,7 +221,7 @@ class DomainQuestionGen(DomainMainMethods):
             f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
         ]# TODO add more question variations (if needed)
         question = self.question_phrasing_choice(questions)
-        answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
+        answer = self.fluents_from_optimal_sequence[inexecutable_action_index]
 
         return self.qa_data_object(self.composite_question_1.__name__, question, answer)
 
@@ -213,11 +231,30 @@ class DomainQuestionGen(DomainMainMethods):
 
     def composite_question_3(self, plan_length):
         # TODO implement
-        pass
+        # pass
+        inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
+        inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
+            [self.action_to_natural_language(inexecutable_sequence[action]) for action in range(1,len(inexecutable_sequence))])       
+        # print(inexecutable_sequence)
+        # break
+        # sys.exit()         
+        question = f"""Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, how many actions are performed before we encounter an inexecutable action?"""
+        answer = inexecutable_action_index
+        # pass
+        return self.qa_data_object(self.composite_question_3.__name__,question,answer) 
+        return f"""question: {question} answer: {answer}"""
 
     def composite_question_4(self, plan_length):
         # TODO implement
-        pass
+        # pass
+        unknown_sequence, unknown_action_index = self.get_sequence_with_unknown_actions(plan_length)
+        question = f"""Given the initial state, I plan to execute the following sequence of actions: {unknown_sequence}, what will be the state before the first unknown action occurs?"""
+        if unknown_action_index == 0:
+            answer = self.fluents_from_optimal_sequence[unknown_action_index]
+        else:
+            answer = self.fluents_from_optimal_sequence[unknown_action_index]
+        # answer = self.fluents_from_optimal_sequence[unknown_action_index - 1]
+        return self.qa_data_object(self.composite_question_4.__name__,question,answer)
 
     def sub_question_1(self, plan_length):
         # TODO implement
