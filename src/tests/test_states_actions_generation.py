@@ -43,7 +43,7 @@ class TestStateActionsGeneration(unittest.TestCase):
         self.assertEqual(expected_state, self.DG.next_state(self.DG.initial_state, action).sort())
 
     def test_pipeline(self):
-        plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)']
+        plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)',  'action_pick_up(b1)', 'action_stack(b1,b2)']
         data = self.DG.generate_data(plan_sequence)
         self.assertEqual(len(data), len(plan_sequence) + 1)
 
@@ -51,24 +51,32 @@ class TestStateActionsGeneration(unittest.TestCase):
         for i, states in enumerate(data[1:]):  # data[0] is the init condition
             for action, d in states.items():
                 self.assertTrue('action_' in action)
-                if d[StatesActionsGenerator.FEASIBLE_KEY]:
-                    self.assertTrue(len(d[StatesActionsGenerator.FLUENTS_KEY]) > 0)
+                if d[EXECUTABLE_ACTION_BOOL_KEY]:
+                    self.assertTrue(len(d[FLUENTS_KEY]) > 0)
                 else:
-                    self.assertEqual([], d[StatesActionsGenerator.FLUENTS_KEY])
+                    self.assertEqual([], d[FLUENTS_KEY])
 
                 if action == plan_sequence[i]:
-                    self.assertTrue(d[StatesActionsGenerator.PART_OF_PLAN_KEY])
+                    self.assertTrue(d[PART_OF_PLAN_KEY])
+                    self.assertTrue(len(d[FLUENTS_KEY]) > 0)
                     part_of_plan_actions.append(action)
         self.assertEqual(part_of_plan_actions, plan_sequence)
 
     def test_save_data_validate(self):
-        plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)']
+        plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)',  'action_pick_up(b1)', 'action_stack(b1,b2)']
         data = self.DG.generate_data(plan_sequence)
         save_path = TMP_DIR + '/data.jsonl'
         self.DG.save_data(save_path)
 
         data_from_file = open_jsonl(save_path)
         self.assertEqual(data, data_from_file)
+
+
+    def test_edge_case(self):
+        pred_state = self.DG.next_state(['ontable(b1)', 'clear(b1)', 'holding(b2)'], 'action_put_down(b2)')
+        true_state = ['ontable(b1)', 'clear(b1)', 'ontable(b2)', 'clear(b2)', 'handempty']
+        self.assertEqual(set(true_state), set(pred_state))
+
 
 
 if __name__ == '__main__':

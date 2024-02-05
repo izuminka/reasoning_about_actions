@@ -8,7 +8,7 @@ from ..common import *
 class DomainMainMethods:
     def __init__(self, states_actions_jsonl_path, instance_id):
         self.states_actions_all = open_jsonl(states_actions_jsonl_path) # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
-        self.init_state = self.states_actions_all[0][ACTION_INIT]  # initial state
+        self.init_state = self.states_actions_all[0][INIT_ACTION_KEY]  # initial state
         self.states_actions = self.states_actions_all[1:]
         self.instance_id = instance_id
         self.given_plan_sequence = self.extract_given_plan_sequence()
@@ -26,14 +26,18 @@ class DomainMainMethods:
                     given_plan_sequence.append(action)
         return given_plan_sequence
 
+
+
     def extract_actions(self, is_executable):
         """extracts the executable actions for each time step"""
+        def action_executability(state_info):
+            return state_info[EXECUTABLE_ACTION_BOOL_KEY] and len(state_info[FLUENTS_KEY]) > 0
 
         actions_for_timestep = []
         for action_state_info in self.states_actions:  # timestep is a dictionary with action as key and value as another dictionary
             actions = []
             for action, value in action_state_info.items():
-                if value[EXECUTABLE_ACTION_BOOL_KEY] == is_executable:
+                if action_executability(value) == is_executable:
                     actions.append(action)
             actions_for_timestep.append(actions)
         return actions_for_timestep
@@ -76,9 +80,9 @@ class DomainMainMethods:
         for timestep in self.states_actions:
             timestep_fluents_from_executable_actions = []
             for action, value in timestep.items():
-                if not value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
-                    # timestep_fluents_from_executable_actions.append(value['fluents'])
-                    for fluent in value['fluents']:
+                if not value[PART_OF_PLAN_KEY] and value[EXECUTABLE_ACTION_BOOL_KEY] and len(value[FLUENTS_KEY]) > 0:
+                    # timestep_fluents_from_executable_actions.append(value[FLUENTS_KEY])
+                    for fluent in value[FLUENTS_KEY]:
                         timestep_fluents_from_executable_actions.append(fluent)
             fluents_from_executable_actions.append(timestep_fluents_from_executable_actions)
         return fluents_from_executable_actions
@@ -90,9 +94,9 @@ class DomainMainMethods:
         for timestep in self.states_actions:
             timestep_fluents_from_optimal_sequence = []
             for action, value in timestep.items():
-                if value['part_of_plan?'] and value['feasible?'] and len(value['fluents']) > 0:
-                    # timestep_fluents_from_optimal_sequence.append(value['fluents'])
-                    for fluent in value['fluents']:
+                if value[PART_OF_PLAN_KEY] and value[EXECUTABLE_ACTION_BOOL_KEY] and len(value[FLUENTS_KEY]) > 0:
+                    # timestep_fluents_from_optimal_sequence.append(value[FLUENTS_KEY])
+                    for fluent in value[FLUENTS_KEY]:
                         timestep_fluents_from_optimal_sequence.append(fluent)
             fluents_from_optimal_sequence.append(timestep_fluents_from_optimal_sequence)
         return fluents_from_optimal_sequence

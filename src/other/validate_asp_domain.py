@@ -1,7 +1,7 @@
 
 import os
 import jsonlines
-from clyngor.inline import ASP_last_model
+from clyngor.inline import ASP_one_model
 
 ASP_EXECUTION_TIME_LIMIT = 10
 
@@ -19,7 +19,7 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
 
 
 def execute_asp_code(asp_code):
-    return ASP_last_model(asp_code)
+    return ASP_one_model(asp_code)
 
 
 def open_jsonl(path):
