@@ -266,7 +266,33 @@ class DomainQuestionGen(DomainMainMethods):
 
     def sub_question_1(self, plan_length):
         # TODO implement
-        pass
+        # pass
+        plan = self.given_plan_sequence[1:plan_length+1]
+        question_answer_list = []
+        for fluent in self.fluents_from_optimal_sequence[plan_length-1]:
+            if fluent.startswith('on('):
+                b1, b2 = self.extract_multi_variable(fluent)
+                question = f"""I plan to perform the following sequence of actions: {plan}, will block {b1} be on block {b2} after performing the sequence of actions?"""
+                answer = True
+                question_answer_list.append(self.qa_data_object(self.sub_question_1.__name__,question,answer))
+            elif fluent.startswith('clear('):
+                b = self.extract_single_variable(fluent)
+                question = f"""I plan to perform the following sequence of actions: {plan}, will block {b} be clear after performing the sequence of actions?"""
+                answer = True
+                question_answer_list.append(self.qa_data_object(self.sub_question_1.__name__,question,answer))
+            elif fluent.startswith('holding('):
+                b = self.extract_single_variable(fluent)
+                question = f"""I plan to perform the following sequence of actions: {plan}, will I be holding block {b} after I perform the sequence of actions?"""
+                answer = True   
+                question_answer_list.append(self.qa_data_object(self.sub_question_1.__name__,question,answer)) 
+            elif fluent.startswith('ontable('):
+                b = self.extract_single_variable(fluent)
+                question = f"""I plan to perform the following sequence of actions: {plan}, will block {b} be on the table after I perform the sequence of actions?"""
+                answer = True
+                question_answer_list.append(self.qa_data_object(self.sub_question_1.__name__,question,answer))
+            else:
+                print('all true fluents returned') 
+        return question_answer_list                
 
     def sub_question_2(self, plan_length):
         # TODO implement
