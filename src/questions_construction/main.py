@@ -210,27 +210,27 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_4(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_5(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_6(self, plan_length):
         # TODO implement
-        pass
+        return None
 
 
 class FluentTrackingQuestions(QuestionGenerator):
@@ -242,11 +242,11 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
@@ -258,7 +258,6 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def question_4(self, plan_length):
         # TODO implement
-        # pass
         random_length = random.randint(2, plan_length - 1)
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length], random_length)} True?"
         answer = False
@@ -266,7 +265,6 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def question_5(self, plan_length):
         # TODO implement
-        # pass
         unique_objects = [obj for action in self.given_plan_sequence for obj in re.findall(r'\((.*?)\)', action)]
         unique_objects = [obj.split(',') for obj in unique_objects]
         unique_objects = list({obj for sublist in unique_objects for obj in sublist})
@@ -277,7 +275,6 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def question_6(self, plan_length):
         # TODO implement
-        # pass
         unique_objects = [obj for action in self.given_plan_sequence for obj in re.findall(r'\((.*?)\)', action)]
         unique_objects = [obj.split(',') for obj in unique_objects]
         unique_objects = list({obj for sublist in unique_objects for obj in sublist})
@@ -299,7 +296,25 @@ class StateTracking(QuestionGenerator):
         answer = True
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
-    # def question_2(self,plan_length):
+    def question_2(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_3(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_4(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_5(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_6(self, plan_length):
+        # TODO implement
+        return None
 
 
 class ActionExecutabilityQuestions(QuestionGenerator):
@@ -311,27 +326,27 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_4(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_5(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_6(self, plan_length):
         # TODO implement
-        pass
+        return None
 
 
 class EffectsQuestions(QuestionGenerator):
@@ -343,27 +358,27 @@ class EffectsQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_4(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_5(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_6(self, plan_length):
         # TODO implement
-        pass
+        return None
 
 
 class LoopingQuestions(QuestionGenerator):
@@ -375,27 +390,27 @@ class LoopingQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_4(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_5(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_6(self, plan_length):
         # TODO implement
-        pass
+        return None
 
 
 class NumericalReasoningQuestions(QuestionGenerator):
@@ -407,27 +422,27 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_4(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_5(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_6(self, plan_length):
         # TODO implement
-        pass
+        return None
 
 
 class HallucinationQuestions(QuestionGenerator):
@@ -439,58 +454,40 @@ class HallucinationQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_2(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_3(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_4(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_5(self, plan_length):
         # TODO implement
-        pass
+        return None
 
     def question_6(self, plan_length):
         # TODO implement
-        pass
+        return None
 
 
-class AllQuestions:
-    def __init__(self, domain_class, jsonl_instance, instance_id):
-        self.domain_asp_to_nlp = domain_class
-        self.jsonl_instance = jsonl_instance
-        self.q_types = [ObjectTrackingQuestions(domain_class, jsonl_instance, instance_id),
-                        FluentTrackingQuestions(domain_class, jsonl_instance, instance_id),
-                        StateTracking(domain_class, jsonl_instance, instance_id),
-                        ActionExecutabilityQuestions(domain_class, jsonl_instance, instance_id),
-                        EffectsQuestions(domain_class, jsonl_instance, instance_id),
-                        LoopingQuestions(domain_class, jsonl_instance, instance_id),
-                        NumericalReasoningQuestions(domain_class, jsonl_instance, instance_id),
-                        HallucinationQuestions(domain_class, jsonl_instance, instance_id)]
+# class CompositeQuestions(DomainQuestionGen):
+#         def __init__(self, states_actions_jsonl_path, instance_id):
+#             super().__init__(states_actions_jsonl_path, instance_id)
 
-    def generate_all_questions(self):
-        all_questions = []
-        for q_type in self.q_types:
-            all_questions += q_type.create_questions()
+#         def question_category(self):
+#             return 'ObjectTracking'
 
-            # class CompositeQuestions(DomainQuestionGen):
-            #         def __init__(self, states_actions_jsonl_path, instance_id):
-            #             super().__init__(states_actions_jsonl_path, instance_id)
+#         def question_1(self, plan_length):
 
-            #         def question_category(self):
-            #             return 'ObjectTracking'
-
-            #         def question_1(self, plan_length):
-
-            #           true_fluents = self.given_fluent_sequence[plan_length+1]
-            # random_index = random.randint(0, true_fluents - 1)
+#           true_fluents = self.given_fluent_sequence[plan_length+1]
+# random_index = random.randint(0, true_fluents - 1)
 #             inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
 #                 [self.action_to_natural_language(action) for action in inexecutable_sequence])
 #             questions = [
@@ -513,6 +510,25 @@ class AllQuestions:
 #         def question_4(self, plan_length):
 #             # TODO implement
 #             pass
+
+
+class AllQuestions:
+    def __init__(self, domain_class, jsonl_instance, instance_id):
+        self.domain_asp_to_nlp = domain_class
+        self.jsonl_instance = jsonl_instance
+        self.q_types = [ObjectTrackingQuestions(domain_class, jsonl_instance, instance_id),
+                        FluentTrackingQuestions(domain_class, jsonl_instance, instance_id),
+                        StateTracking(domain_class, jsonl_instance, instance_id),
+                        ActionExecutabilityQuestions(domain_class, jsonl_instance, instance_id),
+                        EffectsQuestions(domain_class, jsonl_instance, instance_id),
+                        LoopingQuestions(domain_class, jsonl_instance, instance_id),
+                        NumericalReasoningQuestions(domain_class, jsonl_instance, instance_id),
+                        HallucinationQuestions(domain_class, jsonl_instance, instance_id)]
+
+    def generate_all_questions(self):
+        all_questions = []
+        for q_type in self.q_types:
+            all_questions += q_type.create_questions()
 
 
 # if __name__ == '__main__':
