@@ -74,19 +74,26 @@ class StatesActionsGenerator:
     def set_to_asp_string_state(self, state_set, prefix=CURRENT_STATE_PREFIX):
         return prefix + ';'.join(list(state_set)) + ').'
 
+    def strip_neg_fluents(self, neg_fluents):
+        return [f[1:] for f in neg_fluents if f.startswith('-')]
+
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
         all_actions = self.all_actions()
         self.data.append({INIT_ACTION_KEY: {PART_OF_PLAN_KEY: True,
                                             FLUENTS_KEY: list(current_state),
+                                            #NOTE: is i pass garbade like then just returns the neg fluents of the current state
+                                            NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd',
+                                                                             'next_state_neg_fluents.lp'),
                                             EXECUTABLE_ACTION_BOOL_KEY: True}})
+        #TODO add neg fluents to init state
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in all_actions:
                 data_for_step_i[action] = {
                     PART_OF_PLAN_KEY: action == plan_sequence[i],
                     FLUENTS_KEY: self.next_state(current_state, action),
-                    'neg_fluents': self.next_state(current_state, action, 'next_state_neg_fluents.lp')}
+                    NEG_FLUENTS_KEY: self.next_state(current_state, action, 'next_state_neg_fluents.lp')}
                 data_for_step_i[action][EXECUTABLE_ACTION_BOOL_KEY] = bool(data_for_step_i[action][FLUENTS_KEY])
             self.data.append(data_for_step_i)
             current_state = self.next_state(current_state, plan_sequence[i])

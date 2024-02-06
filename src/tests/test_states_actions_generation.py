@@ -74,16 +74,28 @@ class TestStateActionsGeneration(unittest.TestCase):
         self.assertEqual(data, data_from_file)
 
 
-    def test_edge_case(self):
+    def test_edge_case1(self):
         pred_state = self.DG.next_state(['ontable(b1)', 'clear(b1)', 'holding(b2)'], 'action_put_down(b2)')
         true_state = ['ontable(b1)', 'clear(b1)', 'ontable(b2)', 'clear(b2)', 'handempty']
         self.assertEqual(set(true_state), set(pred_state))
 
-    def test_edge_case(self):
+    def test_edge_case2(self):
         pred_state = self.DG.next_state(['ontable(b1)', 'clear(b1)', 'holding(b2)'], 'action_put_down(b2)', asp_code='next_state_neg_fluents.lp')
         expected_neg_fluents = ['-holding(b2)','-holding(b1)','-on(b1,b2)', '-on(b2,b1)']
         self.assertEqual(set(expected_neg_fluents), set(pred_state))
 
+    def test_garbage_action_next_state(self):
+        current_state = ['ontable(b1)', 'clear(b1)', 'holding(b2)']
+        garbadge = 'asfsdkjfnds'
+        pred_state = self.DG.next_state(current_state, garbadge)
+        self.assertEqual(set(current_state), set(pred_state))
+
+    def test_garbage_action_next_state_negative(self):
+        current_state = ['ontable(b1)', 'clear(b1)', 'holding(b2)']
+        neg_current_state = ['-ontable(b2)', '-clear(b2)', '-handempty', '-on(b1,b2)', '-on(b2,b1)', '-holding(b1)']
+        garbadge = 'asfsdkjfnds'
+        pred_state = self.DG.next_state(current_state, garbadge, asp_code='next_state_neg_fluents.lp')
+        self.assertEqual(set(neg_current_state), set(pred_state))
 
 if __name__ == '__main__':
     unittest.main()

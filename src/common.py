@@ -14,6 +14,7 @@ TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
 INIT_ACTION_KEY = 'action_init'
 PART_OF_PLAN_KEY = "part_of_plan?"
 FLUENTS_KEY = "fluents"
+NEG_FLUENTS_KEY = "neg_fluents"
 EXECUTABLE_ACTION_BOOL_KEY = 'executable?'  # TODO rename
 
 
@@ -36,7 +37,7 @@ def execute_asp_code(asp_code):
     first = answers[0]
     for a in answers:
         if a != first:
-            raise ('ASP is broken')
+            raise 'Returned ASP sets are not the same!'
     return first
 
 
