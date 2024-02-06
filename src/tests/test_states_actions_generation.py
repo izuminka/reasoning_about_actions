@@ -57,6 +57,8 @@ class TestStateActionsGeneration(unittest.TestCase):
                     self.assertEqual([], d[FLUENTS_KEY])
 
                 if action == plan_sequence[i]:
+                    print(plan_sequence[i])
+                    print(d[FLUENTS_KEY])
                     self.assertTrue(d[PART_OF_PLAN_KEY])
                     self.assertTrue(len(d[FLUENTS_KEY]) > 0)
                     part_of_plan_actions.append(action)
@@ -79,8 +81,8 @@ class TestStateActionsGeneration(unittest.TestCase):
 
     def test_edge_case(self):
         pred_state = self.DG.next_state(['ontable(b1)', 'clear(b1)', 'holding(b2)'], 'action_put_down(b2)', asp_code='next_state_neg_fluents.lp')
-        true_state = ['ontable(b1)', 'clear(b1)', 'ontable(b2)', 'clear(b2)', 'handempty']
-        self.assertEqual(set(true_state), set(pred_state))
+        expected_neg_fluents = ['-holding(b2)','-holding(b1)','-on(b1,b2)', '-on(b2,b1)']
+        self.assertEqual(set(expected_neg_fluents), set(pred_state))
 
 
 if __name__ == '__main__':

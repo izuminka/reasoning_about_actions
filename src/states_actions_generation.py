@@ -13,7 +13,7 @@ def open_asp_action_sequence(plan_path):
 class StatesActionsGenerator:
     """ Generate data about actions for a given domain, instance and plan sequence"""
 
-    CURRENT_STATE_PREFIX = "current_state("
+    CURRENT_STATE_PREFIX = "init("
 
     @staticmethod
     def open_asp(asp_path):
@@ -51,7 +51,7 @@ class StatesActionsGenerator:
         additional_asp_code = '\n' + '\n'.join([action_occurs, current_state_asp_str])
 
         next_state_path = os.path.join(ASP_CODE_PATH, asp_code)
-        paths = [self.domain_path, self.asp_inst_objects_path, next_state_path]
+        paths = [self.domain_path, next_state_path, self.asp_inst_objects_path]
         asp_code = assemble_asp_code(paths, additional_asp_code=additional_asp_code)
         next_state = set()
         for prefix, contents in execute_asp_code(asp_code):
