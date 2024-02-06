@@ -16,7 +16,7 @@ PART_OF_PLAN_KEY = "part_of_plan?"
 FLUENTS_KEY = "fluents"
 NEG_FLUENTS_KEY = "neg_fluents"
 EXECUTABLE_ACTION_BOOL_KEY = 'executable?'  # TODO rename
-
+OBJECTS = 'objects'
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []

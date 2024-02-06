@@ -5,15 +5,21 @@ import uuid
 from ..common import *
 
 
-class DomainMainMethods:
-    def __init__(self, states_actions_jsonl_path, instance_id):
-        self.states_actions_all = open_jsonl(
-            states_actions_jsonl_path)  # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
+class QuestionGenerationHelpers:
+    """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
+    OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
+    ACTION_JOIN_STR = ', '
+
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        self.states_actions_all = states_actions_all
+        # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
         self.init_state = self.states_actions_all[0][INIT_ACTION_KEY]  # initial state
+        self.domain_class = domain_class
         self.states_actions = self.states_actions_all[1:]
         self.instance_id = instance_id
         self.given_plan_sequence = self.extract_given_plan_sequence()
-        self.given_state_sequence = self.extract_fluents_for_given_plan()
+        self.given_fluent_sequence = self.extract_fluents_for_given_plan()
+        self.given_neg_fluent_sequence = self.extract_fluents_for_given_plan(NEG_FLUENTS_KEY)
         self.plan_length_max = len(self.given_plan_sequence) - 1  # since i=0 is a NULL action
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
@@ -25,7 +31,7 @@ class DomainMainMethods:
                 if value[PART_OF_PLAN_KEY]:
                     given_plan_sequence.append(action)
         return given_plan_sequence
-
+    
     def is_action_executable(self, state_info):
         return state_info[EXECUTABLE_ACTION_BOOL_KEY] and len(state_info[FLUENTS_KEY]) > 0
 
@@ -40,13 +46,14 @@ class DomainMainMethods:
             actions_for_timestep.append(actions)
         return actions_for_timestep
 
-    def extract_fluents_for_given_plan(self):
+    def extract_fluents_for_given_plan(self, fluent_type=FLUENTS_KEY):
         """extracts the executable actions for each time step"""
         states = [self.init_state[FLUENTS_KEY]]
-        for action_state_info, optimal_action in zip(self.states_actions,
-                                                     self.given_plan_sequence):  # timestep is a dictionary with action as key and value as another dictionary
-            states.append(action_state_info[optimal_action][FLUENTS_KEY])
+        # timestep is a dictionary with action as key and value as another dictionary
+        for action_state_info, optimal_action in zip(self.states_actions, self.given_plan_sequence):  
+            states.append(action_state_info[optimal_action][fluent_type])
         return states
+
 
     def extract_executable_actions(self):
         """extracts the executable actions for each time step"""
@@ -77,254 +84,253 @@ class DomainMainMethods:
             # Adding sequence from randomly generated optimal plan
             sequence += [random.choice(self.given_plan_sequence[random.randint(0, self.plan_length_max - 1)])]
         return sequence, index
-
-    # def extract_fluents_from_executable_actions(self):
-    #     """This function extracts the fluents
-    #         from the executable actions which
-    #         are not in the optimal plan from the entire plan"""
-    #
-    #     fluents_from_executable_actions = []
-    #     for timestep in self.states_actions:
-    #         timestep_fluents_from_executable_actions = []
-    #         for action, value in timestep.items():
-    #             if self.is_action_executable(value):
-    #                 # timestep_fluents_from_executable_actions.append(value[FLUENTS_KEY])
-    #                 for fluent in value[FLUENTS_KEY]:
-    #                     timestep_fluents_from_executable_actions.append(fluent)
-    #         fluents_from_executable_actions.append(timestep_fluents_from_executable_actions)
-    #     return fluents_from_executable_actions
-
-    # def extract_fluents_from_optimal_sequence(self):
-    #     """This function extracts the fluents from the optimal sequence"""
-    #
-    #     fluents_from_optimal_sequence = []
-    #     for timestep in self.states_actions:
-    #         timestep_fluents_from_optimal_sequence = []
-    #         for action, value in timestep.items():
-    #             if value[PART_OF_PLAN_KEY] and value[EXECUTABLE_ACTION_BOOL_KEY] and len(value[FLUENTS_KEY]) > 0:
-    #                 # timestep_fluents_from_optimal_sequence.append(value[FLUENTS_KEY])
-    #                 for fluent in value[FLUENTS_KEY]:
-    #                     timestep_fluents_from_optimal_sequence.append(fluent)
-    #         fluents_from_optimal_sequence.append(timestep_fluents_from_optimal_sequence)
-    #     return fluents_from_optimal_sequence
-
-    def print_all(self):
-        print(self.given_plan_sequence)
-        print(self.executable_actions)
-        print(self.inexecutable_actions)
-        print(self.fluents_from_executable_actions)
-        print(self.fluents_from_optimal_sequence)
-
-
-class DomainQuestionGen(DomainMainMethods):
-    """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
-    QUESTION_MULTIPLICITY = 5
-    OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
-    ACTION_JOIN_STR = ', '
-    FREE_ANSWER = 'free_answer'
-    TRUE_FALSE_ANSWER = 'true_false_answer'
-
-    def __init__(self, data):
-        super().__init__(data)
-
-    def domain_name(self):
-        raise ('Implement it in the child class')
-
-    def qa_data_object(self, question_class, anwswer_type, question, answer):
-        return {
-            'id': uuid.uuid4(),
-            'domain_name': self.domain_name(),
-            'instance_id': self.instance_id,
-            'action_sequence': self.given_plan_sequence,
-            'question_type': question_class,
-            'question': question,
-            'anwswer_type': anwswer_type,
-            'answer': answer}
-
-    def fluent_to_natual_language(self, fluent):
-        raise ('Implement it in the child class')
-
-    def action_to_natural_language(self, action):
-        raise ('Implement it in the child class')
-
-    def out_of_domain_object_name(self):
-        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
-        # ex: crane_lift(car1, structure2)
-        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
-        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        raise ('Implement it in the child class')
-
-    def out_of_domain_fluent_name(self):
-        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
-        # ex: crane_lift(car1, structure2)
-        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
-        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        raise ('Implement it in the child class')
-
-    def out_of_domain_action_name(self):
-        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
-        # ex: crane_lift(car1, structure2)
-        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
-        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        raise ('Implement it in the child class')
-
-    def extract_single_variable(self, obj):
-        return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
-
-    def extract_multi_variable(self, obj):
-        match = re.search(self.OBJ_IN_PAREN_REGEX, obj)
-        return match.group(1).split(',')
-
-    @staticmethod
-    def unique_questions(question_generator, plan_length, multiplicity):
-        # TODO implement dedup
-        results = []
-        for i in range(multiplicity):
-            results.append(question_generator(plan_length))
-        return results
-
-    def question_constructors(self):
-        return [self.sub_question_1,
-                self.sub_question_2,
-                self.sub_question_3,
-                self.sub_question_4,
-                self.sub_question_5,
-                self.sub_question_6,
-                self.sub_question_7,
-                self.sub_question_8,
-                self.sub_question_9,
-                self.sub_question_10,
-                self.sub_question_11,
-                self.sub_question_12,
-                self.sub_question_13,
-                self.sub_question_14,
-                self.sub_question_15]
-
-    # self.composite_question_1,
-    # self.composite_question_2,
-    # self.composite_question_3,
-    # self.composite_question_4,
-
-    def create_questions(self, multiplicity=QUESTION_MULTIPLICITY):
-        results = []
-        for plan_length in range(1, self.plan_length_max + 1):
-            for question_constructor in self.question_constructors():
-                results += self.unique_questions(question_constructor, plan_length, multiplicity)
-        return results
-
+    
     @staticmethod
     def question_phrasing_choice(questions):
         # return random.choice(questions)
         return questions[0]  # TODO add random choice
 
-    def sub_question_1(self, plan_length):
-        def random_fluent(plan_length):
-            fluents = self.given_state_sequence[plan_length + 1]
+    def random_fluent(self, plan_length):
+        fluents = self.given_fluent_sequence[plan_length + 1]
+        rand_fluent = random.choice(fluents)
+        while '(' not in rand_fluent:
             rand_fluent = random.choice(fluents)
-            while '(' not in rand_fluent:
-                rand_fluent = random.choice(fluents)
-            return rand_fluent, True  # TODO change to T/F choice
+        return rand_fluent, True  # TODO change to T/F choice
+    
+    def plan_up_to_current_length(self, plan_length):
+        return self.given_plan_sequence[:plan_length]
+    
+    def get_objects_with_true_states(self,obj,plan_length):
+        true_fluents = []
+        for fluent in self.given_fluent_sequence[plan_length+1]:
+            if obj in fluent:
+                true_fluents.append(fluent)
+        true_fluents = [self.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in true_fluents]
+        return true_fluents        
 
-        plan = self.given_plan_sequence[:plan_length]
-        fluent, answer = random_fluent(plan_length)
-        object_name_fluent_str = self.fluent_to_natual_language(fluent)
+    def get_objects_with_false_states(self,obj,plan_length):
+        false_fluents = []
+        for fluent in self.given_neg_fluent_sequence[plan_length+1]:
+            if obj in fluent:
+                false_fluents.append(fluent)
+        false_fluents = [self.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in false_fluents]
+        return false_fluents   
 
-        question = f"I plan to perform the following sequence of actions: {plan}, will {object_name_fluent_str} after performing the sequence of actions?"
-        return self.qa_data_object(self.sub_question_1.__name__, self.TRUE_FALSE_ANSWER, question, answer)
 
-        pass
+class QuestionGenerator(QuestionGenerationHelpers):
+        QUESTION_MULTIPLICITY = 5
+        FREE_ANSWER = 'free_answer'
+        TRUE_FALSE_ANSWER = 'true_false_answer'
 
-    def sub_question_2(self, plan_length):
-        # TODO implement
-        pass
+        def __init__(self, states_actions_all, domain_class, instance_id):
+            super().__init__(states_actions_all, domain_class, instance_id)
+    
+        def qa_data_object(self, anwswer_type, question, answer):
+            return {
+                'id': uuid.uuid4(),
+                'domain_name': self.domain_class.domain_name(),
+                'instance_id': self.instance_id,
+                'action_sequence': self.given_plan_sequence,
+                'question_type': self.question_type(),
+                'question': question,
+                'anwswer_type': anwswer_type,
+                'answer': answer}
+    
+        def question_type(self):
+            raise ('Implement it in the child class')
+        
+        @staticmethod
+        def unique_questions(question_constructor, plan_length, multiplicity, timeout=100):
+            results = {}
+            while(len(results) < multiplicity) and timeout > 0:
+                qa_object = question_constructor(plan_length)
+                if qa_object: # can be None
+                    qa_id = (qa_object['question'],qa_object['answer'])
+                    results[qa_id] = qa_object
+                timeout -= 1
+            if timeout == 0:
+                raise ('Timeout error')
+            return list(results.values())
 
-    def sub_question_3(self, plan_length):
-        # TODO implement
-        pass
+        def create_questions(self, multiplicity=QUESTION_MULTIPLICITY):
+            results = []
+            for plan_length in range(1, self.plan_length_max + 1):
+                for question_constructor in self.question_constructors():
+                    results += self.unique_questions(question_constructor, plan_length, multiplicity)
+            return results
 
-    def sub_question_4(self, plan_length):
-        # TODO implement
-        pass
+        def question_constructors(self):
+            return [self.question_1,
+                    self.question_2,
+                    self.question_3,
+                    self.question_4,
+                    self.question_5,
+                    self.question_6,
+                    self.question_7,
+                    self.question_8,
+                    self.question_9,
+                    self.question_10]
 
-    def sub_question_5(self, plan_length):
-        # TODO implement
-        pass
+        def question_1(self, plan_length):
+            return None
 
-    def sub_question_6(self, plan_length):
-        # TODO implement
-        pass
+        def question_2(self, plan_length):
+            return None
 
-    def sub_question_7(self, plan_length):
-        # TODO implement
-        pass
+        def question_3(self, plan_length):
+            return None
 
-    def sub_question_8(self, plan_length):
-        # TODO implement
-        pass
+        def question_4(self, plan_length):
+            return None
+        
+        def question_5(self, plan_length):
+            return None
+        
+        def question_6(self, plan_length):
+            return None
+                
+        def question_7(self, plan_length):
+            return None
+        
+        def question_8(self, plan_length):
+            return None
+        
+        def question_9(self, plan_length):
+            return None
 
-    def sub_question_9(self, plan_length):
-        # TODO implement
-        pass
+        def question_10(self, plan_length):
+            return None
+        
 
-    def sub_question_10(self, plan_length):
-        # TODO implement
-        pass
+class FluentTrackingQuestions(QuestionGenerator):
+        def __init__(self, states_actions_all, domain_class, instance_id):
+            super().__init__(states_actions_all, domain_class, instance_id)
+        
+        def question_type(self):
+            return 'FluentTracking'
 
-    def sub_question_11(self, plan_length):
-        # TODO implement
-        pass
+        def question_1(self,plan_length):
+            # TODO implement
+            pass
 
-    def sub_question_12(self, plan_length):
-        # TODO implement
-        pass
+        def question_2(self,plan_length):
+            # TODO implement
+            pass
 
-    def sub_question_13(self, plan_length):
-        # TODO implement
-        pass
+        
+        def question_3(self, plan_length):
+            # TODO implement
+            # pass
+            random_length = random.randint(2, plan_length-1)
+            question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length+1],random_length)} True?"
+            answer = True
+            return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
-    def sub_question_14(self, plan_length):
-        # TODO implement
-        pass
+        def question_4(self, plan_length):
+            # TODO implement
+            # pass
+            random_length = random.randint(2, plan_length-1)
+            question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length],random_length)} True?"
+            answer = False
+            return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
-    def sub_question_15(self, plan_length):
-        # TODO implement
-        pass
+        def question_5(self, plan_length):
+            # TODO implement
+            # pass
+            unique_objects = [obj for action in self.given_plan_sequence for obj in re.findall(r'\((.*?)\)', action)]
+            unique_objects = [obj.split(',') for obj in unique_objects]
+            unique_objects = list({obj for sublist in unique_objects for obj in sublist}) 
+            unique_object = random.choice(unique_objects)
+            true_states = self.get_objects_with_true_states(unique_object,plan_length)
+            question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, can you specify all the true fluents for {unique_object}?"
+            return self.qa_data_object(self.FREE_ANSWER, question, true_states)
 
-    def composite_question_1(self, plan_length):
-        inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
+        def question_6(self, plan_length):
+            # TODO implement
+            # pass
+            unique_objects = [obj for action in self.given_plan_sequence for obj in re.findall(r'\((.*?)\)', action)]
+            unique_objects = [obj.split(',') for obj in unique_objects]
+            unique_objects = list({obj for sublist in unique_objects for obj in sublist}) 
+            unique_object = random.choice(unique_objects)
+            false_states = self.get_objects_with_false_states(unique_object,plan_length)
+            question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, can you specify all the true fluents for {unique_object}?"
+            return self.qa_data_object(self.FREE_ANSWER, question, false_states)
 
-        inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
-            [self.action_to_natural_language(action) for action in inexecutable_sequence])
-        questions = [
-            f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
-            f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
-        ]  # TODO add more question variations (if needed)
-        question = self.question_phrasing_choice(questions)
-        answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
+class StateTracking(QuestionGenerator):
+        def __init__(self, states_actions_jsonl_path, instance_id):
+            super().__init__(states_actions_jsonl_path, instance_id)
+        
+        def question_type(self):
+            return 'FluentTracking'
+        
+        def question_1(self, plan_length):
+            
+            question = f"I plan to perform the actions {self.given_plan_sequence[:plan_length]}, to reach the current state. Do the following fluents {self.given_fluent_sequence[plan_length+1]} represent the state completely?"
+            answer = True
+            return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
-        return self.qa_data_object(self.composite_question_1.__name__, self.FREE_ANSWER, question, answer)
+        # def question_2(self,plan_length):
 
-    def composite_question_2(self, plan_length):
-        # TODO implement
-        pass
 
-    def composite_question_3(self, plan_length):
-        # TODO implement
-        pass
+class AllQuestions:
+    def __init__(self, domain_class, jsonl_instance, instance_id):
+        self.domain_asp_to_nlp = domain_class
+        self.jsonl_instance = jsonl_instance
+        self.q_types = [ObjectTrackingQuestions(domain_class, jsonl_instance, instance_id),
+                     FluentTrackingQuestions(domain_class, jsonl_instance, instance_id),
+                     StateTracking(domain_class, jsonl_instance, instance_id)]
 
-    def composite_question_4(self, plan_length):
-        # TODO implement
-        pass
+    def generate_all_questions(self):
+        all_questions = []
+        for q_type in self.q_types:
+            all_questions += q_type.create_questions()
+    
 
-# class ObjectTrackingQuestions()
+# class CompositeQuestions(DomainQuestionGen):
+#         def __init__(self, states_actions_jsonl_path, instance_id):
+#             super().__init__(states_actions_jsonl_path, instance_id)
+        
+#         def question_category(self):
+#             return 'ObjectTracking'
+        
+#         def question_1(self, plan_length):
+
+#           true_fluents = self.given_fluent_sequence[plan_length+1]
+            random_index = random.randint(0,true_fluents-1)
+            corrupted_true_fluents = true_fluents.pop(random_index)
+            true_fluents.insert(random.choice(self.given_neg_fluent_sequence)) inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
+
+#             inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
+#                 [self.action_to_natural_language(action) for action in inexecutable_sequence])
+#             questions = [
+#                 f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
+#                 f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
+#             ]  # TODO add more question variations (if needed)
+#             question = self.question_phrasing_choice(questions)
+#             answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
+
+#             return self.qa_data_object(self.composite_question_1.__name__, self.FREE_ANSWER, question, answer)
+
+#         def question_2(self, plan_length):
+#             # TODO implement
+#             pass
+
+#         def question_3(self, plan_length):
+#             # TODO implement
+#             pass
+
+#         def question_4(self, plan_length):
+#             # TODO implement
+#             pass
+
 
 # if __name__ == '__main__':
-# all_questions = []
-# for domain_class in domain_list:
-#     for instance_jsonl in instance_list:
-#         domain_instance = domain_class(instance_jsonl)
-#         all_questions += domain_instance.create_questions()
-# # TODO add batching
-# with open('questions.jsonl', 'w') as f:
-#     for question in all_questions:
-#         f.write(json.dumps(question) + '\n')
+#     all_questions = []
+#     for domain_class in domain_list:
+#         for instance_jsonl in instance_list:
+#             domain_instance = domain_class(instance_jsonl)
+#             all_questions += domain_instance.create_questions()
+#     # TODO add batching
+#     with open('questions.jsonl', 'w') as f:
+#         for question in all_questions:
+#             f.write(json.dumps(question) + '\n')

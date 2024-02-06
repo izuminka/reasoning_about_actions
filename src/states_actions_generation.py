@@ -1,5 +1,6 @@
 from common import *
 import clingo
+import re
 
 
 def open_asp_action_sequence(plan_path):
@@ -74,17 +75,26 @@ class StatesActionsGenerator:
     def set_to_asp_string_state(self, state_set, prefix=CURRENT_STATE_PREFIX):
         return prefix + ';'.join(list(state_set)) + ').'
 
-    def strip_neg_fluents(self, neg_fluents):
-        return [f[1:] for f in neg_fluents if f.startswith('-')]
+    def parse_objects(self, objects):
+        # objects = 'block(a;b;c).\ntruck(t1;t2;t3)'
+        # return {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}
+        #TODO parse objects, use clygor for easier parsing
+        types_regex = r'(\w+)\('
+        object_types = re.findall(types_regex, objects)
+        instances_regex = r'(?<=\().+?(?=\))'
+        object_dict = {}
+        for t in object_types:
+            object_dict[t] = re.findall(instances_regex, objects)[object_types.index(t)].split(';')
+        return object_dict 
 
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
         all_actions = self.all_actions()
         self.data.append({INIT_ACTION_KEY: {PART_OF_PLAN_KEY: True,
                                             FLUENTS_KEY: list(current_state),
-                                            #NOTE: is i pass garbade like then just returns the neg fluents of the current state
-                                            NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd',
-                                                                             'next_state_neg_fluents.lp'),
+                                            #HACK: i pass garbage like then just returns the neg fluents of the current state
+                                            NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd', 'next_state_neg_fluents.lp'),
+                                            OBJECTS: self.parse(self.objects),
                                             EXECUTABLE_ACTION_BOOL_KEY: True}})
         #TODO add neg fluents to init state
         for i in range(len(plan_sequence)):
