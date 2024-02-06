@@ -77,6 +77,10 @@ class TestStateActionsGeneration(unittest.TestCase):
         true_state = ['ontable(b1)', 'clear(b1)', 'ontable(b2)', 'clear(b2)', 'handempty']
         self.assertEqual(set(true_state), set(pred_state))
 
+    def test_edge_case(self):
+        pred_state = self.DG.next_state(['ontable(b1)', 'clear(b1)', 'holding(b2)'], 'action_put_down(b2)', asp_code='next_state_neg_fluents.lp')
+        true_state = ['ontable(b1)', 'clear(b1)', 'ontable(b2)', 'clear(b2)', 'handempty']
+        self.assertEqual(set(true_state), set(pred_state))
 
 
 if __name__ == '__main__':

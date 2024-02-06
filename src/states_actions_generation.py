@@ -45,12 +45,12 @@ class StatesActionsGenerator:
 
         return set([action[0] for _, action in execute_asp_code(asp_code)])
 
-    def next_state(self, current_state_set, action):
+    def next_state(self, current_state_set, action, asp_code='next_state.lp'):
         action_occurs = f"occurs({action}, 1)."
         current_state_asp_str = self.set_to_asp_string_state(current_state_set)
         additional_asp_code = '\n' + '\n'.join([action_occurs, current_state_asp_str])
 
-        next_state_path = os.path.join(ASP_CODE_PATH, 'next_state.lp')
+        next_state_path = os.path.join(ASP_CODE_PATH, asp_code)
         paths = [self.domain_path, self.asp_inst_objects_path, next_state_path]
         asp_code = assemble_asp_code(paths, additional_asp_code=additional_asp_code)
         next_state = set()
@@ -85,7 +85,8 @@ class StatesActionsGenerator:
             for action in all_actions:
                 data_for_step_i[action] = {
                     PART_OF_PLAN_KEY: action == plan_sequence[i],
-                    FLUENTS_KEY: self.next_state(current_state, action)}
+                    FLUENTS_KEY: self.next_state(current_state, action),
+                    'neg_fluents': self.next_state(current_state, action, 'next_state_neg_fluents.lp')}
                 data_for_step_i[action][EXECUTABLE_ACTION_BOOL_KEY] = bool(data_for_step_i[action][FLUENTS_KEY])
             self.data.append(data_for_step_i)
             current_state = self.next_state(current_state, plan_sequence[i])

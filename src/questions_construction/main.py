@@ -13,6 +13,7 @@ class DomainMainMethods:
         self.states_actions = self.states_actions_all[1:]
         self.instance_id = instance_id
         self.given_plan_sequence = self.extract_given_plan_sequence()
+        self.given_state_sequence = self.extract_fluents_for_given_plan()
         self.plan_length_max = len(self.given_plan_sequence) - 1  # since i=0 is a NULL action
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
@@ -38,6 +39,14 @@ class DomainMainMethods:
                     actions.append(action)
             actions_for_timestep.append(actions)
         return actions_for_timestep
+
+    def extract_fluents_for_given_plan(self):
+        """extracts the executable actions for each time step"""
+        states = [self.init_state[FLUENTS_KEY]]
+        for action_state_info, optimal_action in zip(self.states_actions,
+                                                     self.given_plan_sequence):  # timestep is a dictionary with action as key and value as another dictionary
+            states.append(action_state_info[optimal_action][FLUENTS_KEY])
+        return states
 
     def extract_executable_actions(self):
         """extracts the executable actions for each time step"""
@@ -121,7 +130,7 @@ class DomainQuestionGen(DomainMainMethods):
     def domain_name(self):
         raise ('Implement it in the child class')
 
-    def qa_data_object(self, question_class, question, answer):
+    def qa_data_object(self, question_class, anwswer_type, question, answer):
         return {
             'id': uuid.uuid4(),
             'domain_name': self.domain_name(),
@@ -129,6 +138,7 @@ class DomainQuestionGen(DomainMainMethods):
             'action_sequence': self.given_plan_sequence,
             'question_type': question_class,
             'question': question,
+            'anwswer_type': anwswer_type,
             'answer': answer}
 
     def fluent_to_natual_language(self, fluent):
@@ -137,12 +147,26 @@ class DomainQuestionGen(DomainMainMethods):
     def action_to_natural_language(self, action):
         raise ('Implement it in the child class')
 
+    def out_of_domain_object_name(self):
+        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
+        # ex: crane_lift(car1, structure2)
+        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
+        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
+        raise ('Implement it in the child class')
+
+    def out_of_domain_fluent_name(self):
+        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
+        # ex: crane_lift(car1, structure2)
+        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
+        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
+        raise ('Implement it in the child class')
+
     def out_of_domain_action_name(self):
         # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
         # ex: crane_lift(car1, structure2)
         # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
         # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        pass
+        raise ('Implement it in the child class')
 
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
@@ -160,11 +184,7 @@ class DomainQuestionGen(DomainMainMethods):
         return results
 
     def question_constructors(self):
-        return [self.composite_question_1,
-                self.composite_question_2,
-                self.composite_question_3,
-                self.composite_question_4,
-                self.sub_question_1,
+        return [self.sub_question_1,
                 self.sub_question_2,
                 self.sub_question_3,
                 self.sub_question_4,
@@ -180,6 +200,11 @@ class DomainQuestionGen(DomainMainMethods):
                 self.sub_question_14,
                 self.sub_question_15]
 
+    # self.composite_question_1,
+    # self.composite_question_2,
+    # self.composite_question_3,
+    # self.composite_question_4,
+
     def create_questions(self, multiplicity=QUESTION_MULTIPLICITY):
         results = []
         for plan_length in range(1, self.plan_length_max + 1):
@@ -192,34 +217,21 @@ class DomainQuestionGen(DomainMainMethods):
         # return random.choice(questions)
         return questions[0]  # TODO add random choice
 
-    def composite_question_1(self, plan_length):
-        inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
-
-        inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
-            [self.action_to_natural_language(action) for action in inexecutable_sequence])
-        questions = [
-            f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
-            f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
-        ]  # TODO add more question variations (if needed)
-        question = self.question_phrasing_choice(questions)
-        answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
-
-        return self.qa_data_object(self.composite_question_1.__name__, self.FREE_ANSWER, question, answer)
-
-    def composite_question_2(self, plan_length):
-        # TODO implement
-        pass
-
-    def composite_question_3(self, plan_length):
-        # TODO implement
-        pass
-
-    def composite_question_4(self, plan_length):
-        # TODO implement
-        pass
-
     def sub_question_1(self, plan_length):
-        # TODO implement
+        def random_fluent(plan_length):
+            fluents = self.given_state_sequence[plan_length + 1]
+            rand_fluent = random.choice(fluents)
+            while '(' not in rand_fluent:
+                rand_fluent = random.choice(fluents)
+            return rand_fluent, True  # TODO change to T/F choice
+
+        plan = self.given_plan_sequence[:plan_length]
+        fluent, answer = random_fluent(plan_length)
+        object_name_fluent_str = self.fluent_to_natual_language(fluent)
+
+        question = f"I plan to perform the following sequence of actions: {plan}, will {object_name_fluent_str} after performing the sequence of actions?"
+        return self.qa_data_object(self.sub_question_1.__name__, self.TRUE_FALSE_ANSWER, question, answer)
+
         pass
 
     def sub_question_2(self, plan_length):
@@ -277,6 +289,34 @@ class DomainQuestionGen(DomainMainMethods):
     def sub_question_15(self, plan_length):
         # TODO implement
         pass
+
+    def composite_question_1(self, plan_length):
+        inexecutable_sequence, inexecutable_action_index = self.get_random_inexecutable_sequence(plan_length)
+
+        inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
+            [self.action_to_natural_language(action) for action in inexecutable_sequence])
+        questions = [
+            f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
+            f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
+        ]  # TODO add more question variations (if needed)
+        question = self.question_phrasing_choice(questions)
+        answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
+
+        return self.qa_data_object(self.composite_question_1.__name__, self.FREE_ANSWER, question, answer)
+
+    def composite_question_2(self, plan_length):
+        # TODO implement
+        pass
+
+    def composite_question_3(self, plan_length):
+        # TODO implement
+        pass
+
+    def composite_question_4(self, plan_length):
+        # TODO implement
+        pass
+
+# class ObjectTrackingQuestions()
 
 # if __name__ == '__main__':
 # all_questions = []

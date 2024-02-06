@@ -13,7 +13,20 @@ class Blocksworld(DomainQuestionGen):
         return 'blocksworld'
 
     def fluent_to_natual_language(self, fluent):
-        # TODO add logic to convert fluents to natural language
+        if fluent.startswith('on('):
+            b1, b2 = self.extract_multi_variable(fluent)
+            return f'block {b1} is on block {b2}'
+        elif fluent.startswith('clear('):
+            b = self.extract_single_variable(fluent)
+            return f'block {b} is clear'
+        elif fluent.startswith('holding('):
+            b = self.extract_single_variable(fluent)
+            return f'block {b} is being held'
+        elif fluent.startswith('ontable('):
+            b = self.extract_single_variable(fluent)
+            return f'block {b} is on the table'
+        else:
+            print('all true fluents returned')
         return fluent
 
     def action_to_natural_language(self, action):
@@ -24,12 +37,12 @@ class Blocksworld(DomainQuestionGen):
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
             return f'put down block {block_name}'
-        elif 'stack(' in action:
-            b1, b2 = self.extract_multi_variable(action)
-            return f'stack block {b1} from block {b2}'
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
             return f'unstack block {b1} from block {b2}'
+        elif 'stack(' in action:
+            b1, b2 = self.extract_multi_variable(action)
+            return f'stack block {b1} from block {b2}'
         else:
             # TODO handle made up actions
             # action_nlp = ''
