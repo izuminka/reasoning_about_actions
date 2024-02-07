@@ -4,7 +4,6 @@ import re
 import uuid
 from ..common import *
 from domains import *
-from domains import Blocksworld
 from src.states_actions_generation import *
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -158,9 +157,8 @@ class QuestionGenerationHelpers:
                 rand_fluent = random.choice(rand_fluent)
         return rand_fluent, False  # TODO change to T/F choice
 
-    def actions_up_to(self, plan_length):
-        # TODO add NL conversion
-        return self.given_plan_sequence[:plan_length]
+    def nl_actions_up_to(self, plan_length):
+        return ','.join([self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
 
     def get_objects_with_true_states(self, obj, plan_length):
         true_fluents = []
@@ -294,7 +292,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
                 fluents = self.false_fluents_for_object(object, plan_length)
             num_samples = random.randint(min_object_fluent_pair, len(fluents))
             object_fluent_pair = random.sample(fluents, num_samples)
-        return f"Given the initial condition, I perform {self.actions_up_to(plan_length)}. Is {object_fluent_pair} after my actions?"
+        return f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. Is {object_fluent_pair} after my actions?"
 
     def question_1(self, plan_length):
         question = self.question_1_2_helper(plan_length, is_true_fluents=True)
@@ -322,14 +320,14 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def question_3(self, plan_length):
         # NOTE: only fluents for single objects, ex: ontable(block1)
         object_types, objects_for_fluent, chosen_fluent = self.question_3_4_helper(plan_length, is_true_fluents=True)
-        question = f"Given the initial condition, I perform {self.actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
+        question = f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
         answer_type = self.FREE_ANSWER
         return self.qa_data_object(answer_type, question, objects_for_fluent)
 
     def question_4(self, plan_length):
         # NOTE: only fluents for single objects, ex: -ontable(block1)
         object_types, objects_for_fluent, chosen_fluent = self.question_3_4_helper(plan_length, is_true_fluents=False)
-        question = f"Given the initial condition, I perform {self.actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
+        question = f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
         answer_type = self.FREE_ANSWER
         return self.qa_data_object(answer_type, question, objects_for_fluent)
 
@@ -344,27 +342,27 @@ class FluentTrackingQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         # TODO implement
         fluent, answer = self.random_true_fluent(plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"
+        question = f"I plan to perform the following sequence of actions: { self.nl_actions_up_to(plan_length)}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_2(self, plan_length):
         # TODO implement
         fluent, answer = self.random_false_fluent(plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"
+        question = f"I plan to perform the following sequence of actions: { self.nl_actions_up_to(plan_length)}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_3(self, plan_length):
         # TODO implement
         # pass
         random_length = random.randint(2, plan_length - 1)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length + 1], random_length)} True/False?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length + 1], random_length)} True/False?"
         answer = True
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
         random_length = random.randint(2, plan_length - 1)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length], random_length)} True/False?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, in this are all the following {random.sample(self.given_fluent_sequence[plan_length], random_length)} True/False?"
         answer = False
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
@@ -372,14 +370,14 @@ class FluentTrackingQuestions(QuestionGenerator):
         # TODO implement
         unique_object = random.choice(StatesActionsGenerator.parse_objects())
         true_states = self.get_objects_with_true_states(unique_object, plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, can you specify all the true fluents for {unique_object}?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, can you specify all the true fluents for {unique_object}?"
         return self.qa_data_object(self.FREE_ANSWER, question, true_states)
 
     def question_6(self, plan_length):
         # TODO implement
         unique_object = random.choice(StatesActionsGenerator.parse_objects())
         false_states = self.get_objects_with_false_states(unique_object, plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, can you specify all the true fluents for {unique_object}?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, can you specify all the true fluents for {unique_object}?"
         return self.qa_data_object(self.FREE_ANSWER, question, false_states)
 
 
@@ -391,7 +389,7 @@ class StateTracking(QuestionGenerator):
         return 'StateTracking'
 
     def question_1(self, plan_length):
-        question = f"I plan to perform the actions {self.given_plan_sequence[:plan_length]}, to reach the current state. Do the following fluents {self.given_fluent_sequence[plan_length + 1]} represent the state completely?"
+        question = f"I plan to perform the actions {self.nl_actions_up_to(plan_length)}, to reach the current state. Do the following fluents {self.given_fluent_sequence[plan_length + 1]} represent the state completely?"
         answer = True
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
@@ -400,17 +398,15 @@ class StateTracking(QuestionGenerator):
         return None
 
     def question_3(self, plan_length):
-        # TODO rm tripple quotes
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, list all the conditions that will be true when I perform the sequence of actions?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, list all the conditions that will be true when I perform the sequence of actions?"
         answer = self.ACTION_JOIN_STR.join(
-            [Blocksworld.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
+            [self.domain_class.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
-        # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, list all the conditions that will not be true when I perform the sequence of actions?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, list all the conditions that will not be true when I perform the sequence of actions?"
         answer = self.ACTION_JOIN_STR.join(
-            [Blocksworld.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
+            [self.domain_class.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
 
@@ -423,7 +419,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, are all the actions in the sequence executable?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, are all the actions in the sequence executable?"
         answer = True
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
@@ -435,16 +431,16 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
     def question_3(self, plan_length):
         # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, specify all the actions which are executable in the current state?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state, specify all the actions which are executable in the current state?"
         answer = self.ACTION_JOIN_STR.join(
-            [Blocksworld.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
+            [self.domain_class.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, specify all the actions which are inexecutable in the current state?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state, specify all the actions which are inexecutable in the current state?"
         answer = self.ACTION_JOIN_STR.join(
-            [Blocksworld.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
+            [self.domain_class.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_5(self, plan_length):
