@@ -1,6 +1,5 @@
 % I have the following types:
 object(P) :- place(P).
-place(P) :- place(P).
 
 % I have the following predicates:
 pfluent(connected(P1, P2)) :- place(P1), place(P2), P1 != P2.
