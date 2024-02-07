@@ -1,18 +1,13 @@
 % I have the following types:
 object(O) :- location(O).
-location(O) :- location(O).
 object(O) :- locatable(O).
-locatable(O) :- locatable(O).
 locatable(O) :- driver(O).
-driver(O) :- driver(O).
 locatable(O) :- truck(O).
-truck(O) :- truck(O).
 locatable(O) :- obj(O).
-obj(O) :- obj(O).
 
 % I have the following predicates:
 pfluent(at(L, Loc)) :- locatable(L), location(Loc).
-pfluent(member(O, T)) :- obj(O), truck(T).
+pfluent(in(O, T)) :- obj(O), truck(T).
 pfluent(driving(D, T)) :- driver(D), truck(T).
 pfluent(link(L1, L2)) :- location(L1), location(L2), L1 != L2.
 pfluent(path(L1, L2)) :- location(L1), location(L2), L1 != L2.
@@ -55,14 +50,14 @@ member(at(Obj, Loc), cond_exec_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(T
 
 % Action Load a truck effects
 causes(action_load_truck(Obj, Truck, Loc), -at(Obj, Loc), cond_causes_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
-causes(action_load_truck(Obj, Truck, Loc), member(Obj, Truck), cond_causes_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+causes(action_load_truck(Obj, Truck, Loc), in(Obj, Truck), cond_causes_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
 
 % Action Unload a truck preconditions
 member(at(Truck, Loc), cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
-member(member(Obj, Truck), cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+member(in(Obj, Truck), cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
 
 % Action Unload a truck effects
-causes(action_unload_truck(Obj, Truck, Loc), -member(Obj, Truck), cond_causes_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+causes(action_unload_truck(Obj, Truck, Loc), -in(Obj, Truck), cond_causes_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
 causes(action_unload_truck(Obj, Truck, Loc), at(Obj, Loc), cond_causes_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
 
 % Action Board a truck preconditions
