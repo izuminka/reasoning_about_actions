@@ -1,7 +1,3 @@
-% I have the following types:
-object(B) :- block(B).
-block(B) :- block(B).
-
 % I have the following predicates:
 pfluent(on(B1, B2)) :- block(B1), block(B2), B1 != B2.
 pfluent(ontable(B)) :- block(B).
