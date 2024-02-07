@@ -5,7 +5,7 @@ import uuid
 from ..common import *
 from domains import *
 from domains import Blocksworld
-
+from src.states_actions_generation import *
 class QuestionGenerationHelpers:
     """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
     ACTION_JOIN_STR = ', '
@@ -280,20 +280,14 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def question_5(self, plan_length):
         # TODO implement
-        unique_objects = [obj for action in self.given_plan_sequence for obj in re.findall(r'\((.*?)\)', action)]
-        unique_objects = [obj.split(',') for obj in unique_objects]
-        unique_objects = list({obj for sublist in unique_objects for obj in sublist})
-        unique_object = random.choice(unique_objects)
+        unique_object = random.choice(StatesActionsGenerator.parse_objects())
         true_states = self.get_objects_with_true_states(unique_object, plan_length)
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, can you specify all the true fluents for {unique_object}?"
         return self.qa_data_object(self.FREE_ANSWER, question, true_states)
 
     def question_6(self, plan_length):
         # TODO implement
-        unique_objects = [obj for action in self.given_plan_sequence for obj in re.findall(r'\((.*?)\)', action)]
-        unique_objects = [obj.split(',') for obj in unique_objects]
-        unique_objects = list({obj for sublist in unique_objects for obj in sublist})
-        unique_object = random.choice(unique_objects)
+        unique_object = random.choice(StatesActionsGenerator.parse_objects())
         false_states = self.get_objects_with_false_states(unique_object, plan_length)
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, can you specify all the true fluents for {unique_object}?"
         return self.qa_data_object(self.FREE_ANSWER, question, false_states)
