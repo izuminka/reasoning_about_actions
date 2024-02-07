@@ -1,3 +1,9 @@
 /data/generated/
 /data/initial/other/
 /src/other/
+src/__pycache__/__init__.cpython-39.pyc
+src/__pycache__/common.cpython-39.pyc
+src/__pycache__/states_actions_generation.cpython-39.pyc
+src/questions_construction/__pycache__/__init__.cpython-39.pyc
+src/questions_construction/__pycache__/main.cpython-39.pyc
+src/tests/__pycache__/test_question_construction.cpython-39-pytest-7.1.1.pyc
