@@ -1,1 +1,1 @@
-block(b5; b4; b3; b6; b2; b1; b7).
+block(b1; b2; b3; b4; b5; b6; b7).
