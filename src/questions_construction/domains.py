@@ -2,6 +2,7 @@ from collections import defaultdict
 import random
 from main import DomainQuestionGen
 import re
+from src.states_actions_generation import StatesActionsGenerator
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -35,6 +36,9 @@ class BaseDomain:
         raise ('Implement it in the child class')
 
 class Blocksworld(BaseDomain):
+    
+    list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
+    
     def domain_name(self):
         return 'blocksworld'
 
@@ -88,13 +92,9 @@ class Blocksworld(BaseDomain):
             # use self.out_of_domain_action_name for translation
             raise ('action is not defined')
     
-    def out_of_domain_action_name(self,plan_length):
-        list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
-        unique_blocks = [block for action in self.given_plan_sequence for block in re.findall(r'\((.*?)\)', action)]
-        unique_blocks = [block.split(',') for block in unique_blocks]
-        unique_blocks = list({block for sublist in unique_blocks for block in sublist})
-        random_paranthesis = f"""({random.choice(unique_blocks)}, {random.choice(unique_blocks)})"""
-        random_action = f"""{random.choice(list_of_unknown_actions)}{random_paranthesis}"""
+    def out_of_domain_action_name(self,plan_length,objects):
+        random_paranthesis = f"""({random.choice(StatesActionsGenerator.parse_objects(objects))}, {random.choice(StatesActionsGenerator.parse_objects(objects))})"""
+        random_action = f"""{random.choice(self.list_of_unknown_actions)}{random_paranthesis}"""
         unknown_action_index = random.randint(0,plan_length-1)
         sequences_with_unknown_actions = self.given_plan_sequence[1:plan_length+1].copy()
         sequences_with_unknown_actions.insert(unknown_action_index,random_action)

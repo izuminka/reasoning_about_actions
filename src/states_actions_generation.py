@@ -27,15 +27,15 @@ class StatesActionsGenerator:
     @staticmethod
     def parse_objects(objects):
         # objects = 'block(a;b;c).\ntruck(t1;t2;t3)'
-        # return {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}
-        objects = objects.replace('\n', ' ')
+        # return {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}        
+        objects = objects.replace('\n', ' ')  
         object_types = re.findall(StatesActionsGenerator.OBJECT_TYPES_REGEX, objects)
         object_dict = {}
         for t in object_types:
-            objects = re.findall(StatesActionsGenerator.OBJECT_INSTANCES_REGEX, objects)[object_types.index(t)].split(';')
-            object_dict[t] = [obj.strip(' ') for obj in objects]
+            instances = re.findall(StatesActionsGenerator.OBJECT_INSTANCES_REGEX, objects)[object_types.index(t)]
+            instances = [obj.strip() for obj in instances.split(';')]
+            object_dict[t] = instances
         return object_dict
-
     def __init__(self, asp_domain_path, asp_instance_init_path, asp_instance_objects_path):
         self.domain_path = asp_domain_path
         self.asp_domain = self.open_asp(self.domain_path)
