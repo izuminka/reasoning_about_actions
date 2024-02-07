@@ -1,13 +1,3 @@
-% I have the following types:
-object(S) :- satellite(S).
-satellite(S) :- satellite(S).
-object(D) :- direction(D).
-direction(D) :- direction(D).
-object(I) :- instrument(I).
-instrument(I) :- instrument(I).
-object(M) :- mode(M).
-mode(M) :- mode(M).
-
 % I have the following predicates:
 pfluent(on_board(I, S)) :- instrument(I), satellite(S).
 pfluent(supports(I, M)) :- instrument(I), mode(M).

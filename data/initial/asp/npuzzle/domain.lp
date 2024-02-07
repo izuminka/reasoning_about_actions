@@ -1,7 +1,3 @@
-% I have the following types:
-position(P) :- position(P).
-tile(T) :- tile(T).
-
 % I have the following predicates:
 pfluent(at(T, P)) :- tile(T), position(P).
 pfluent(neighbor(P1, P2)) :- position(P1), position(P2), P1 != P2.
