@@ -1,24 +1,18 @@
 % I have the following types:
 vehicle(V) :- truck(V).
-truck(V) :- truck(V).
 vehicle(V) :- airplane(V).
-airplane(V) :- airplane(V).
 physobj(P) :- package(P).
-package(P) :- package(P).
 physobj(P) :- vehicle(P).
 place(P) :- airport(P).
-airport(P) :- airport(P).
 place(P) :- location(P).
-location(P) :- location(P).
 object(O) :- city(O).
-city(O) :- city(O).
 object(O) :- place(O).
 object(O) :- physobj(O).
 
 % I have the following predicates:
 pfluent(in_city(P, C)) :- place(P), city(C).
 pfluent(at(PH, P)) :- physobj(PH), place(P).
-pfluent(member(P, V)) :- package(P), vehicle(V).
+pfluent(in(P, V)) :- package(P), vehicle(V).
 
 % I have the following actions and restrictions:
 action(action_load_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
@@ -57,30 +51,30 @@ member(at(Pkg, Loc), cond_exec_load_truck(Pkg, Truck, Loc)) :- package(Pkg), tru
 
 % Action Load a truck effects:
 causes(action_load_truck(Pkg, Truck, Loc), -at(Pkg, Loc), cond_causes_load_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
-causes(action_load_truck(Pkg, Truck, Loc), member(Pkg, Truck), cond_causes_load_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
+causes(action_load_truck(Pkg, Truck, Loc), in(Pkg, Truck), cond_causes_load_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
 
 % Action Load an airplane preconditions:
-member(at(Airplane, Loc), cond_exec_load_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
 member(at(Pkg, Loc), cond_exec_load_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
+member(at(Airplane, Loc), cond_exec_load_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
 
 % Action Load an airplane effects:
 causes(action_load_airplane(Pkg, Airplane, Loc), -at(Pkg, Loc), cond_causes_load_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
-causes(action_load_airplane(Pkg, Airplane, Loc), member(Pkg, Airplane), cond_causes_load_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
+causes(action_load_airplane(Pkg, Airplane, Loc), in(Pkg, Airplane), cond_causes_load_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
 
 % Action Unload a truck preconditions:
 member(at(Truck, Loc), cond_exec_unload_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
-member(member(Pkg, Truck), cond_exec_unload_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
+member(in(Pkg, Truck), cond_exec_unload_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
 
 % Action Unload a truck effects:
-causes(action_unload_truck(Pkg, Truck, Loc), -member(Pkg, Truck), cond_causes_unload_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
+causes(action_unload_truck(Pkg, Truck, Loc), -in(Pkg, Truck), cond_causes_unload_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
 causes(action_unload_truck(Pkg, Truck, Loc), at(Pkg, Loc), cond_causes_unload_truck(Pkg, Truck, Loc)) :- package(Pkg), truck(Truck), place(Loc).
 
 % Action Unload an airplane preconditions:
 member(at(Airplane, Loc), cond_exec_unload_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
-member(member(Pkg, Airplane), cond_exec_unload_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
+member(in(Pkg, Airplane), cond_exec_unload_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
 
 % Action Unload an airplane effects:
-causes(action_unload_airplane(Pkg, Airplane, Loc), -member(Pkg, Airplane), cond_causes_unload_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
+causes(action_unload_airplane(Pkg, Airplane, Loc), -in(Pkg, Airplane), cond_causes_unload_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
 causes(action_unload_airplane(Pkg, Airplane, Loc), at(Pkg, Loc), cond_causes_unload_airplane(Pkg, Airplane, Loc)) :- package(Pkg), airplane(Airplane), place(Loc).
 
 % Action Drive a truck preconditions:

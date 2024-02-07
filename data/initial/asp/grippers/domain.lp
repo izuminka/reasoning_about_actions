@@ -1,12 +1,3 @@
-% I have the following types:
-object(O) :- room(O).
-room(O) :- room(O).
-object(O) :- object(O).
-object(O) :- robot(O).
-robot(O) :- robot(O).
-object(O) :- gripper(O).
-gripper(O) :- gripper(O).
-
 % I have the following predicates:
 pfluent(at_robby(R, Rm)) :- robot(R), room(Rm).
 pfluent(at(O, Rm)) :- object(O), room(Rm).
