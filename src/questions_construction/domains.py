@@ -4,6 +4,8 @@ from main import DomainQuestionGen
 import re
 
 class BaseDomain:
+    OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
+
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
 

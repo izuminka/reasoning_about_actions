@@ -8,7 +8,6 @@ from domains import Blocksworld
 
 class QuestionGenerationHelpers:
     """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
-    OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
     ACTION_JOIN_STR = ', '
 
     def __init__(self, states_actions_all, domain_class, instance_id):
@@ -21,7 +20,7 @@ class QuestionGenerationHelpers:
         self.given_plan_sequence = self.extract_given_plan_sequence()
         self.given_fluent_sequence = self.extract_fluents_for_given_plan()
         self.given_neg_fluent_sequence = self.extract_fluents_for_given_plan(NEG_FLUENTS_KEY)
-        self.plan_length_max = len(self.given_plan_sequence) - 1  # since i=0 is a NULL action
+        self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
 
