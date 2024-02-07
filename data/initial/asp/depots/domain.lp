@@ -1,27 +1,18 @@
 % I have the following types:
 object(O) :- place(O).
-place(O) :- place(O).
 object(O) :- locatable(O).
-locatable(O) :- locatable(O).
 place(P) :- depot(P).
-depot(P) :- depot(P).
 place(P) :- distributor(P).
-distributor(P) :- distributor(P).
 locatable(T) :- truck(T).
-truck(T) :- truck(T).
 locatable(H) :- hoist(H).
-hoist(H) :- hoist(H).
 locatable(S) :- surface(S).
-surface(S) :- surface(S).
 surface(P) :- pallet(P).
-pallet(P) :- pallet(P).
 surface(C) :- crate(C).
-crate(C) :- crate(C).
 
 % I have the following predicates:
 pfluent(at(L, P)) :- locatable(L), place(P).
 pfluent(on(C, S)) :- crate(C), surface(S).
-pfluent(member(C, T)) :- crate(C), truck(T).
+pfluent(in(C, T)) :- crate(C), truck(T).
 pfluent(lifting(H, C)) :- hoist(H), crate(C).
 pfluent(available(H)) :- hoist(H).
 pfluent(clear(S)) :- surface(S).
@@ -90,15 +81,15 @@ member(at(T, P), cond_exec_load(H, C, T, P)) :- hoist(H), crate(C), truck(T), pl
 member(lifting(H, C), cond_exec_load(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 
 causes(action_load(H, C, T, P), -lifting(H, C), cond_causes_load(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
-causes(action_load(H, C, T, P), member(C, T), cond_causes_load(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
+causes(action_load(H, C, T, P), in(C, T), cond_causes_load(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 causes(action_load(H, C, T, P), available(H), cond_causes_load(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 
 % Action Unload preconditions and effects:
 member(at(H, P), cond_exec_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 member(at(T, P), cond_exec_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 member(available(H), cond_exec_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
-member(member(C, T), cond_exec_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
+member(in(C, T), cond_exec_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 
-causes(action_unload(H, C, T, P), -member(C, T), cond_causes_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
+causes(action_unload(H, C, T, P), -in(C, T), cond_causes_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 causes(action_unload(H, C, T, P), -available(H), cond_causes_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
 causes(action_unload(H, C, T, P), lifting(H, C), cond_causes_unload(H, C, T, P)) :- hoist(H), crate(C), truck(T), place(P).
