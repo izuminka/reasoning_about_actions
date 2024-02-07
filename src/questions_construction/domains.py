@@ -85,3 +85,17 @@ class Blocksworld(BaseDomain):
             # return f'action_nlp block {b1} from block {b2}'
             # use self.out_of_domain_action_name for translation
             raise ('action is not defined')
+    
+    def out_of_domain_action_name(self,plan_length):
+        list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
+        unique_blocks = [block for action in self.given_plan_sequence for block in re.findall(r'\((.*?)\)', action)]
+        unique_blocks = [block.split(',') for block in unique_blocks]
+        unique_blocks = list({block for sublist in unique_blocks for block in sublist})
+        random_paranthesis = f"""({random.choice(unique_blocks)}, {random.choice(unique_blocks)})"""
+        random_action = f"""{random.choice(list_of_unknown_actions)}{random_paranthesis}"""
+        unknown_action_index = random.randint(0,plan_length-1)
+        sequences_with_unknown_actions = self.given_plan_sequence[1:plan_length+1].copy()
+        sequences_with_unknown_actions.insert(unknown_action_index,random_action)
+        while len(sequences_with_unknown_actions)<plan_length:
+            sequences_with_unknown_actions += [random.choice(self.given_plan_sequence)]
+        return sequences_with_unknown_actions, unknown_action_index    
