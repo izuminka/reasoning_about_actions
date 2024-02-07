@@ -4,7 +4,7 @@
 	location locatable - object
 	man nut spanner - locatable	
 )                                           
-                                                                               
+                                                                             
 (:predicates 
 	(at ?m - locatable ?l - location)
 	(carrying ?m - man ?s - spanner)

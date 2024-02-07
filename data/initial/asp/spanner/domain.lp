@@ -1,14 +1,9 @@
 % I have the following types:
 object(O) :- location(O).
-location(O) :- location(O).
 object(O) :- locatable(O).
-locatable(O) :- locatable(O).
 locatable(M) :- man(M).
-man(M) :- man(M).
 locatable(N) :- nut(N).
-nut(N) :- nut(N).
 locatable(S) :- spanner(S).
-spanner(S) :- spanner(S).
 
 % I have the following predicates:
 pfluent(at(L, Loc)) :- locatable(L), location(Loc).
