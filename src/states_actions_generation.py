@@ -98,7 +98,7 @@ class StatesActionsGenerator:
                                             FLUENTS_KEY: list(current_state),
                                             #HACK: i pass garbage like then just returns the neg fluents of the current state
                                             NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd', 'next_state_neg_fluents.lp'),
-                                            OBJECTS: self.parse_objects(self.objects),
+                                            OBJECTS_KEY: self.parse_objects(self.objects),
                                             EXECUTABLE_ACTION_BOOL_KEY: True}})
         #TODO add neg fluents to init state
         for i in range(len(plan_sequence)):

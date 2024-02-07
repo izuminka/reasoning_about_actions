@@ -14,6 +14,7 @@ class QuestionGenerationHelpers:
         self.states_actions_all = states_actions_all
         # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
         self.init_state = self.states_actions_all[0][INIT_ACTION_KEY]  # initial state
+        self.objects_by_type = self.init_state[OBJECTS_KEY]
         self.domain_class = domain_class
         self.states_actions = self.states_actions_all[1:]
         self.instance_id = instance_id
@@ -98,14 +99,12 @@ class QuestionGenerationHelpers:
 
     def random_false_fluent(self, plan_length):
         set1 = set(self.given_fluent_sequence[plan_length + 1] + self.given_neg_fluent_sequence[plan_length + 1])
-        random_no = random.choice([x for x in range(0, len(self.given_fluent_sequence)) if x != plan_length+1])
+        random_no = random.choice([x for x in range(0, len(self.given_fluent_sequence)) if x != plan_length + 1])
         set2 = set(self.given_fluent_sequence[random_no] + self.given_neg_fluent_sequence[random_no])
         rand_fluent = random.choice(list(set2 - set1))
         while '(' not in rand_fluent:
             rand_fluent = random.choice(rand_fluent)
         return rand_fluent, False  # TODO change to T/F choice
-
-    
 
     def plan_up_to_current_length(self, plan_length):
         return self.given_plan_sequence[:plan_length]
@@ -115,7 +114,8 @@ class QuestionGenerationHelpers:
         for fluent in self.given_fluent_sequence[plan_length + 1]:
             if obj in fluent:
                 true_fluents.append(fluent)
-        true_fluents = [self.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in true_fluents]
+        true_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
+                        true_fluents]
         return true_fluents
 
     def get_objects_with_false_states(self, obj, plan_length):
@@ -123,7 +123,8 @@ class QuestionGenerationHelpers:
         for fluent in self.given_neg_fluent_sequence[plan_length + 1]:
             if obj in fluent:
                 false_fluents.append(fluent)
-        false_fluents = [self.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in false_fluents]
+        false_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
+                         false_fluents]
         return false_fluents
 
 
@@ -147,7 +148,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
             'answer': answer}
 
     def question_category(self):
-        raise ('Implement it in the child class')
+        raise 'Implement it in the child class'
 
     @staticmethod
     def unique_questions(question_constructor, plan_length, multiplicity, timeout=100):
@@ -217,7 +218,8 @@ class ObjectTrackingQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'ObjectTracking'
+        # TODO insure the same format for all question_categories
+        return 'object_tracking'
 
     def question_1(self, plan_length):
         # TODO implement
@@ -253,14 +255,14 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         # TODO implement
-        fluent,answer = self.random_true_fluent(plan_length)
-        question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, is the condition:{self.fluent_to_natural_language(fluent)} True/False?"""
+        fluent, answer = self.random_true_fluent(plan_length)
+        question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"""
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_2(self, plan_length):
         # TODO implement
         fluent, answer = self.random_false_fluent(plan_length)
-        question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, is the condition:{self.fluent_to_natural_language(fluent)} True/False?"""
+        question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"""
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_3(self, plan_length):
@@ -310,16 +312,18 @@ class StateTracking(QuestionGenerator):
         return None
 
     def question_3(self, plan_length):
-        # TODO implement
+        # TODO rm tripple quotes
         question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, list all the conditions that will be true when I perform the sequence of actions?"""
-        answer = self.ACTION_JOIN_STR.join([self.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
+        answer = self.ACTION_JOIN_STR.join(
+            [self.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
         question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, list all the conditions that will not be true when I perform the sequence of actions?"""
-        answer = self.ACTION_JOIN_STR.join([self.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
-        return self.qa_data_object(self.FREE_ANSWER, question, answer)        
+        answer = self.ACTION_JOIN_STR.join(
+            [self.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
 
 class ActionExecutabilityQuestions(QuestionGenerator):
@@ -344,14 +348,16 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_3(self, plan_length):
         # TODO implement
         question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, specify all the actions which are executable in the current state?"""
-        answer = self.ACTION_JOIN_STR.join([self.fluent_to_natual_language(action) for action in self.executable_actions[plan_length+1]]) 
+        answer = self.ACTION_JOIN_STR.join(
+            [self.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
         question = f"""I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, specify all the actions which are inexecutable in the current state?"""
-        answer = self.ACTION_JOIN_STR.join([self.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length+1]]) 
-        return self.qa_data_object(self.FREE_ANSWER, question, answer)        
+        answer = self.ACTION_JOIN_STR.join(
+            [self.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_5(self, plan_length):
         # TODO implement
