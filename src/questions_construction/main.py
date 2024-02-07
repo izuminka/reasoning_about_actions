@@ -315,14 +315,14 @@ class StateTracking(QuestionGenerator):
         # TODO rm tripple quotes
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, list all the conditions that will be true when I perform the sequence of actions?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, list all the conditions that will not be true when I perform the sequence of actions?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
 
@@ -349,14 +349,14 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, specify all the actions which are executable in the current state?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, specify all the actions which are inexecutable in the current state?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_5(self, plan_length):
