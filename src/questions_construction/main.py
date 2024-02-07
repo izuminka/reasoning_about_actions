@@ -456,31 +456,43 @@ class EffectsQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'Effects'
+        return 'effects'
 
     def question_1(self, plan_length):
-        # TODO implement
-        return None
+        action = self.given_plan_sequence[plan_length-1]  #TODO doube check
+        fluents_current_state = set(self.given_fluent_sequence[plan_length-1]) #TODO doube check
+        fluents_next_state = set(self.given_fluent_sequence[plan_length])
+
+        affected_fluents = fluents_next_state - fluents_current_state
+        num_samples = len(affected_fluents)
+        sampled_fluents = random.sample(affected_fluents, num_samples)
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} will {sampled_fluents}? True/False"
+        answer = True
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_2(self, plan_length):
-        # TODO implement
-        return None
+        action = self.given_plan_sequence[plan_length-1]  #TODO doube check
+        fluents_current_state = set(self.given_fluent_sequence[plan_length-1]) #TODO doube check
+        fluents_next_state = set(self.given_fluent_sequence[plan_length])
+
+        unaffected_fluents = fluents_next_state.intersection(fluents_current_state)
+        num_samples = len(unaffected_fluents)
+        sampled_fluents = random.sample(unaffected_fluents, num_samples)
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} will {sampled_fluents}? True/False"
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_3(self, plan_length):
-        # TODO implement
-        return None
+        action = self.given_plan_sequence[plan_length-1]  #TODO doube check
+        fluents_next_state = self.given_fluent_sequence[plan_length] #TODO doube check
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be true"
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, fluents_next_state)
 
     def question_4(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_5(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_6(self, plan_length):
-        # TODO implement
-        return None
+        action = self.given_plan_sequence[plan_length-1]  #TODO doube check
+        neg_fluents_next_state = self.given_neg_fluent_sequence[plan_length] #TODO doube check
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be false"
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, neg_fluents_next_state)
 
 
 class LoopingQuestions(QuestionGenerator):
