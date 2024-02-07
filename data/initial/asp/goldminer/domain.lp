@@ -1,6 +1,3 @@
-% I have the following types:
-loc(L) :- loc(L).
-
 % I have the following predicates:
 pfluent(robot_at(L)) :- loc(L).
 pfluent(bomb_at(L)) :- loc(L).
