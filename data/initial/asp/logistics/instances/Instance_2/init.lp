@@ -1,0 +1,12 @@
+init(at(p1,l1-1);
+at(p2,l1-1);
+in_city(l1-0,c1);
+at(p3,l0-0);
+in_city(l0-1,c0);
+in_city(l0-0,c0);
+at(a0,l0-0);
+at(t1,l1-1);
+at(p0,l0-1);
+at(t0,l0-1);
+in_city(l1-1,c1);
+).
