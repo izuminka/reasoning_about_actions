@@ -1,6 +1,6 @@
 from collections import defaultdict
 import random
-from main import DomainQuestionGen
+from main import QuestionGenerator,QuestionGenerationHelpers
 import re
 from src.states_actions_generation import StatesActionsGenerator
 
