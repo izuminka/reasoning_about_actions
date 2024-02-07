@@ -617,7 +617,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         answer = inexecutable_action
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
     
-    def question_1(self, plan_length):
+    def question_13(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many actions are there before the first inexecutable action?"
         inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
