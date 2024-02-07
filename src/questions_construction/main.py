@@ -579,45 +579,45 @@ class NumericalReasoningQuestions(QuestionGenerator):
         answer = False
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)        
     
-    def question_6(self, plan_length,objects):
+    def question_7(self, plan_length,objects):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the total number of objects?"
         no_of_unique_objects = sum([len(instances) for instances in StatesActionsGenerator.parse_objects(objects).values()])  
         answer = no_of_unique_objects
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
     
-    def question_7(self, plan_length):
+    def question_8(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many true fluents are there in the current state?"
         answer = len(self.given_fluent_sequence[plan_length + 1])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
     
-    def question_8(self, plan_length):
+    def question_9(self, plan_length):
     # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many false fluents are there in the current state?"
         answer = len(self.given_neg_fluent_sequence[plan_length + 1])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)   
     
-    def question_8(self, plan_length):
+    def question_10(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many executable actions are there in the current state?"
         answer = len(self.executable_actions[plan_length])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)   
     
-    def question_9(self, plan_length):
+    def question_11(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many inexecutable actions are there in the current state?"
         answer = len(self.inexecutable_actions[plan_length])
         return self.qa_data_object(self.FREE_ANSWER_ANSWER, question, answer)
     
-    def question_10(self, plan_length):
+    def question_12(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. What is the first inexecutable action in the sequence of actions?"
         inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
         answer = inexecutable_action
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
     
-    def question_11(self, plan_length):
+    def question_13(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many actions are there before the first inexecutable action?"
         inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
