@@ -15,12 +15,26 @@ class StatesActionsGenerator:
     """ Generate data about actions for a given domain, instance and plan sequence"""
 
     CURRENT_STATE_PREFIX = "init("
+    OBJECT_TYPES_REGEX = r'(\w+)\('
+    OBJECT_INSTANCES_REGEX =  r'(?<=\().+?(?=\))'
 
     @staticmethod
     def open_asp(asp_path):
         with open(asp_path) as f:
             asp = f.read()
         return asp
+
+    @staticmethod
+    def parse_objects(objects):
+        # objects = 'block(a;b;c).\ntruck(t1;t2;t3)'
+        # return {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}
+        objects = objects.replace('\n', ' ')
+        object_types = re.findall(StatesActionsGenerator.OBJECT_TYPES_REGEX, objects)
+        object_dict = {}
+        for t in object_types:
+            objects = re.findall(StatesActionsGenerator.OBJECT_INSTANCES_REGEX, objects)[object_types.index(t)].split(';')
+            object_dict[t] = [obj.strip(' ') for obj in objects]
+        return object_dict
 
     def __init__(self, asp_domain_path, asp_instance_init_path, asp_instance_objects_path):
         self.domain_path = asp_domain_path
@@ -75,17 +89,7 @@ class StatesActionsGenerator:
     def set_to_asp_string_state(self, state_set, prefix=CURRENT_STATE_PREFIX):
         return prefix + ';'.join(list(state_set)) + ').'
 
-    def parse_objects(self, objects):
-        # objects = 'block(a;b;c).\ntruck(t1;t2;t3)'
-        # return {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}
-        #TODO parse objects, use clygor for easier parsing
-        types_regex = r'(\w+)\('
-        object_types = re.findall(types_regex, objects)
-        instances_regex = r'(?<=\().+?(?=\))'
-        object_dict = {}
-        for t in object_types:
-            object_dict[t] = re.findall(instances_regex, objects)[object_types.index(t)].split(';')
-        return object_dict 
+
 
     def generate_data(self, plan_sequence):
         current_state = self.initial_state
@@ -94,7 +98,7 @@ class StatesActionsGenerator:
                                             FLUENTS_KEY: list(current_state),
                                             #HACK: i pass garbage like then just returns the neg fluents of the current state
                                             NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd', 'next_state_neg_fluents.lp'),
-                                            OBJECTS: self.parse(self.objects),
+                                            OBJECTS: self.parse_objects(self.objects),
                                             EXECUTABLE_ACTION_BOOL_KEY: True}})
         #TODO add neg fluents to init state
         for i in range(len(plan_sequence)):

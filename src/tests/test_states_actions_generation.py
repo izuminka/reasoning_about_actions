@@ -97,5 +97,19 @@ class TestStateActionsGeneration(unittest.TestCase):
         pred_state = self.DG.next_state(current_state, garbadge, asp_code='next_state_neg_fluents.lp')
         self.assertEqual(set(neg_current_state), set(pred_state))
 
+
+    def test_parse_objects(self):
+        expected = {'block': ['a', 'b', 'c']}
+        for objects_str in ['block(a;b;c).\n',
+                            'block(a;\nb;c\n).\n']:
+            objects_dict = self.DG.parse_objects(objects_str)
+            self.assertEqual(expected, objects_dict)
+
+        expected = {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}
+        for objects_str in ['block(a;b;c).\ntruck(t1;t2;t3)',
+                            'block(a;\nb;c\n).\n\ntruck(t1;\nt2;\nt3\n)\n']:
+            objects_dict = self.DG.parse_objects(objects_str)
+            self.assertEqual(expected, objects_dict)
+
 if __name__ == '__main__':
     unittest.main()

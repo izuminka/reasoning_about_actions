@@ -141,12 +141,12 @@ class QuestionGenerator(QuestionGenerationHelpers):
             'domain_name': self.domain_class.domain_name(),
             'instance_id': self.instance_id,
             'action_sequence': self.given_plan_sequence,
-            'question_type': self.question_type(),
+            'question_type': self.question_category(),
             'question': question,
             'anwswer_type': anwswer_type,
             'answer': answer}
 
-    def question_type(self):
+    def question_category(self):
         raise ('Implement it in the child class')
 
     @staticmethod
@@ -216,7 +216,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'ObjectTracking'
 
     def question_1(self, plan_length):
@@ -248,7 +248,7 @@ class FluentTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'FluentTracking'
 
     def question_1(self, plan_length):
@@ -303,7 +303,7 @@ class StateTracking(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'StateTracking'
 
     def question_1(self, plan_length):
@@ -332,7 +332,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'Action Executability'
 
     def question_1(self, plan_length):
@@ -371,7 +371,7 @@ class EffectsQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'Effects'
 
     def question_1(self, plan_length):
@@ -403,7 +403,7 @@ class LoopingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'Looping'
 
     def question_1(self, plan_length):
@@ -435,7 +435,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
+    def question_category(self):
         return 'NumericalReasoning'
 
     def question_1(self, plan_length):
@@ -467,8 +467,8 @@ class HallucinationQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_type(self):
-        return 'Halucination'
+    def question_category(self):
+        return 'Hallucination'
 
     def question_1(self, plan_length):
         # TODO implement
