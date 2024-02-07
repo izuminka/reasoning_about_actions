@@ -34,8 +34,10 @@ class StatesActionsGenerator:
         for t in object_types:
             instances = re.findall(StatesActionsGenerator.OBJECT_INSTANCES_REGEX, objects)[object_types.index(t)]
             instances = [obj.strip() for obj in instances.split(';')]
-            object_dict[t] = instances
+            object_dict[t] = instances  
         return object_dict
+    
+    
     def __init__(self, asp_domain_path, asp_instance_init_path, asp_instance_objects_path):
         self.domain_path = asp_domain_path
         self.asp_domain = self.open_asp(self.domain_path)

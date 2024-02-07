@@ -1,6 +1,6 @@
 from collections import defaultdict
 import random
-from main import *
+from main import DomainQuestionGen
 import re
 from src.states_actions_generation import StatesActionsGenerator
 
@@ -38,11 +38,12 @@ class BaseDomain:
 class Blocksworld(BaseDomain):
     
     list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
+    list_of_unknown_fluents = ['belowtable','unclear','empty','broken','unstable','usable']
     
     def domain_name(self):
         return 'blocksworld'
 
-    def fluent_to_natual_language(self, fluent):
+    def fluent_to_natural_language(self, fluent):
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return f'block {b1} is on block {b2}'
@@ -92,12 +93,24 @@ class Blocksworld(BaseDomain):
             # use self.out_of_domain_action_name for translation
             raise ('action is not defined')
     
-    def out_of_domain_action_name(self,plan_length,objects):
-        random_paranthesis = f"""({random.choice(StatesActionsGenerator.parse_objects(objects))}, {random.choice(StatesActionsGenerator.parse_objects(objects))})"""
+    def out_of_domain_action_sequence(self,plan_length,objects):
+        random_key = random.choice(list(StatesActionsGenerator.parse_objects(objects).keys()))
+        random_object = random.choice(StatesActionsGenerator.parse_objects(objects)[random_key])
+        random_paranthesis = f"""({random_object})"""
         random_action = f"""{random.choice(self.list_of_unknown_actions)}{random_paranthesis}"""
         unknown_action_index = random.randint(0,plan_length-1)
-        sequences_with_unknown_actions = self.given_plan_sequence[1:plan_length+1].copy()
-        sequences_with_unknown_actions.insert(unknown_action_index,random_action)
+        sequences_with_unknown_actions = QuestionGenerator.extract_given_plan_sequence()[:unknown_action_index]+[random_action]
         while len(sequences_with_unknown_actions)<plan_length:
-            sequences_with_unknown_actions += [random.choice(self.given_plan_sequence)]
-        return sequences_with_unknown_actions, unknown_action_index    
+            sequences_with_unknown_actions += [random.choice(QuestionGenerator.extract_given_plan_sequence())]
+        return sequences_with_unknown_actions, unknown_action_index   
+    
+    def out_of_domain_fluent_sequence(self,plan_length,objects):    
+        random_key = random.choice(list(StatesActionsGenerator.parse_objects(objects).keys()))
+        random_object = random.choice(StatesActionsGenerator.parse_objects(objects)[random_key])
+        random_paranthesis = f"""({random_object})"""
+        random_fluent = f"""{random.choice(self.list_of_unknown_fluents)}{random_paranthesis}"""
+        unknown_fluent_index = random.randint(0,plan_length-1)
+        sequences_with_unknown_fluents = QuestionGenerator.extract_fluents_for_given_plan()[1:unknown_fluent_index+1]+[random_fluent]
+        while len(sequences_with_unknown_fluents)<plan_length:
+            sequences_with_unknown_fluents += [random.choice(QuestionGenerator.extract_given_plan_sequence())]
+        return sequences_with_unknown_fluents, unknown_fluent_index  

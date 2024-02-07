@@ -38,6 +38,7 @@ class QuestionGenerationHelpers:
         self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
+        
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
@@ -165,8 +166,7 @@ class QuestionGenerationHelpers:
         for fluent in self.given_fluent_sequence[plan_length + 1]:
             if obj in fluent:
                 true_fluents.append(fluent)
-        true_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
-                        true_fluents]
+        true_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in true_fluents]
         return true_fluents
 
     def get_objects_with_false_states(self, obj, plan_length):
@@ -174,8 +174,7 @@ class QuestionGenerationHelpers:
         for fluent in self.given_neg_fluent_sequence[plan_length + 1]:
             if obj in fluent:
                 false_fluents.append(fluent)
-        false_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
-                         false_fluents]
+        false_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in false_fluents]
         return false_fluents
 
     def object_type_by_object_name(self):
@@ -193,6 +192,8 @@ class QuestionGenerator(QuestionGenerationHelpers):
     QUESTION_MULTIPLICITY = 5
     FREE_ANSWER = 'free_answer'
     TRUE_FALSE_ANSWER = 'true_false_answer'
+    digit_regex = '\d+'
+    word_regex = '[a-zA-Z]+'
 
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -400,13 +401,13 @@ class StateTracking(QuestionGenerator):
     def question_3(self, plan_length):
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, list all the conditions that will be true when I perform the sequence of actions?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(fluent) for fluent in self.given_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, list all the conditions that will not be true when I perform the sequence of actions?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(fluent) for fluent in self.given_neg_fluent_sequence[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
 
@@ -433,14 +434,14 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state, specify all the actions which are executable in the current state?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(action) for action in self.executable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state, specify all the actions which are inexecutable in the current state?"
         answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
+            [Blocksworld.fluent_to_natual_language(action) for action in self.inexecutable_actions[plan_length + 1]])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_5(self, plan_length):
@@ -534,31 +535,95 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_category(self):
         return 'NumericalReasoning'
 
-    def question_1(self, plan_length):
+    def question_1(self, plan_length, objects):
         # TODO implement
-        return None
+        obj, no_of_unique_objects = StatesActionsGenerator.parse_objects(objects)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the current number of objects {no_of_unique_objects}?"
+        answer = True
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_2(self, plan_length):
         # TODO implement
-        return None
+        no_of_unique_objects_random = random.randint(1, 50)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the current number of objects {no_of_unique_objects_random}?"
+        # return None
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_3(self, plan_length):
         # TODO implement
-        return None
+        no_of_executable_actions = len(self.executable_actions[plan_length])
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the current number of executable actions {no_of_executable_actions}?"
+        answer = True
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # TODO implement
-        return None
+        no_of_executable_actions = len(self.executable_actions[plan_length]) + random.randint(1, 10)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the current number of executable actions {no_of_executable_actions}?"
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_5(self, plan_length):
         # TODO implement
-        return None
+        total_no_of_actions = plan_length+1
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the total number of actions is {total_no_of_actions}?"
+        answer = True
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        # return None
 
     def question_6(self, plan_length):
         # TODO implement
-        return None
-
-
+        total_no_of_actions = plan_length+1 + random.randint(1, 10)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the total number of actions is {total_no_of_actions}?"
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)        
+    
+    def question_6(self, plan_length,objects):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. In this state is the total number of objects?"
+        no_of_unique_objects = sum([len(instances) for instances in StatesActionsGenerator.parse_objects(objects).values()])  
+        answer = no_of_unique_objects
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+    
+    def question_7(self, plan_length):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many true fluents are there in the current state?"
+        answer = len(self.given_fluent_sequence[plan_length + 1])
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+    
+    def question_8(self, plan_length):
+    # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many false fluents are there in the current state?"
+        answer = len(self.given_neg_fluent_sequence[plan_length + 1])
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)   
+    
+    def question_8(self, plan_length):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many executable actions are there in the current state?"
+        answer = len(self.executable_actions[plan_length])
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)   
+    
+    def question_9(self, plan_length):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many inexecutable actions are there in the current state?"
+        answer = len(self.inexecutable_actions[plan_length])
+        return self.qa_data_object(self.FREE_ANSWER_ANSWER, question, answer)
+    
+    def question_10(self, plan_length):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. What is the first inexecutable action in the sequence of actions?"
+        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
+        answer = inexecutable_action
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+    
+    def question_11(self, plan_length):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. How many actions are there before the first inexecutable action?"
+        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
+        answer = index-1
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+        
 class HallucinationQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -566,29 +631,59 @@ class HallucinationQuestions(QuestionGenerator):
     def question_category(self):
         return 'Hallucination'
 
-    def question_1(self, plan_length):
+    def question_1(self, plan_length,objects):
         # TODO implement
-        return None
+        # return None
+        random_key = random.choice(list(StatesActionsGenerator.parse_objects(objects).keys()))
+        random_object = random.choice(StatesActionsGenerator.parse_objects(objects)[random_key])
+        object_name = re.findall(self.word_regex, random_object)[0]
+        object_number = re.findall(self.digit_regex, random_object)[0]
+        hallucinated_object = object_name+str(random.randint(int(object_number), int(object_number)+10))
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, is the object {hallucinated_object} part of the objects in the current state?"
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+    
+    def question_2(self, plan_length,objects):
+        # TODO implement
+        # return None
+        out_of_domain_action_seq,index = self.domain_class.out_of_domain_action_sequence(plan_length,objects)
+        question = f"I plan to perform the following sequence of actions: {out_of_domain_action_seq} to reach the current state, is the action {out_of_domain_action_seq[index]} a defined action in the domain?"
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
-    def question_2(self, plan_length):
+    def question_3(self, plan_length,objects):
         # TODO implement
-        return None
+        out_of_domain_fluent_seq,index = self.domain_class.out_of_domain_fluent_sequence(plan_length,objects)
+        question = f"I plan to perform the following sequence of actions: {out_of_domain_fluent_seq} to reach the current state, is the fluent {out_of_domain_fluent_seq[index]} a defined fluent in the domain?"
+        answer = False
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
-    def question_3(self, plan_length):
+    def question_4(self, plan_length,objects):
         # TODO implement
-        return None
-
-    def question_4(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_5(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_6(self, plan_length):
-        # TODO implement
-        return None
+        # return None
+        random_key = random.choice(list(StatesActionsGenerator.parse_objects(objects).keys()))
+        random_objects = StatesActionsGenerator.parse_objects(objects)[random_key]
+        object_name = re.findall(self.word_regex, random_objects)[0]
+        object_number = re.findall(self.digit_regex, random_objects)[0]
+        hallucinated_object = object_name+str(random.randint(int(object_number), int(object_number)+10))        
+        random_index = random.randint(0, len(random_objects) - 1)
+        random_objects.pop(random_index)
+        random_objects.insert(random_index,hallucinated_object)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, which object is not defined in the problem?"
+        answer = hallucinated_object
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+    
+    def question_5(self, plan_length,objects):
+        corrupted_fluent_sequence , index = self.domain_class.out_of_domain_fluent_sequence(plan_length,objects)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. Given the fluents for a current_state: {corrupted_fluent_sequence} which fluent is not defined in the problem?"
+        answer = corrupted_fluent_sequence[index]
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+    
+    def question_6(self, plan_length,objects):
+        corrupted_action_sequence , index = self.domain_class.out_of_domain_action_sequence(plan_length,objects)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. Given the actions for a current_state: {corrupted_action_sequence} which action is not defined in the problem?"
+        answer = corrupted_action_sequence[index]
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
 
 # class CompositeQuestions(DomainQuestionGen):
