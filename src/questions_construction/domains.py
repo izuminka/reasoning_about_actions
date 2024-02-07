@@ -1,6 +1,6 @@
 from collections import defaultdict
 import random
-from main import DomainQuestionGen
+from main import *
 import re
 from src.states_actions_generation import StatesActionsGenerator
 
@@ -13,7 +13,7 @@ class BaseDomain:
     def extract_multi_variable(self, obj):
         match = re.search(self.OBJ_IN_PAREN_REGEX, obj)
         return match.group(1).split(',')
-    
+
     def out_of_domain_object_name(self):
             # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
             # ex: crane_lift(car1, structure2)

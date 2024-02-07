@@ -6,6 +6,21 @@ from ..common import *
 from domains import *
 from domains import Blocksworld
 from src.states_actions_generation import *
+
+OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
+
+
+def extract_single_variable(obj):
+    return re.findall(OBJ_IN_PAREN_REGEX, obj)[0]
+
+
+def extract_variables(obj):
+    if ',' not in obj:
+        return extract_single_variable(obj)
+    match = re.search(OBJ_IN_PAREN_REGEX, obj)
+    return match.group(1).split(',')
+
+
 class QuestionGenerationHelpers:
     """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
     ACTION_JOIN_STR = ', '
@@ -90,23 +105,61 @@ class QuestionGenerationHelpers:
         # return random.choice(questions)
         return questions[0]  # TODO add random choice
 
-    def random_true_fluent(self, plan_length):
-        fluents = self.given_fluent_sequence[plan_length + 1] + self.given_neg_fluent_sequence[plan_length + 1]
+    def is_string_inside_parentheses(self, main_string, target_string):
+        # TODO needs testing
+        pattern = re.compile(r'\({}*\)'.format(re.escape(target_string)))
+        match = pattern.search(main_string)
+        return bool(match)
+
+    def fluents_for_objects(self, obj, plan_length, is_true_fluents=True):
+        # TODO needs testing
+        fluents_for_object = []
+        if is_true_fluents:
+            fluents = self.given_fluent_sequence[plan_length + 1]
+        else:
+            fluents = self.given_neg_fluent_sequence[plan_length + 1]
+        for fluent in fluents:
+            if self.is_string_inside_parentheses(fluent, obj):
+                fluents_for_object.append(fluent)
+        return fluents_for_object
+
+    def true_fluents_for_object(self, object, plan_length):
+        return self.fluents_for_objects(object, plan_length, is_true_fluents=True)
+
+    def false_fluents_for_object(self, object, plan_length):
+        return self.fluents_for_objects(object, plan_length, is_true_fluents=False)
+
+    def objects_for_fluent_one_object(self, fluent_prefix, plan_length, is_true_fluents=True):
+        objects_for_fluent = []
+        if is_true_fluents:
+            fluents = self.given_fluent_sequence[plan_length + 1]
+        else:
+            fluents = self.given_neg_fluent_sequence[plan_length + 1]
+        for fluent in fluents:
+            if fluent_prefix in fluent:
+                objects_for_fluent.append(extract_single_variable(fluent))
+        return objects_for_fluent
+
+    def random_true_fluent(self, plan_length, is_empty_fluent=True):
+        fluents = self.given_fluent_sequence[plan_length + 1]
         rand_fluent = random.choice(fluents)
-        while '(' not in rand_fluent:
-            rand_fluent = random.choice(fluents)
+        if is_empty_fluent:
+            while not self.is_variable_in_fluent(rand_fluent):
+                rand_fluent = random.choice(fluents)
         return rand_fluent, True  # TODO change to T/F choice
 
-    def random_false_fluent(self, plan_length):
-        set1 = set(self.given_fluent_sequence[plan_length + 1] + self.given_neg_fluent_sequence[plan_length + 1])
+    def random_false_fluent(self, plan_length, is_empty_fluent=True):
+        set1 = set(self.given_neg_fluent_sequence[plan_length + 1])
         random_no = random.choice([x for x in range(0, len(self.given_fluent_sequence)) if x != plan_length + 1])
-        set2 = set(self.given_fluent_sequence[random_no] + self.given_neg_fluent_sequence[random_no])
+        set2 = set(self.given_neg_fluent_sequence[random_no])
         rand_fluent = random.choice(list(set2 - set1))
-        while '(' not in rand_fluent:
-            rand_fluent = random.choice(rand_fluent)
+        if is_empty_fluent:
+            while not self.is_variable_in_fluent(rand_fluent):
+                rand_fluent = random.choice(rand_fluent)
         return rand_fluent, False  # TODO change to T/F choice
 
-    def plan_up_to_current_length(self, plan_length):
+    def actions_up_to(self, plan_length):
+        # TODO add NL conversion
         return self.given_plan_sequence[:plan_length]
 
     def get_objects_with_true_states(self, obj, plan_length):
@@ -126,6 +179,16 @@ class QuestionGenerationHelpers:
         false_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
                          false_fluents]
         return false_fluents
+
+    def object_type_by_object_name(self):
+        by_object_name = {}
+        for obj_type, objects in self.objects_by_type:
+            for obj in objects:
+                by_object_name[obj] = obj_type
+        return by_object_name
+
+    def is_variable_in_fluent(self, fluent):
+        return '(' in fluent and ')' in fluent
 
 
 class QuestionGenerator(QuestionGenerationHelpers):
@@ -221,29 +284,54 @@ class ObjectTrackingQuestions(QuestionGenerator):
         # TODO insure the same format for all question_categories
         return 'object_tracking'
 
+    def question_1_2_helper(self, plan_length, is_true_fluents=True, min_object_fluent_pair=2):
+        object_fluent_pair = []
+        while len(object_fluent_pair) <= min_object_fluent_pair:
+            object = random.choice(self.objects_by_type.values())
+            if is_true_fluents:
+                fluents = self.true_fluents_for_object(object, plan_length)
+            else:
+                fluents = self.false_fluents_for_object(object, plan_length)
+            num_samples = random.randint(min_object_fluent_pair, len(fluents))
+            object_fluent_pair = random.sample(fluents, num_samples)
+        return f"Given the initial condition, I perform {self.actions_up_to(plan_length)}. Is {object_fluent_pair} after my actions?"
+
     def question_1(self, plan_length):
-        # TODO implement
-        return None
+        question = self.question_1_2_helper(plan_length, is_true_fluents=True)
+        answer_type = self.TRUE_FALSE_ANSWER
+        return self.qa_data_object(answer_type, question, True)
 
     def question_2(self, plan_length):
-        # TODO implement
-        return None
+        question = self.question_1_2_helper(plan_length, is_true_fluents=False)
+        answer_type = self.TRUE_FALSE_ANSWER
+        return self.qa_data_object(answer_type, question, False)
+
+    def question_3_4_helper(self, plan_length, is_true_fluents=True):
+        # NOTE: only fluents for single objects, ex: ontable(block1)
+        chosen_fluent = None
+        while not self.is_variable_in_fluent(chosen_fluent) and ',' not in chosen_fluent:
+            if is_true_fluents:
+                chosen_fluent = random.choice(self.given_fluent_sequence[plan_length + 1])
+            else:
+                chosen_fluent = random.choice(self.given_neg_fluent_sequence[plan_length + 1])
+        objects_for_fluent = self.objects_for_fluent_one_object(chosen_fluent[:chosen_fluent.find('(')], plan_length)
+        by_object_name = self.object_type_by_object_name()
+        object_types = set([by_object_name[obj] for obj in objects_for_fluent])
+        return object_types, objects_for_fluent, chosen_fluent
 
     def question_3(self, plan_length):
-        # TODO implement
-        return None
+        # NOTE: only fluents for single objects, ex: ontable(block1)
+        object_types, objects_for_fluent, chosen_fluent = self.question_3_4_helper(plan_length, is_true_fluents=True)
+        question = f"Given the initial condition, I perform {self.actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
+        answer_type = self.FREE_ANSWER
+        return self.qa_data_object(answer_type, question, objects_for_fluent)
 
     def question_4(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_5(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_6(self, plan_length):
-        # TODO implement
-        return None
+        # NOTE: only fluents for single objects, ex: -ontable(block1)
+        object_types, objects_for_fluent, chosen_fluent = self.question_3_4_helper(plan_length, is_true_fluents=False)
+        question = f"Given the initial condition, I perform {self.actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
+        answer_type = self.FREE_ANSWER
+        return self.qa_data_object(answer_type, question, objects_for_fluent)
 
 
 class FluentTrackingQuestions(QuestionGenerator):
@@ -547,7 +635,6 @@ class AllQuestions:
         all_questions = []
         for q_type in self.q_types:
             all_questions += q_type.create_questions()
-
 
 # if __name__ == '__main__':
 #     all_questions = []
