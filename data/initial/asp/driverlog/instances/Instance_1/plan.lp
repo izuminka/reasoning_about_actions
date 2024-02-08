@@ -1,7 +1,7 @@
-occurs(action_walk(driver1,s3,p4-3),1).
-occurs(action_walk(driver1,p4-3,s4),2).
-occurs(action_walk(driver1,s4,p4-1),3).
-occurs(action_walk(driver1,p4-1,s1),4).
+occurs(action_walk(driver1,s3,p4_3),1).
+occurs(action_walk(driver1,p4_3,s4),2).
+occurs(action_walk(driver1,s4,p4_1),3).
+occurs(action_walk(driver1,p4_1,s1),4).
 occurs(action_board_truck(driver1,truck1,s1),5).
 occurs(action_drive_truck(truck1,s1,s0,driver1),6).
 occurs(action_load_truck(package4,truck1,s0),7).
@@ -17,5 +17,5 @@ occurs(action_unload_truck(package3,truck1,s4),16).
 occurs(action_unload_truck(package2,truck1,s4),17).
 occurs(action_drive_truck(truck1,s4,s1,driver1),18).
 occurs(action_disembark_truck(driver1,truck1,s1),19).
-occurs(action_walk(driver2,s4,p4-0),20).
-occurs(action_walk(driver2,p4-0,s0),21).
+occurs(action_walk(driver2,s4,p4_0),20).
+occurs(action_walk(driver2,p4_0,s0),21).

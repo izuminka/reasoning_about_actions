@@ -1,1 +1,1 @@
-loc(f4-2f; f2-1f; f2-2f; f0-0f; f0-1f; f1-1f; f0-2f; f4-0f; f2-0f; f1-0f; f3-0f; f1-2f; f3-1f; f3-2f; f4-1f).
+loc(f4_2f; f2_1f; f2_2f; f0_0f; f0_1f; f1_1f; f0_2f; f4_0f; f2_0f; f1_0f; f3_0f; f1_2f; f3_1f; f3_2f; f4_1f).

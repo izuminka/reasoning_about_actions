@@ -31,9 +31,9 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
     return asp_code
 
 
-def execute_asp_code(asp_code):
+def execute_asp_code(asp_code, time_limit=0):
     # answers = list(solve(inline=asp_code, stats=True, nb_model=None, options='--opt-mode=OptN', time_limit=10))
-    answers = list(ASP(asp_code, time_limit=10))
+    answers = list(ASP(asp_code, time_limit=time_limit))
     first = answers[0]
     for a in answers:
         if a != first:

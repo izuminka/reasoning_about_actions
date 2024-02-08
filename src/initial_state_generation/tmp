@@ -1,0 +1,264 @@
+#include <incmode>.
+
+fluent(X) :- pfluent(X).
+
+literal(X) :- fluent(X).
+literal(-X) :- fluent(X).
+
+literal(X) :- dfluent(X).
+literal(-X) :- dfluent(X).
+
+contrary(X, -X) :- fluent(X).
+contrary(-X, X) :- fluent(X).
+
+initially(X) :- init(X).
+
+h(X, 1)   :- initially(X), literal(X).
+h(-X, 1)  :- fluent(X), not init(X).
+
+max(I) :- I = #max {J : occurs(_, J)}.
+
+#program step(t).
+
+time(t).
+
+% {occurs(A, t) : action(A)} 1.
+
+h(X, t) :- define(X, Y),
+	formula(Y, and),
+	#count{Z : member(Z, Y), not h(Z, t)} == 0.
+
+h(X, t) :- define(X, Y),
+	formula(Y, or),
+	#count{Z : member(Z, Y), h(Z, t)} > 0.
+
+not_exec(A, t):- action(A), occurs(A, t), not executable(A, t).
+
+executable(A, t) :-  action(A),
+	     exec(A, S),
+	     #count{Z : literal(Z), member(Z, S), not h(Z, t)} == 0.
+
+h(X, t) :- action(A), occurs(A, t-1),
+         executable(A, t-1),
+	     causes(A, X, true).
+
+h(X, t) :- action(A), occurs(A, t-1),
+         executable(A, t-1),
+	     causes(A, X, Y),
+	     literal(Y), h(Y, t).
+
+h(X, t) :- action(A), occurs(A, t-1),
+         executable(A, t-1),
+	     causes(A, X, S),
+	     #count{Z : literal(Z), member(Z, S), not h(Z, t)} == 0.
+
+h(X, t) :- time(t), h(X, t-1), contrary(X, Y), not h(Y, t).
+
+stop(t) :- occurs(A,t), not_exec(A, t).
+
+stop(t) :- max(J), t == J+1.
+
+#program check(t).
+
+:- query(t), not stop(t).
+
+#show.
+#show stop/1.
+#show occurs/2.
+#show not_exec/2.
+#show h(X, J) : h(X, J), fluent(X), stop(J).
+#show time/1.
+#show max/1.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% I have the following types:
+object(O) :- location(O).
+object(O) :- locatable(O).
+locatable(O) :- driver(O).
+locatable(O) :- truck(O).
+locatable(O) :- obj(O).
+
+% I have the following predicates:
+pfluent(at(L, Loc)) :- locatable(L), location(Loc).
+pfluent(in(O, T)) :- obj(O), truck(T).
+pfluent(driving(D, T)) :- driver(D), truck(T).
+pfluent(link(L1, L2)) :- location(L1), location(L2), L1 != L2.
+pfluent(path(L1, L2)) :- location(L1), location(L2), L1 != L2.
+pfluent(empty(T)) :- truck(T).
+
+% I have the following actions and restrictions:
+action(action_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+cond(cond_exec_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+exec(action_load_truck(Obj, Truck, Loc), cond_exec_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+cond(cond_causes_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+
+action(action_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+cond(cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+exec(action_unload_truck(Obj, Truck, Loc), cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+cond(cond_causes_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+
+action(action_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+cond(cond_exec_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+exec(action_board_truck(Driver, Truck, Loc), cond_exec_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+cond(cond_causes_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+
+action(action_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+cond(cond_exec_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+exec(action_disembark_truck(Driver, Truck, Loc), cond_exec_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+cond(cond_causes_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+
+action(action_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+cond(cond_exec_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+exec(action_drive_truck(Truck, Loc_From, Loc_To, Driver), cond_exec_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+cond(cond_causes_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+
+action(action_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+cond(cond_exec_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+exec(action_walk(Driver, Loc_From, Loc_To), cond_exec_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+cond(cond_causes_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+
+% Action Load a truck preconditions
+member(at(Truck, Loc), cond_exec_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+member(at(Obj, Loc), cond_exec_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+
+% Action Load a truck effects
+causes(action_load_truck(Obj, Truck, Loc), -at(Obj, Loc), cond_causes_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+causes(action_load_truck(Obj, Truck, Loc), in(Obj, Truck), cond_causes_load_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+
+% Action Unload a truck preconditions
+member(at(Truck, Loc), cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+member(in(Obj, Truck), cond_exec_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+
+% Action Unload a truck effects
+causes(action_unload_truck(Obj, Truck, Loc), -in(Obj, Truck), cond_causes_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+causes(action_unload_truck(Obj, Truck, Loc), at(Obj, Loc), cond_causes_unload_truck(Obj, Truck, Loc)) :- obj(Obj), truck(Truck), location(Loc).
+
+% Action Board a truck preconditions
+member(at(Driver, Loc), cond_exec_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+member(at(Truck, Loc), cond_exec_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+member(empty(Truck), cond_exec_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+
+% Action Board a truck effects
+causes(action_board_truck(Driver, Truck, Loc), driving(Driver, Truck), cond_causes_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+causes(action_board_truck(Driver, Truck, Loc), -empty(Truck), cond_causes_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+causes(action_board_truck(Driver, Truck, Loc), -at(Driver, Loc), cond_causes_board_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+
+% Action Disembark a truck preconditions
+member(at(Truck, Loc), cond_exec_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+member(driving(Driver, Truck), cond_exec_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+
+% Action Disembark a truck effects
+causes(action_disembark_truck(Driver, Truck, Loc), -driving(Driver, Truck), cond_causes_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+causes(action_disembark_truck(Driver, Truck, Loc), at(Driver, Loc), cond_causes_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+causes(action_disembark_truck(Driver, Truck, Loc), empty(Truck), cond_causes_disembark_truck(Driver, Truck, Loc)) :- driver(Driver), truck(Truck), location(Loc).
+
+% Action Drive a truck preconditions
+member(at(Truck, Loc_From), cond_exec_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+member(driving(Driver, Truck), cond_exec_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+member(link(Loc_From, Loc_To), cond_exec_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+
+% Action Drive a truck effects
+causes(action_drive_truck(Truck, Loc_From, Loc_To, Driver), -at(Truck, Loc_From), cond_causes_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+causes(action_drive_truck(Truck, Loc_From, Loc_To, Driver), at(Truck, Loc_To), cond_causes_drive_truck(Truck, Loc_From, Loc_To, Driver)) :- truck(Truck), location(Loc_From), location(Loc_To), Loc_From != Loc_To, driver(Driver).
+
+% Action Walk preconditions
+member(at(Driver, Loc_From), cond_exec_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+member(path(Loc_From, Loc_To), cond_exec_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+
+% Action Walk effects
+causes(action_walk(Driver, Loc_From, Loc_To), -at(Driver, Loc_From), cond_causes_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+causes(action_walk(Driver, Loc_From, Loc_To), at(Driver, Loc_To), cond_causes_walk(Driver, Loc_From, Loc_To)) :- driver(Driver), location(Loc_From), location(Loc_To), Loc_From != Loc_To.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+init(at(package2, s2);
+link(s4, s1);
+link(s1, s2);
+link(s2, s0);
+link(s1, s4);
+path(s0, p4_0);
+path(p4_1, s1);
+link(s0, s4);
+at(driver1, s3);
+path(s0, p0_5);
+at(driver2, s4);
+empty(truck1);
+link(s0, s2);
+link(s2, s5);
+link(s5, s4);
+link(s3, s4);
+link(s4, s5);
+path(s3, p4_3);
+at(package4, s0);
+link(s3, s2);
+path(p4_0, s4);
+at(truck1, s1);
+link(s4, s0);
+path(s5, p5_2);
+path(p5_2, s5);
+link(s5, s3);
+path(s4, p4_1);
+link(s0, s1);
+at(truck2, s5);
+at(package1, s2);
+path(p4_3, s4);
+link(s2, s1);
+path(s4, p4_0);
+empty(truck2);
+at(driver3, s3);
+link(s1, s0);
+link(s5, s0);
+path(p0_5, s5);
+path(s1, p4_1);
+path(s4, p4_3);
+path(p4_1, s4);
+link(s2, s3);
+path(s2, p5_2);
+link(s0, s5);
+path(p5_2, s2);
+path(p4_3, s3);
+link(s4, s3);
+path(s5, p0_5);
+link(s3, s5);
+path(p4_0, s0);
+path(p0_5, s0);
+at(package3, s3);
+link(s5, s2);
+).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+driver(driver3; driver2; driver1).
+truck(truck2; truck1).
+obj(package3; package2; package4; package1).
+location(s5; p4_1; p5_2; s2; s4; s0; s3; s1; p4_3; p4_0; p0_5).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+occurs(action_walk(driver1,s3,p4_3),1).
+occurs(action_walk(driver1,p4_3,s4),2).
+occurs(action_walk(driver1,s4,p4_1),3).
+occurs(action_walk(driver1,p4_1,s1),4).
+occurs(action_board_truck(driver1,truck1,s1),5).
+occurs(action_drive_truck(truck1,s1,s0,driver1),6).
+occurs(action_load_truck(package4,truck1,s0),7).
+occurs(action_drive_truck(truck1,s0,s2,driver1),8).
+occurs(action_load_truck(package2,truck1,s2),9).
+occurs(action_load_truck(package1,truck1,s2),10).
+occurs(action_drive_truck(truck1,s2,s3,driver1),11).
+occurs(action_load_truck(package3,truck1,s3),12).
+occurs(action_unload_truck(package1,truck1,s3),13).
+occurs(action_drive_truck(truck1,s3,s4,driver1),14).
+occurs(action_unload_truck(package4,truck1,s4),15).
+occurs(action_unload_truck(package3,truck1,s4),16).
+occurs(action_unload_truck(package2,truck1,s4),17).
+occurs(action_drive_truck(truck1,s4,s1,driver1),18).
+occurs(action_disembark_truck(driver1,truck1,s1),19).
+occurs(action_walk(driver2,s4,p4_0),20).
+occurs(action_walk(driver2,p4_0,s0),21).
+
+not_exec in ASP code. Bad ASP code driverlog Instance_1

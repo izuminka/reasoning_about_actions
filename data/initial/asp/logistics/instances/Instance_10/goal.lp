@@ -1,7 +1,7 @@
-goal(at(p0,l0-1);
-at(p1,l1-1);
-at(p2,l1-1);
-at(p3,l1-1);
-at(p4,l1-0);
-at(p5,l1-3);
+goal(at(p0,l0_1);
+at(p1,l1_1);
+at(p2,l1_1);
+at(p3,l1_1);
+at(p4,l1_0);
+at(p5,l1_3);
 ).
