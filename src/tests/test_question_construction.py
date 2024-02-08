@@ -1,5 +1,6 @@
-from ..questions_construction.main import *
+
 from ..questions_construction.domains import *
+from ..questions_construction.main import *
 import unittest
 from ..common import *
 import shutil
@@ -12,9 +13,10 @@ TMP_DIR = TESTS_DIR + '/tmp'
 
 
 class TestQuestionGenerationMainMethods(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
     instance_id = 'sdf'
-    DMM = DomainMainMethods(TESTS_DIR + '/data20.jsonl', instance_id)
-    random.seed(10)
+    domain_class = Blocksworld()
+    DMM = QuestionGenerationHelpers(domain_class, jsonl_object, instance_id)
 
     def test_extract_given_plan_sequence(self):
         true_plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)', 'action_pick_up(b1)',
@@ -41,8 +43,6 @@ class TestQuestionGenerationMainMethods(unittest.TestCase):
         self.assertEqual(inexecutable_actions_true, self.DMM.extract_inexecutable_actions())
 
     def test_get_random_inexecutable_sequence(self):
-        random.seed(10)
-
         inexecutable_sequence = self.DMM.get_random_inexecutable_sequence(3)
         expected = (['action_unstack(b2,b1)', 'action_put_down(b2)', 'action_stack(b1,b2)'], 2)
         self.assertEqual(expected, inexecutable_sequence)
@@ -55,38 +55,281 @@ class TestQuestionGenerationMainMethods(unittest.TestCase):
     #
     #     print(self.DMM.extract_fluents_from_executable_actions())
 
+    def test_qa_object(self):
+        # TODO
+        pass
 
-class TestQuestionGenerationSingleDomain(unittest.TestCase):
 
-    def test_object_tracking_questions(self):
-        jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
-        instance_id = 'sdf'
-        domain_class = Blocksworld()
-        object_tracking_questions = ObjectTrackingQuestions(jsonl_object, domain_class, instance_id)
+class TestObjectTrackingQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = ObjectTrackingQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1,5,10,15,20]
 
-    def test_all_questions(self):
-        jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
-        instance_id = 'sdf'
-        domain_class = Blocksworld()
-        all_questions = AllQuestions(jsonl_object, domain_class, instance_id)
+    def test_q1(self):
+        qa_object = self.object_tracking_questions.question_1()
 
-    def test_all_instances_object_tracking_questions(self):
-        domain_class = Blocksworld()
-        jsonl_objects = [open_jsonl(TESTS_DIR + '/data20.jsonl')]
-        all_questions = []
-        for instance_id, jsonl in jsonl_objects.items():
-            all_questions += ObjectTrackingQuestions(jsonl, domain_class, instance_id)
+    def test_q2(self):
+        # todo
+        pass
 
-class TestQuestionGenerationMultiDomain(unittest.TestCase):
+    def test_q3(self):
+        # todo
+        pass
 
-    def test_everything(self):
-        domain_clases = [Blocksworld()]
-        jsonl_objects = [open_jsonl(TESTS_DIR + '/data20.jsonl')] # TODO
-        all_questions = []
-        for domain_class in domain_clases:
-            for instance_id, jsonl in jsonl_objects.items():
-                all_questions += AllQuestions(jsonl, domain_class, instance_id)
+    def test_q4(self):
+        # todo
+        pass
 
+class TestFluentTrackingQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = FluentTrackingQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+class TestStateTrackingQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = StateTrackingQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+class TestActionExecutabilityQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = ActionExecutabilityQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+class TestEffectsQuestionsQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = EffectsQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+class TestLoopingQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = LoopingQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+class TestNumericalReasoningQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = NumericalReasoningQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+class TestHallucinationQuestionsBlocksworld(unittest.TestCase):
+    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+    instance_id = 'sdf'
+    domain_class = Blocksworld()
+    object_tracking_questions = HallucinationQuestions(jsonl_object, domain_class, instance_id)
+    plan_lengths = [1, 5, 10, 15, 20]
+
+    def test_q1(self):
+        # todo
+        pass
+
+    def test_q2(self):
+        # todo
+        pass
+
+    def test_q3(self):
+        # todo
+        pass
+
+    def test_q4(self):
+        # todo
+        pass
+
+    def test_q5(self):
+        # todo
+        pass
+
+    def test_q6(self):
+        # todo
+        pass
+
+
+# class TestQuestionGenerationBlocksworld(unittest.TestCase):
+#
+#     def test_object_tracking_questions(self):
+#         jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+#         instance_id = 'sdf'
+#         domain_class = Blocksworld()
+#         object_tracking_questions = ObjectTrackingQuestions(jsonl_object, domain_class, instance_id)
+#
+#     def test_all_questions(self):
+#         jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+#         instance_id = 'sdf'
+#         domain_class = Blocksworld()
+#         all_questions = AllQuestions(jsonl_object, domain_class, instance_id)
+#
+#     def test_all_instances_object_tracking_questions(self):
+#         domain_class = Blocksworld()
+#         jsonl_objects = [open_jsonl(TESTS_DIR + '/data20.jsonl')]
+#         all_questions = []
+#         for instance_id, jsonl in jsonl_objects.items():
+#             all_questions += ObjectTrackingQuestions(jsonl, domain_class, instance_id)
+#
+# class TestQuestionGenerationMultiDomain(unittest.TestCase):
+#
+#     def test_everything(self):
+#         domain_clases = [Blocksworld()]
+#         jsonl_objects = [open_jsonl(TESTS_DIR + '/data20.jsonl')] # TODO
+#         all_questions = []
+#         for domain_class in domain_clases:
+#             for instance_id, jsonl in jsonl_objects.items():
+#                 all_questions += AllQuestions(jsonl, domain_class, instance_id)
 
 
 

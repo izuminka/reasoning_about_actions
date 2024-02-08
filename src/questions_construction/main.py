@@ -386,7 +386,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         return self.qa_data_object(self.FREE_ANSWER, question, false_states)
 
 
-class StateTracking(QuestionGenerator):
+class StateTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
@@ -767,7 +767,7 @@ class AllQuestions:
         self.jsonl_instance = jsonl_instance
         self.q_types = [ObjectTrackingQuestions(jsonl_instance,domain_class, instance_id),
                         FluentTrackingQuestions(jsonl_instance,domain_class, instance_id),
-                        StateTracking(jsonl_instance,domain_class, instance_id),
+                        StateTrackingQuestions(jsonl_instance, domain_class, instance_id),
                         ActionExecutabilityQuestions(jsonl_instance,domain_class, instance_id),
                         EffectsQuestions(jsonl_instance,domain_class, instance_id),
                         LoopingQuestions(jsonl_instance,domain_class, instance_id),
