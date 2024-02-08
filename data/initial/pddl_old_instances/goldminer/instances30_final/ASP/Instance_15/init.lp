@@ -1,0 +1,26 @@
+init(bomb_at(f1-0f);
+connected(f1-1f, f0-1f);
+connected(f1-2f, f1-1f);
+connected(f1-0f, f0-0f);
+connected(f0-0f, f0-1f);
+gold_at(f0-2f);
+connected(f0-2f, f0-1f);
+robot_at(f0-0f);
+arm_empty;
+connected(f0-1f, f0-0f);
+connected(f0-1f, f0-2f);
+hard_rock_at(f1-2f);
+hard_rock_at(f1-1f);
+connected(f1-1f, f1-2f);
+connected(f1-0f, f1-1f);
+connected(f1-1f, f1-0f);
+laser_at(f1-0f);
+connected(f1-2f, f0-2f);
+connected(f0-2f, f1-2f);
+connected(f0-0f, f1-0f);
+clear(f1-0f);
+soft_rock_at(f0-2f);
+clear(f0-0f);
+connected(f0-1f, f1-1f);
+soft_rock_at(f0-1f);
+).

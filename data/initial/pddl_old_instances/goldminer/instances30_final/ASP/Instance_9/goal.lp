@@ -1,0 +1,2 @@
+goal(holds_gold;
+).
