@@ -1,0 +1,16 @@
+goal(visited(loc-x0-y0);
+visited(loc-x0-y1);
+visited(loc-x0-y2);
+visited(loc-x0-y3);
+visited(loc-x0-y6);
+visited(loc-x0-y7);
+visited(loc-x0-y8);
+visited(loc-x1-y0);
+visited(loc-x1-y2);
+visited(loc-x1-y3);
+visited(loc-x1-y4);
+visited(loc-x1-y5);
+visited(loc-x1-y6);
+visited(loc-x1-y7);
+visited(loc-x1-y8);
+).

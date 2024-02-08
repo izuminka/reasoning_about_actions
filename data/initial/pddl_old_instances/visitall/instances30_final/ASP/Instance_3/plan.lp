@@ -1,0 +1,16 @@
+occurs(action_move(loc-x0-y7,loc-x0-y6),1).
+occurs(action_move(loc-x0-y6,loc-x0-y7),2).
+occurs(action_move(loc-x0-y7,loc-x0-y8),3).
+occurs(action_move(loc-x0-y8,loc-x1-y8),4).
+occurs(action_move(loc-x1-y8,loc-x1-y7),5).
+occurs(action_move(loc-x1-y7,loc-x1-y6),6).
+occurs(action_move(loc-x1-y6,loc-x1-y5),7).
+occurs(action_move(loc-x1-y5,loc-x1-y4),8).
+occurs(action_move(loc-x1-y4,loc-x1-y3),9).
+occurs(action_move(loc-x1-y3,loc-x0-y3),10).
+occurs(action_move(loc-x0-y3,loc-x0-y2),11).
+occurs(action_move(loc-x0-y2,loc-x1-y2),12).
+occurs(action_move(loc-x1-y2,loc-x0-y2),13).
+occurs(action_move(loc-x0-y2,loc-x0-y1),14).
+occurs(action_move(loc-x0-y1,loc-x0-y0),15).
+occurs(action_move(loc-x0-y0,loc-x1-y0),16).

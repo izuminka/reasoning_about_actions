@@ -1,0 +1,10 @@
+occurs(action_move(loc-x1-y1,loc-x0-y1),1).
+occurs(action_move(loc-x0-y1,loc-x0-y0),2).
+occurs(action_move(loc-x0-y0,loc-x0-y1),3).
+occurs(action_move(loc-x0-y1,loc-x1-y1),4).
+occurs(action_move(loc-x1-y1,loc-x2-y1),5).
+occurs(action_move(loc-x2-y1,loc-x2-y0),6).
+occurs(action_move(loc-x2-y0,loc-x3-y0),7).
+occurs(action_move(loc-x3-y0,loc-x3-y1),8).
+occurs(action_move(loc-x3-y1,loc-x2-y1),9).
+occurs(action_move(loc-x2-y1,loc-x2-y2),10).
