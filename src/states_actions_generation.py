@@ -1,5 +1,4 @@
 from src.common import *
-import clingo
 import re
 
 

@@ -1,8 +1,8 @@
-from collections import defaultdict
-import random
-import re
-from src.states_actions_generation import *
-from main import *
+# from collections import defaultdict
+# import random
+# import re
+# from src.states_actions_generation import *
+from src.questions_construction.main import *
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -132,7 +132,3 @@ class Blocksworld(BaseDomain):
         string_repeat_number = random.randint(1,plan_length-1)   
         sequence = string_repeat_number*f"unstack({b1},{b2}) stack({b1},{b2}), "
         return sequence, string_repeat_number, b1, b2
-    
-        
-        
-        

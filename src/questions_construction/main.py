@@ -1,11 +1,11 @@
 import json
 import random
-import re
 import uuid
-from ..common import *
-from domains import BaseDomain, Blocksworld
-from ..states_actions_generation import *
-import sys
+from src.states_actions_generation import *
+
+# import sys
+# from ..common import *
+# import re
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 
@@ -159,8 +159,6 @@ class QuestionGenerationHelpers:
                 rand_fluent = random.choice(rand_fluent)
         return rand_fluent, False  # TODO change to T/F choice
 
-    def nl_actions_up_to(self, plan_length):
-        return ','.join([self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
 
     def get_objects_with_true_states(self, obj, plan_length):
         true_fluents = []
@@ -187,10 +185,9 @@ class QuestionGenerationHelpers:
 
     def is_variable_in_fluent(self, fluent):
         return '(' in fluent and ')' in fluent
-
-    def blocksworld_actions_to_nl(self,plan_length):
-        nl = ', '.join([self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        return nl
+    
+    def nl_actions_up_to(self, plan_length):
+        return ','.join([self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
 
 class QuestionGenerator(QuestionGenerationHelpers):
     QUESTION_MULTIPLICITY = 5
@@ -508,7 +505,7 @@ class LoopingQuestions(QuestionGenerator):
         return 'looping'
 
     def question_1(self, plan_length):
-        sequence, string_repeat_number, b1, b2 = Blocksworld.get_looping_action_sequence(self,plan_length)
+        sequence, string_repeat_number, b1, b2 = self.domain_class.get_looping_action_sequence(self,plan_length)
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, to reach the current state. In the currents state if I perform :{sequence}  Will the block {b1} be on top of block{b2}?"
         answer = True
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
@@ -634,14 +631,14 @@ class NumericalReasoningQuestions(QuestionGenerator):
     
     def question_10(self, plan_length):
         # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.blocksworld_actions_to_nl(plan_length)} to reach the current state. How many executable actions are there from the current state?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state. How many executable actions are there from the current state?"
         answer = len(self.executable_actions[plan_length])
         print("self.executable_actions[plan_length]---->",self.executable_actions[plan_length])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)   
     
     def question_11(self, plan_length):
         # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.blocksworld_actions_to_nl(plan_length)} to reach the current state. How many inexecutable actions are there from the current state?"
+        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state. How many inexecutable actions are there from the current state?"
         answer = len(self.inexecutable_actions[plan_length])
         print("self.inexecutable_actions[plan_length]---->",self.inexecutable_actions[plan_length])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
