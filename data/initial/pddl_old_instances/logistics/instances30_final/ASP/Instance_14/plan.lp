@@ -1,0 +1,10 @@
+occurs(action_drive_truck(t1,l1-0,l1-1,c1),1).
+occurs(action_load_truck(p0,t1,l1-1),2).
+occurs(action_drive_truck(t1,l1-1,l1-0,c1),3).
+occurs(action_unload_truck(p0,t1,l1-0),4).
+occurs(action_load_airplane(p1,a1,l3-0),5).
+occurs(action_fly_airplane(a1,l3-0,l1-0),6).
+occurs(action_load_airplane(p0,a1,l1-0),7).
+occurs(action_fly_airplane(a1,l1-0,l2-0),8).
+occurs(action_unload_airplane(p1,a1,l2-0),9).
+occurs(action_unload_airplane(p0,a1,l2-0),10).

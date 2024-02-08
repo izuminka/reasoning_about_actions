@@ -1,0 +1,17 @@
+occurs(action_drive_truck(t2,l1-1,l1-0,c1),1).
+occurs(action_drive_truck(t0,l0-1,l0-0,c0),2).
+occurs(action_load_airplane(p2,a3,l1-0),3).
+occurs(action_fly_airplane(a3,l1-0,l0-0),4).
+occurs(action_unload_airplane(p2,a3,l0-0),5).
+occurs(action_load_truck(p2,t0,l0-0),6).
+occurs(action_drive_truck(t0,l0-0,l0-1,c0),7).
+occurs(action_unload_truck(p2,t0,l0-1),8).
+occurs(action_load_airplane(p1,a3,l0-0),9).
+occurs(action_fly_airplane(a3,l0-0,l1-0),10).
+occurs(action_unload_airplane(p1,a3,l1-0),11).
+occurs(action_load_truck(p1,t2,l1-0),12).
+occurs(action_drive_truck(t2,l1-0,l1-2,c1),13).
+occurs(action_unload_truck(p1,t2,l1-2),14).
+occurs(action_load_truck(p0,t2,l1-2),15).
+occurs(action_drive_truck(t2,l1-2,l1-1,c1),16).
+occurs(action_unload_truck(p0,t2,l1-1),17).
