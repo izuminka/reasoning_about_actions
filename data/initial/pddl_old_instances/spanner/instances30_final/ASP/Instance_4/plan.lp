@@ -1,0 +1,10 @@
+occurs(action_walk(shed,location1,bob),1).
+occurs(action_pickup_spanner(location1,spanner1,bob),2).
+occurs(action_walk(location1,location2,bob),3).
+occurs(action_walk(location2,location3,bob),4).
+occurs(action_walk(location3,location4,bob),5).
+occurs(action_walk(location4,location5,bob),6).
+occurs(action_walk(location5,location6,bob),7).
+occurs(action_walk(location6,location7,bob),8).
+occurs(action_walk(location7,gate,bob),9).
+occurs(action_tighten_nut(gate,spanner1,bob,nut1),10).

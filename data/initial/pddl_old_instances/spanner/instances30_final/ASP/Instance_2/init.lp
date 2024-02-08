@@ -1,0 +1,23 @@
+init(at(spanner3, location1);
+at(spanner4, location4);
+at(spanner5, location3);
+useable(spanner4);
+useable(spanner5);
+at(spanner6, location2);
+at(spanner7, location2);
+link(location1,location2);
+link(location4,gate);
+link(shed,location1);
+link(location2,location3);
+loose(nut1);
+at(spanner1, location4);
+at(nut1, gate);
+useable(spanner6);
+link(location3,location4);
+useable(spanner2);
+useable(spanner1);
+useable(spanner3);
+at(bob, shed);
+at(spanner2, location2);
+useable(spanner7);
+).
