@@ -1,0 +1,14 @@
+occurs(action_switch_on(instrument0,satellite0),1).
+occurs(action_calibrate(satellite0,instrument0,star8),2).
+occurs(action_turn_to(satellite0,phenomenon10,star8),3).
+occurs(action_take_image(satellite0,phenomenon10,instrument0,thermograph0),4).
+occurs(action_turn_to(satellite0,phenomenon14,phenomenon10),5).
+occurs(action_take_image(satellite0,phenomenon14,instrument0,thermograph0),6).
+occurs(action_turn_to(satellite0,planet11,phenomenon14),7).
+occurs(action_take_image(satellite0,planet11,instrument0,spectrograph1),8).
+occurs(action_turn_to(satellite0,planet12,planet11),9).
+occurs(action_take_image(satellite0,planet12,instrument0,infrared4),10).
+occurs(action_turn_to(satellite0,star13,planet12),11).
+occurs(action_take_image(satellite0,star13,instrument0,thermograph0),12).
+occurs(action_turn_to(satellite0,star9,star13),13).
+occurs(action_take_image(satellite0,star9,instrument0,thermograph0),14).

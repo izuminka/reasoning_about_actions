@@ -1,0 +1,10 @@
+occurs(action_switch_on(instrument13,satellite2),1).
+occurs(action_calibrate(satellite2,instrument13,star4),2).
+occurs(action_switch_on(instrument3,satellite1),3).
+occurs(action_turn_to(satellite2,phenomenon9,star4),4).
+occurs(action_take_image(satellite2,phenomenon9,instrument13,thermograph6),5).
+occurs(action_turn_to(satellite1,star4,groundstation2),6).
+occurs(action_calibrate(satellite1,instrument3,star4),7).
+occurs(action_turn_to(satellite1,phenomenon8,star4),8).
+occurs(action_take_image(satellite1,phenomenon8,instrument3,image4),9).
+occurs(action_turn_to(satellite1,groundstation0,phenomenon8),10).
