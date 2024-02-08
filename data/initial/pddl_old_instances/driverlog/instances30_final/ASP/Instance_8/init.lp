@@ -1,0 +1,28 @@
+init(link(s1, s0);
+link(s0, s1);
+at(truck3, s0);
+empty(truck1);
+empty(truck3);
+empty(truck2);
+path(p0-2, s0);
+link(s2, s0);
+at(package2, s1);
+link(s0, s2);
+at(driver1, s0);
+at(package1, s2);
+path(s1, p0-1);
+link(s1, s2);
+at(truck4, s1);
+at(truck1, s2);
+path(s0, p0-2);
+empty(truck4);
+at(truck2, s1);
+at(package4, s0);
+link(s2, s1);
+at(package3, s1);
+path(p0-1, s0);
+path(p0-2, s2);
+path(s2, p0-2);
+path(s0, p0-1);
+path(p0-1, s1);
+).

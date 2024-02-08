@@ -1,0 +1,11 @@
+occurs(action_walk(driver1,s1,p1-0),1).
+occurs(action_walk(driver1,p1-0,s0),2).
+occurs(action_board_truck(driver1,truck1,s0),3).
+occurs(action_drive_truck(truck1,s0,s1,driver1),4).
+occurs(action_board_truck(driver2,truck3,s0),5).
+occurs(action_drive_truck(truck3,s0,s1,driver2),6).
+occurs(action_board_truck(driver4,truck5,s0),7).
+occurs(action_load_truck(package2,truck5,s0),8).
+occurs(action_drive_truck(truck5,s0,s1,driver4),9).
+occurs(action_disembark_truck(driver4,truck5,s1),10).
+occurs(action_unload_truck(package2,truck5,s1),11).

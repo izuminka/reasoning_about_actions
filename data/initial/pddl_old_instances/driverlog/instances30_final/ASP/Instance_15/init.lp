@@ -1,0 +1,26 @@
+init(at(driver2, s0);
+link(s1, s0);
+link(s0, s1);
+at(truck3, s0);
+empty(truck1);
+empty(truck2);
+path(p1-0, s0);
+at(truck2, s0);
+at(package1, s1);
+path(p1-0, s1);
+at(package3, s0);
+empty(truck6);
+at(truck4, s1);
+at(driver3, s0);
+at(truck5, s0);
+at(truck6, s1);
+empty(truck5);
+empty(truck4);
+at(driver1, s1);
+path(s0, p1-0);
+at(truck1, s0);
+path(s1, p1-0);
+at(driver4, s0);
+at(package2, s0);
+empty(truck3);
+).
