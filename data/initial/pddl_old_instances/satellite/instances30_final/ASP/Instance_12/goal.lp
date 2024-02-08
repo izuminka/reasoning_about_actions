@@ -1,4 +1,4 @@
-goal(have_image(Star1, spectrograph0);
-have_image(Star2, spectrograph0);
-have_image(Planet3, spectrograph0);
+goal(have_image(star1, spectrograph0);
+have_image(star2, spectrograph0);
+have_image(planet3, spectrograph0);
 ).

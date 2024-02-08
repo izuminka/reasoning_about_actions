@@ -1,4 +1,4 @@
-goal(pointing(satellite1, GroundStation0);
-have_image(Phenomenon8, image4);
-have_image(Phenomenon9, thermograph6);
+goal(pointing(satellite1, groundstation0);
+have_image(phenomenon8, image4);
+have_image(phenomenon9, thermograph6);
 ).

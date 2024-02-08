@@ -1,3 +1,3 @@
-goal(pointing(satellite0, Star0);
-have_image(Star1, infrared0);
+goal(pointing(satellite0, star0);
+have_image(star1, infrared0);
 ).

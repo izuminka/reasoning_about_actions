@@ -1,4 +1,4 @@
-goal(pointing(satellite1, Planet2);
-have_image(Star1, thermograph0);
-have_image(Planet2, thermograph4);
+goal(pointing(satellite1, planet2);
+have_image(star1, thermograph0);
+have_image(planet2, thermograph4);
 ).

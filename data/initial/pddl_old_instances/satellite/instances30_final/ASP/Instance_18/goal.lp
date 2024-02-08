@@ -1,5 +1,5 @@
-goal(pointing(satellite0, Planet5);
-have_image(Planet5, spectrograph0);
-have_image(Phenomenon6, thermograph3);
-have_image(Planet7, thermograph2);
+goal(pointing(satellite0, planet5);
+have_image(planet5, spectrograph0);
+have_image(phenomenon6, thermograph3);
+have_image(planet7, thermograph2);
 ).

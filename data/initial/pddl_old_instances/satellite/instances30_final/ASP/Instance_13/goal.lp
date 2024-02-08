@@ -1,3 +1,3 @@
-goal(pointing(satellite1, Star4);
-have_image(Star4, spectrograph0);
+goal(pointing(satellite1, star4);
+have_image(star4, spectrograph0);
 ).

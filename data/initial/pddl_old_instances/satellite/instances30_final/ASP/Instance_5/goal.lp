@@ -1,4 +1,4 @@
-goal(pointing(satellite3, Star4);
-pointing(satellite4, GroundStation2);
-have_image(Star5, infrared4);
+goal(pointing(satellite3, star4);
+pointing(satellite4, groundstation2);
+have_image(star5, infrared4);
 ).

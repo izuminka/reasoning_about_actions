@@ -1,3 +1,3 @@
-goal(pointing(satellite2, GroundStation1);
-have_image(Planet9, spectrograph3);
+goal(pointing(satellite2, groundstation1);
+have_image(planet9, spectrograph3);
 ).

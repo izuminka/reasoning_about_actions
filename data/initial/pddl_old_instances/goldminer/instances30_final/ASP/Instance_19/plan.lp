@@ -7,8 +7,8 @@ occurs(action_move(f1_1f,f1_2f),6).
 occurs(action_fire_laser(f1_2f, f1_3f),7).
 occurs(action_move(f1_2f,f1_1f),8).
 occurs(action_move(f1_1f,f1_0f),9).
-occurs(action_put_down_laser(f1_0f),10).
-occurs(action_pick_up_bomb(f1_0f),11).
+occurs(action_putdown_laser(f1_0f),10).
+occurs(action_pickup_bomb(f1_0f),11).
 occurs(action_move(f1_0f,f1_1f),12).
 occurs(action_move(f1_1f,f1_2f),13).
 occurs(action_move(f1_2f,f1_3f),14).
