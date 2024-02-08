@@ -1,0 +1,9 @@
+occurs(action_move(robot2,room3,room1),1).
+occurs(action_pick(robot2,ball4,room1,lgripper2),2).
+occurs(action_move(robot2,room1,room2),3).
+occurs(action_pick(robot2,ball2,room2,rgripper2),4).
+occurs(action_drop(robot2,ball4,room2,lgripper2),5).
+occurs(action_pick(robot2,ball3,room2,lgripper2),6).
+occurs(action_move(robot2,room2,room1),7).
+occurs(action_drop(robot2,ball3,room1,lgripper2),8).
+occurs(action_drop(robot2,ball2,room1,rgripper2),9).
