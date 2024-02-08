@@ -1,0 +1,12 @@
+occurs(action_move(v5,l5,l4,f3,f2),1).
+occurs(action_load(c2,v1,l6,s7,s6),2).
+occurs(action_move(v1,l6,l5,f5,f4),3).
+occurs(action_unload(c2,v1,l5,s6,s7),4).
+occurs(action_load(c0,v4,l7,s2,s1),5).
+occurs(action_move(v4,l7,l8,f5,f4),6).
+occurs(action_move(v4,l8,l0,f6,f5),7).
+occurs(action_move(v4,l0,l1,f7,f6),8).
+occurs(action_unload(c0,v4,l1,s1,s2),9).
+occurs(action_load(c3,v5,l4,s3,s2),10).
+occurs(action_move(v5,l4,l5,f4,f3),11).
+occurs(action_unload(c3,v5,l5,s2,s3),12).

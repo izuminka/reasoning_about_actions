@@ -1,0 +1,9 @@
+occurs(action_load(c0,v7,l4,s2,s1),1).
+occurs(action_move(v7,l4,l5,f1,f0),2).
+occurs(action_move(v7,l5,l6,f1,f0),3).
+occurs(action_move(v7,l6,l0,f1,f0),4).
+occurs(action_load(c1,v7,l0,s1,s0),5).
+occurs(action_move(v7,l0,l1,f1,f0),6).
+occurs(action_unload(c1,v7,l1,s0,s1),7).
+occurs(action_move(v7,l1,l2,f1,f0),8).
+occurs(action_unload(c0,v7,l2,s1,s2),9).
