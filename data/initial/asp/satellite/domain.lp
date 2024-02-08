@@ -2,7 +2,7 @@
 pfluent(on_board(I, S)) :- instrument(I), satellite(S).
 pfluent(supports(I, M)) :- instrument(I), mode(M).
 pfluent(pointing(S, D)) :- satellite(S), direction(D).
-pfluent(power_available(S)) :- satellite(S).
+pfluent(power_avail(S)) :- satellite(S).
 pfluent(power_on(I)) :- instrument(I).
 pfluent(calibrated(I)) :- instrument(I).
 pfluent(have_image(D, M)) :- direction(D), mode(M).
@@ -41,16 +41,16 @@ causes(action_turn_to(S, New_D, Prev_D), -pointing(S, Prev_D), cond_causes_turn_
 
 % Action Switch on preconditions and effects
 member(on_board(I, S), cond_exec_switch_on(I, S)) :- instrument(I), satellite(S).
-member(power_available(S), cond_exec_switch_on(I, S)) :- instrument(I), satellite(S).
+member(power_avail(S), cond_exec_switch_on(I, S)) :- instrument(I), satellite(S).
 causes(action_switch_on(I, S), power_on(I), cond_causes_switch_on(I, S)) :- instrument(I), satellite(S).
 causes(action_switch_on(I, S), -calibrated(I), cond_causes_switch_on(I, S)) :- instrument(I), satellite(S).
-causes(action_switch_on(I, S), -power_available(S), cond_causes_switch_on(I, S)) :- instrument(I), satellite(S).
+causes(action_switch_on(I, S), -power_avail(S), cond_causes_switch_on(I, S)) :- instrument(I), satellite(S).
 
 % Action Switch off preconditions and effects
 member(on_board(I, S), cond_exec_switch_off(I, S)) :- instrument(I), satellite(S).
 member(power_on(I), cond_exec_switch_off(I, S)) :- instrument(I), satellite(S).
 causes(action_switch_off(I, S), -power_on(I), cond_causes_switch_off(I, S)) :- instrument(I), satellite(S).
-causes(action_switch_off(I, S), power_available(S), cond_causes_switch_off(I, S)) :- instrument(I), satellite(S).
+causes(action_switch_off(I, S), power_avail(S), cond_causes_switch_off(I, S)) :- instrument(I), satellite(S).
 
 % Action Calibrate preconditions and effects
 member(on_board(I, S), cond_exec_calibrate(S, I, D)) :- satellite(S), instrument(I), direction(D).
