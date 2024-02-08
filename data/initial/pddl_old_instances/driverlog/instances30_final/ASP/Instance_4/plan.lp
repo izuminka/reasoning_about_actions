@@ -1,6 +1,6 @@
 occurs(action_board_truck(driver4,truck2,s1),1).
-occurs(action_walk(driver2,s0,p0-2),2).
-occurs(action_walk(driver2,p0-2,s2),3).
+occurs(action_walk(driver2,s0,p0_2),2).
+occurs(action_walk(driver2,p0_2,s2),3).
 occurs(action_drive_truck(truck2,s1,s0,driver4),4).
 occurs(action_load_truck(package4,truck2,s0),5).
 occurs(action_load_truck(package2,truck2,s0),6).

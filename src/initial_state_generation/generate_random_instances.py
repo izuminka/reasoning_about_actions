@@ -487,9 +487,9 @@ def convert_goldminer(domain):
                 elif ele[0] == 'pickup-laser':
                     plans += f'occurs(action_pickup_laser({ele[1]}),{time_stamp+1}).\n'
                 elif ele[0] == 'pickup-bomb':
-                    plans += f'occurs(action_pick_up_bomb({ele[1]}),{time_stamp+1}).\n'
+                    plans += f'occurs(action_pickup_bomb({ele[1]}),{time_stamp+1}).\n'
                 elif ele[0] == 'putdown-laser':
-                    plans += f'occurs(action_put_down_laser({ele[1]}),{time_stamp+1}).\n'
+                    plans += f'occurs(action_putdown_laser({ele[1]}),{time_stamp+1}).\n'
                 elif ele[0] == 'detonate-bomb':
                     plans += f'occurs(action_detonate_bomb({ele[1]}, {ele[2]}),{time_stamp+1}).\n'
                 elif ele[0] == 'fire-laser':

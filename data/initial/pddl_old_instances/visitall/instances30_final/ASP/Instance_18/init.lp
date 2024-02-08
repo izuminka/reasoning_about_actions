@@ -1,9 +1,9 @@
-init(connected(loc-x0-y1,loc-x0-y2);
-connected(loc-x0-y2,loc-x0-y3);
-connected(loc-x0-y2,loc-x1-y2);
-visited(loc-x0-y2);
-connected(loc-x1-y2,loc-x0-y2);
-connected(loc-x0-y2,loc-x0-y1);
-at-robot(loc-x0-y2);
-connected(loc-x0-y3,loc-x0-y2);
+init(connected(loc_x0_y1,loc_x0_y2);
+connected(loc_x0_y2,loc_x0_y3);
+connected(loc_x0_y2,loc_x1_y2);
+visited(loc_x0_y2);
+connected(loc_x1_y2,loc_x0_y2);
+connected(loc_x0_y2,loc_x0_y1);
+at_robot(loc_x0_y2);
+connected(loc_x0_y3,loc_x0_y2);
 ).

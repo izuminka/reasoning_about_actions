@@ -1,1 +1,1 @@
-occurs(action_move(loc-x4-y0,loc-x3-y0),1).
+occurs(action_move(loc_x4_y0,loc_x3_y0),1).

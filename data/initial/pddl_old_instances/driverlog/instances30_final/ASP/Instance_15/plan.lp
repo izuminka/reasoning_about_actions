@@ -1,5 +1,5 @@
-occurs(action_walk(driver1,s1,p1-0),1).
-occurs(action_walk(driver1,p1-0,s0),2).
+occurs(action_walk(driver1,s1,p1_0),1).
+occurs(action_walk(driver1,p1_0,s0),2).
 occurs(action_board_truck(driver1,truck1,s0),3).
 occurs(action_drive_truck(truck1,s0,s1,driver1),4).
 occurs(action_board_truck(driver2,truck3,s0),5).

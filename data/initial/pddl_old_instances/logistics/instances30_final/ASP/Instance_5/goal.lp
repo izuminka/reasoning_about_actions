@@ -1,5 +1,5 @@
-goal(at(p0,l1-1);
-at(p1,l1-0);
-at(p2,l0-0);
-at(p3,l1-2);
+goal(at(p0,l1_1);
+at(p1,l1_0);
+at(p2,l0_0);
+at(p3,l1_2);
 ).

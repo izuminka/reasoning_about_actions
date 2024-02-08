@@ -1,7 +1,6 @@
 import os
 import jsonlines
-# from clyngor.inline import *
-# from clyngor import solve
+from clyngor import ASP
 
 CODE_PATH = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.dirname(CODE_PATH)
@@ -20,8 +19,8 @@ OBJECTS_KEY = 'objects'
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
-    if type(paths) is str:
-        paths = [paths]
+    # if type(paths) is str:
+    #     paths = [paths]
     for path in paths:
         with open(path, 'r') as f:
             asp_code.append(f.read())
@@ -32,7 +31,6 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
 
 
 def execute_asp_code(asp_code, time_limit=0):
-    # answers = list(solve(inline=asp_code, stats=True, nb_model=None, options='--opt-mode=OptN', time_limit=10))
     answers = list(ASP(asp_code, time_limit=time_limit))
     first = answers[0]
     for a in answers:

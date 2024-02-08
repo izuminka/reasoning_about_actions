@@ -1,3 +1,3 @@
-goal(visited(loc-x3-y0);
-visited(loc-x4-y0);
+goal(visited(loc_x3_y0);
+visited(loc_x4_y0);
 ).

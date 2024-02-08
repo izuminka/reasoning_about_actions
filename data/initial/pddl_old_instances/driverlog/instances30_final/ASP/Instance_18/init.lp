@@ -6,11 +6,11 @@ link(s0, s1);
 empty(truck1);
 at(driver4, s1);
 at(package1, s1);
-path(s0, p0-1);
-path(p0-1, s0);
-path(s1, p0-1);
+path(s0, p0_1);
+path(p0_1, s0);
+path(s1, p0_1);
 at(truck2, s1);
 at(truck1, s1);
-path(p0-1, s1);
+path(p0_1, s1);
 empty(truck2);
 ).

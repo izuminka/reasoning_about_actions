@@ -1,5 +1,5 @@
-goal(visited(loc-x0-y1);
-visited(loc-x0-y2);
-visited(loc-x0-y3);
-visited(loc-x1-y2);
+goal(visited(loc_x0_y1);
+visited(loc_x0_y2);
+visited(loc_x0_y3);
+visited(loc_x1_y2);
 ).

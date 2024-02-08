@@ -7,5 +7,5 @@ occurs(action_unload_truck(package2,truck3,s1),6).
 occurs(action_board_truck(driver1,truck4,s1),7).
 occurs(action_drive_truck(truck4,s1,s0,driver1),8).
 occurs(action_disembark_truck(driver1,truck4,s0),9).
-occurs(action_walk(driver4,s1,p0-1),10).
-occurs(action_walk(driver4,p0-1,s0),11).
+occurs(action_walk(driver4,s1,p0_1),10).
+occurs(action_walk(driver4,p0_1,s0),11).

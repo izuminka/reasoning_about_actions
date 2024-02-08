@@ -1,8 +1,8 @@
-occurs(action_move(loc-x1-y4,loc-x1-y5),1).
-occurs(action_move(loc-x1-y5,loc-x1-y4),2).
-occurs(action_move(loc-x1-y4,loc-x0-y4),3).
-occurs(action_move(loc-x0-y4,loc-x0-y3),4).
-occurs(action_move(loc-x0-y3,loc-x1-y3),5).
-occurs(action_move(loc-x1-y3,loc-x1-y2),6).
-occurs(action_move(loc-x1-y2,loc-x1-y1),7).
-occurs(action_move(loc-x1-y1,loc-x1-y0),8).
+occurs(action_move(loc_x1_y4,loc_x1_y5),1).
+occurs(action_move(loc_x1_y5,loc_x1_y4),2).
+occurs(action_move(loc_x1_y4,loc_x0_y4),3).
+occurs(action_move(loc_x0_y4,loc_x0_y3),4).
+occurs(action_move(loc_x0_y3,loc_x1_y3),5).
+occurs(action_move(loc_x1_y3,loc_x1_y2),6).
+occurs(action_move(loc_x1_y2,loc_x1_y1),7).
+occurs(action_move(loc_x1_y1,loc_x1_y0),8).

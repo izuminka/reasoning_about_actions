@@ -1,5 +1,5 @@
-init(at-robot(loc-x4-y0);
-visited(loc-x4-y0);
-connected(loc-x4-y0,loc-x3-y0);
-connected(loc-x3-y0,loc-x4-y0);
+init(at_robot(loc_x4_y0);
+visited(loc_x4_y0);
+connected(loc_x4_y0,loc_x3_y0);
+connected(loc_x3_y0,loc_x4_y0);
 ).
