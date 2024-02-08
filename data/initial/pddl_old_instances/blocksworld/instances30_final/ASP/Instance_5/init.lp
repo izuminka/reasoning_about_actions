@@ -1,0 +1,10 @@
+init(clear(b1);
+ontable(b3);
+clear(b4);
+ontable(b2);
+ontable(b1);
+ontable(b4);
+handempty;
+clear(b2);
+clear(b3);
+).

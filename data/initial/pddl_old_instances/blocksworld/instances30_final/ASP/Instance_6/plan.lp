@@ -1,0 +1,14 @@
+occurs(action_unstack(b5,b1),1).
+occurs(action_stack(b5,b4),2).
+occurs(action_unstack(b1,b2),3).
+occurs(action_put_down(b1),4).
+occurs(action_unstack(b2,b3),5).
+occurs(action_put_down(b2),6).
+occurs(action_unstack(b5,b4),7).
+occurs(action_stack(b5,b2),8).
+occurs(action_pick_up(b3),9).
+occurs(action_stack(b3,b5),10).
+occurs(action_pick_up(b1),11).
+occurs(action_stack(b1,b3),12).
+occurs(action_pick_up(b4),13).
+occurs(action_stack(b4,b1),14).
