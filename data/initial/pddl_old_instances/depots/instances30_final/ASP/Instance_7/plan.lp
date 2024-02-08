@@ -1,0 +1,11 @@
+occurs(action_drive(truck1,distributor7,distributor4),1).
+occurs(action_lift(hoist5,crate1,pallet5,distributor1),2).
+occurs(action_lift(hoist8,crate0,pallet8,distributor4),3).
+occurs(action_load(hoist8,crate0,truck1,distributor4),4).
+occurs(action_drive(truck1,distributor4,distributor1),5).
+occurs(action_load(hoist5,crate1,truck1,distributor1),6).
+occurs(action_unload(hoist5,crate0,truck1,distributor1),7).
+occurs(action_drive(truck1,distributor1,distributor6),8).
+occurs(action_unload(hoist10,crate1,truck1,distributor6),9).
+occurs(action_drop(hoist10,crate1,pallet10,distributor6),10).
+occurs(action_drop(hoist5,crate0,pallet5,distributor1),11).
