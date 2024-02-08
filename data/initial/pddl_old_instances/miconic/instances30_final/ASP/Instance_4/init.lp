@@ -1,0 +1,13 @@
+init(destin(p0,f2);
+origin(p1,f1);
+above(f0,f1);
+destin(p1,f2);
+destin(p2,f2);
+origin(p3,f1);
+origin(p0,f0);
+above(f1,f2);
+lift_at(f0);
+origin(p2,f1);
+above(f0,f2);
+destin(p3,f2);
+).

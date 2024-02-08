@@ -1,0 +1,5 @@
+goal(served(p0);
+served(p1);
+served(p2);
+served(p3);
+).

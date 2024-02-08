@@ -1,0 +1,9 @@
+occurs(action_board(f0,p2),1).
+occurs(action_up(f0,f1),2).
+occurs(action_board(f1,p0),3).
+occurs(action_up(f1,f3),4).
+occurs(action_board(f3,p1),5).
+occurs(action_depart(f3,p0),6).
+occurs(action_down(f3,f2),7).
+occurs(action_depart(f2,p2),8).
+occurs(action_depart(f2,p1),9).

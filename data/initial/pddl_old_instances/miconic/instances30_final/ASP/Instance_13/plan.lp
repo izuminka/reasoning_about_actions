@@ -1,0 +1,16 @@
+occurs(action_board(f0,p1),1).
+occurs(action_board(f0,p3),2).
+occurs(action_board(f0,p4),3).
+occurs(action_board(f0,p5),4).
+occurs(action_board(f0,p6),5).
+occurs(action_up(f0,f1),6).
+occurs(action_board(f1,p0),7).
+occurs(action_board(f1,p2),8).
+occurs(action_depart(f1,p6),9).
+occurs(action_depart(f1,p5),10).
+occurs(action_depart(f1,p4),11).
+occurs(action_depart(f1,p3),12).
+occurs(action_depart(f1,p1),13).
+occurs(action_down(f1,f0),14).
+occurs(action_depart(f0,p2),15).
+occurs(action_depart(f0,p0),16).
