@@ -342,7 +342,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'FluentTracking'
+        return 'fluent_tracking'
 
     def question_1(self, plan_length):
         # TODO implement
@@ -391,7 +391,7 @@ class StateTracking(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'StateTracking'
+        return 'state_tracking'
 
     def question_1(self, plan_length):
         question = f"I plan to perform the actions {self.nl_actions_up_to(plan_length)}, to reach the current state. Do the following fluents {self.given_fluent_sequence[plan_length + 1]} represent the state completely?"
@@ -420,7 +420,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'Action Executability'
+        return 'action_executability'
 
     def question_1(self, plan_length):
         # TODO implement
@@ -505,7 +505,7 @@ class LoopingQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'Looping'
+        return 'looping'
 
     def question_1(self, plan_length):
         sequence, string_repeat_number, b1, b2 = Blocksworld.get_looping_action_sequence(self,plan_length)
@@ -539,7 +539,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'NumericalReasoning'
+        return 'numerical_reasoning'
 
     def question_1(self, plan_length):
         # TODO implement
@@ -666,7 +666,7 @@ class HallucinationQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
-        return 'Hallucination'
+        return 'hallucination'
 
     def question_1(self, plan_length,objects):
         # TODO implement
