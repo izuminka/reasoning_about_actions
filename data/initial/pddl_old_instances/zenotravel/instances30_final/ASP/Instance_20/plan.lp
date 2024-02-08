@@ -1,0 +1,15 @@
+occurs(action_board(person5,plane1,city3),1).
+occurs(action_fly(plane1,city3,city0,fl6,fl5),2).
+occurs(action_board(person3,plane1,city0),3).
+occurs(action_board(person2,plane1,city0),4).
+occurs(action_fly(plane1,city0,city1,fl5,fl4),5).
+occurs(action_debark(person5,plane1,city1),6).
+occurs(action_board(person4,plane1,city1),7).
+occurs(action_debark(person3,plane1,city1),8).
+occurs(action_debark(person2,plane1,city1),9).
+occurs(action_fly(plane1,city1,city4,fl4,fl3),10).
+occurs(action_debark(person4,plane1,city4),11).
+occurs(action_fly(plane1,city4,city5,fl3,fl2),12).
+occurs(action_board(person1,plane1,city5),13).
+occurs(action_fly(plane1,city5,city2,fl2,fl1),14).
+occurs(action_debark(person1,plane1,city2),15).

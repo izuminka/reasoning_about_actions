@@ -1,0 +1,10 @@
+occurs(action_board(person3,plane3,city4),1).
+occurs(action_fly(plane3,city4,city0,fl4,fl3),2).
+occurs(action_board(person1,plane3,city0),3).
+occurs(action_fly(plane3,city0,city1,fl3,fl2),4).
+occurs(action_board(person2,plane3,city1),5).
+occurs(action_fly(plane3,city1,city2,fl2,fl1),6).
+occurs(action_debark(person2,plane3,city2),7).
+occurs(action_debark(person1,plane3,city2),8).
+occurs(action_fly(plane3,city2,city3,fl1,fl0),9).
+occurs(action_debark(person3,plane3,city3),10).

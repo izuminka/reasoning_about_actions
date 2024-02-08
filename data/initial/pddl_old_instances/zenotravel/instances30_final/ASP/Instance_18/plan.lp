@@ -1,0 +1,17 @@
+occurs(action_refuel(plane1,city0,fl1,fl2),1).
+occurs(action_refuel(plane1,city0,fl2,fl3),2).
+occurs(action_refuel(plane1,city0,fl3,fl4),3).
+occurs(action_refuel(plane1,city0,fl4,fl5),4).
+occurs(action_board(person1,plane1,city0),5).
+occurs(action_fly(plane1,city0,city1,fl5,fl4),6).
+occurs(action_board(person4,plane1,city1),7).
+occurs(action_fly(plane1,city1,city6,fl4,fl3),8).
+occurs(action_debark(person4,plane1,city6),9).
+occurs(action_fly(plane1,city6,city7,fl3,fl2),10).
+occurs(action_board(person2,plane1,city7),11).
+occurs(action_debark(person1,plane1,city7),12).
+occurs(action_fly(plane1,city7,city4,fl2,fl1),13).
+occurs(action_board(person3,plane1,city4),14).
+occurs(action_debark(person2,plane1,city4),15).
+occurs(action_fly(plane1,city4,city2,fl1,fl0),16).
+occurs(action_debark(person3,plane1,city2),17).

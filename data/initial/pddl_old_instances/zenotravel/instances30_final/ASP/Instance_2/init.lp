@@ -1,0 +1,21 @@
+init(at(plane3, city1);
+next(fl4,fl5);
+at(person1, city2);
+at(plane6, city2);
+next(fl5,fl6);
+fuel_level(plane1,fl2);
+fuel_level(plane5,fl4);
+at(plane5, city2);
+at(plane4, city1);
+next(fl1,fl2);
+at(plane1, city0);
+at(person2, city1);
+next(fl2,fl3);
+fuel_level(plane4,fl4);
+next(fl0,fl1);
+at(plane2, city1);
+fuel_level(plane6,fl0);
+fuel_level(plane2,fl0);
+next(fl3,fl4);
+fuel_level(plane3,fl2);
+).
