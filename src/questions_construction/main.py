@@ -509,7 +509,7 @@ class LoopingQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         sequence, string_repeat_number, b1, b2 = Blocksworld.get_looping_action_sequence(self,plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, to reach the current state.In the currents state if I perform  Will the block {b1} be on top of block{b2}?"
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, to reach the current state. In the currents state if I perform :{sequence}  Will the block {b1} be on top of block{b2}?"
         answer = True
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
