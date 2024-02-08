@@ -1,8 +1,8 @@
 from collections import defaultdict
 import random
-from main import QuestionGenerator,QuestionGenerationHelpers
 import re
-from src.states_actions_generation import StatesActionsGenerator
+from src.states_actions_generation import *
+from main import *
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -114,3 +114,25 @@ class Blocksworld(BaseDomain):
         while len(sequences_with_unknown_fluents)<plan_length:
             sequences_with_unknown_fluents += [random.choice(QuestionGenerator.extract_given_plan_sequence())]
         return sequences_with_unknown_fluents, unknown_fluent_index  
+    
+    def get_looping_action_sequence(self,plan_length):
+        fluents = self.given_fluent_sequence[plan_length]
+        ontable_list = [x for x in fluents if "on(" in x]
+        clear_list = [re.findall(r'\((.*?)\)',x)[0] for x in fluents if "clear" in x]
+        l = []
+        for x in clear_list:
+            for y in ontable_list:
+                if x in y:
+                    l.append(y) 
+        # print(l)
+        # exit()
+        match = re.search(r'\((.*?)\)',(random.choice(l)))
+        match = match.group(1).split(',')
+        b1,b2 = match[0],match[1]
+        string_repeat_number = random.randint(1,plan_length-1)   
+        sequence = string_repeat_number*f"unstack({b1},{b2}) stack({b1},{b2}), "
+        return sequence, string_repeat_number, b1, b2
+    
+        
+        
+        

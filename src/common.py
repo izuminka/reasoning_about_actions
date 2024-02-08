@@ -1,7 +1,7 @@
 import os
 import jsonlines
-from clyngor.inline import *
-from clyngor import solve
+# from clyngor.inline import *
+# from clyngor import solve
 
 CODE_PATH = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.dirname(CODE_PATH)

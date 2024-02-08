@@ -1,4 +1,4 @@
-from common import *
+from src.common import *
 import clingo
 import re
 
@@ -6,8 +6,7 @@ import re
 def open_asp_action_sequence(plan_path):
     with open(plan_path) as f:
         plan_sequence_asp = f.read()
-    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)],
-                           key=lambda x: x[0])
+    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)], key=lambda x: x[0])
     return [p for _, p in plan_sequence]
 
 
