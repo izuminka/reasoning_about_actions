@@ -1,0 +1,80 @@
+Type-checking move
+...action passes type checking.
+Type-checking pickup-laser
+...action passes type checking.
+Type-checking pickup-bomb
+...action passes type checking.
+Type-checking putdown-laser
+...action passes type checking.
+Type-checking detonate-bomb
+...action passes type checking.
+Type-checking fire-laser
+...action passes type checking.
+Type-checking pick-gold
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/goldminer/instances30/instance-1.plan.pddl
+Plan to validate:
+
+Plan size: 7
+1:
+(move f2-0f f1-0f)
+ 
+2:
+(move f1-0f f0-0f)
+ 
+3:
+(pickup-bomb f0-0f)
+ 
+4:
+(move f0-0f f1-0f)
+ 
+5:
+(detonate-bomb f1-0f f1-1f)
+ 
+6:
+(move f1-0f f1-1f)
+ 
+7:
+(pick-gold f1-1f)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (robot-at f2-0f)
+Adding (robot-at f1-0f)
+
+Checking next happening (time 2)
+Deleting (robot-at f1-0f)
+Adding (robot-at f0-0f)
+
+Checking next happening (time 3)
+Deleting (arm-empty)
+Adding (holds-bomb)
+
+Checking next happening (time 4)
+Deleting (robot-at f0-0f)
+Adding (robot-at f1-0f)
+
+Checking next happening (time 5)
+Deleting (holds-bomb)
+Deleting (soft-rock-at f1-1f)
+Adding (arm-empty)
+Adding (clear f1-1f)
+
+Checking next happening (time 6)
+Deleting (robot-at f1-0f)
+Adding (robot-at f1-1f)
+
+Checking next happening (time 7)
+Deleting (arm-empty)
+Adding (holds-gold)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 7 
+
+Successful plans:
+Value: 7
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/goldminer/instances30/instance-1.plan.pddl 7 
+

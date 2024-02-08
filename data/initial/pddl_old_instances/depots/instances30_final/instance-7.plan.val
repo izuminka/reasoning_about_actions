@@ -1,0 +1,122 @@
+Type-checking drive
+...action passes type checking.
+Type-checking lift
+...action passes type checking.
+Type-checking drop
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/depots/instances30/instance-18.plan.pddl
+Plan to validate:
+
+Plan size: 11
+1:
+(drive truck1 distributor7 distributor4)
+ 
+2:
+(lift hoist5 crate1 pallet5 distributor1)
+ 
+3:
+(lift hoist8 crate0 pallet8 distributor4)
+ 
+4:
+(load hoist8 crate0 truck1 distributor4)
+ 
+5:
+(drive truck1 distributor4 distributor1)
+ 
+6:
+(load hoist5 crate1 truck1 distributor1)
+ 
+7:
+(unload hoist5 crate0 truck1 distributor1)
+ 
+8:
+(drive truck1 distributor1 distributor6)
+ 
+9:
+(unload hoist10 crate1 truck1 distributor6)
+ 
+10:
+(drop hoist10 crate1 pallet10 distributor6)
+ 
+11:
+(drop hoist5 crate0 pallet5 distributor1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at truck1 distributor7)
+Adding (at truck1 distributor4)
+
+Checking next happening (time 2)
+Deleting (at crate1 distributor1)
+Deleting (clear crate1)
+Deleting (available hoist5)
+Deleting (on crate1 pallet5)
+Adding (lifting hoist5 crate1)
+Adding (clear pallet5)
+
+Checking next happening (time 3)
+Deleting (at crate0 distributor4)
+Deleting (clear crate0)
+Deleting (available hoist8)
+Deleting (on crate0 pallet8)
+Adding (lifting hoist8 crate0)
+Adding (clear pallet8)
+
+Checking next happening (time 4)
+Deleting (lifting hoist8 crate0)
+Adding (in crate0 truck1)
+Adding (available hoist8)
+
+Checking next happening (time 5)
+Deleting (at truck1 distributor4)
+Adding (at truck1 distributor1)
+
+Checking next happening (time 6)
+Deleting (lifting hoist5 crate1)
+Adding (in crate1 truck1)
+Adding (available hoist5)
+
+Checking next happening (time 7)
+Deleting (in crate0 truck1)
+Deleting (available hoist5)
+Adding (lifting hoist5 crate0)
+
+Checking next happening (time 8)
+Deleting (at truck1 distributor1)
+Adding (at truck1 distributor6)
+
+Checking next happening (time 9)
+Deleting (in crate1 truck1)
+Deleting (available hoist10)
+Adding (lifting hoist10 crate1)
+
+Checking next happening (time 10)
+Deleting (lifting hoist10 crate1)
+Deleting (clear pallet10)
+Adding (available hoist10)
+Adding (at crate1 distributor6)
+Adding (clear crate1)
+Adding (on crate1 pallet10)
+
+Checking next happening (time 11)
+Deleting (lifting hoist5 crate0)
+Deleting (clear pallet5)
+Adding (available hoist5)
+Adding (at crate0 distributor1)
+Adding (clear crate0)
+Adding (on crate0 pallet5)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 11 
+
+Successful plans:
+Value: 11
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/depots/instances30/instance-18.plan.pddl 11 
+

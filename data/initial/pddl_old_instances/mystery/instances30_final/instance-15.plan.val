@@ -1,0 +1,129 @@
+Type-checking move
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-8.plan.pddl
+Plan to validate:
+
+Plan size: 12
+1:
+(move v5 l5 l4 f3 f2)
+ 
+2:
+(load c2 v1 l6 s7 s6)
+ 
+3:
+(move v1 l6 l5 f5 f4)
+ 
+4:
+(unload c2 v1 l5 s6 s7)
+ 
+5:
+(load c0 v4 l7 s2 s1)
+ 
+6:
+(move v4 l7 l8 f5 f4)
+ 
+7:
+(move v4 l8 l0 f6 f5)
+ 
+8:
+(move v4 l0 l1 f7 f6)
+ 
+9:
+(unload c0 v4 l1 s1 s2)
+ 
+10:
+(load c3 v5 l4 s3 s2)
+ 
+11:
+(move v5 l4 l5 f4 f3)
+ 
+12:
+(unload c3 v5 l5 s2 s3)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at v5 l5)
+Deleting (has-fuel l5 f3)
+Adding (at v5 l4)
+Adding (has-fuel l5 f2)
+
+Checking next happening (time 2)
+Deleting (at c2 l6)
+Deleting (has-space v1 s7)
+Adding (in c2 v1)
+Adding (has-space v1 s6)
+
+Checking next happening (time 3)
+Deleting (at v1 l6)
+Deleting (has-fuel l6 f5)
+Adding (at v1 l5)
+Adding (has-fuel l6 f4)
+
+Checking next happening (time 4)
+Deleting (in c2 v1)
+Deleting (has-space v1 s6)
+Adding (at c2 l5)
+Adding (has-space v1 s7)
+
+Checking next happening (time 5)
+Deleting (at c0 l7)
+Deleting (has-space v4 s2)
+Adding (in c0 v4)
+Adding (has-space v4 s1)
+
+Checking next happening (time 6)
+Deleting (at v4 l7)
+Deleting (has-fuel l7 f5)
+Adding (at v4 l8)
+Adding (has-fuel l7 f4)
+
+Checking next happening (time 7)
+Deleting (at v4 l8)
+Deleting (has-fuel l8 f6)
+Adding (at v4 l0)
+Adding (has-fuel l8 f5)
+
+Checking next happening (time 8)
+Deleting (at v4 l0)
+Deleting (has-fuel l0 f7)
+Adding (at v4 l1)
+Adding (has-fuel l0 f6)
+
+Checking next happening (time 9)
+Deleting (in c0 v4)
+Deleting (has-space v4 s1)
+Adding (at c0 l1)
+Adding (has-space v4 s2)
+
+Checking next happening (time 10)
+Deleting (at c3 l4)
+Deleting (has-space v5 s3)
+Adding (in c3 v5)
+Adding (has-space v5 s2)
+
+Checking next happening (time 11)
+Deleting (at v5 l4)
+Deleting (has-fuel l4 f4)
+Adding (at v5 l5)
+Adding (has-fuel l4 f3)
+
+Checking next happening (time 12)
+Deleting (in c3 v5)
+Deleting (has-space v5 s2)
+Adding (at c3 l5)
+Adding (has-space v5 s3)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 12 
+
+Successful plans:
+Value: 12
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-8.plan.pddl 12 
+

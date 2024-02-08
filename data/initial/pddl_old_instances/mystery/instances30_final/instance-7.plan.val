@@ -1,0 +1,93 @@
+Type-checking move
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-7.plan.pddl
+Plan to validate:
+
+Plan size: 8
+1:
+(load c1 v0 l3 s1 s0)
+ 
+2:
+(move v0 l3 l2 f2 f1)
+ 
+3:
+(move v0 l2 l1 f2 f1)
+ 
+4:
+(unload c1 v0 l1 s0 s1)
+ 
+5:
+(move v0 l1 l0 f3 f2)
+ 
+6:
+(load c2 v0 l0 s1 s0)
+ 
+7:
+(move v0 l0 l1 f5 f4)
+ 
+8:
+(unload c2 v0 l1 s0 s1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at c1 l3)
+Deleting (has-space v0 s1)
+Adding (in c1 v0)
+Adding (has-space v0 s0)
+
+Checking next happening (time 2)
+Deleting (at v0 l3)
+Deleting (has-fuel l3 f2)
+Adding (at v0 l2)
+Adding (has-fuel l3 f1)
+
+Checking next happening (time 3)
+Deleting (at v0 l2)
+Deleting (has-fuel l2 f2)
+Adding (at v0 l1)
+Adding (has-fuel l2 f1)
+
+Checking next happening (time 4)
+Deleting (in c1 v0)
+Deleting (has-space v0 s0)
+Adding (at c1 l1)
+Adding (has-space v0 s1)
+
+Checking next happening (time 5)
+Deleting (at v0 l1)
+Deleting (has-fuel l1 f3)
+Adding (at v0 l0)
+Adding (has-fuel l1 f2)
+
+Checking next happening (time 6)
+Deleting (at c2 l0)
+Deleting (has-space v0 s1)
+Adding (in c2 v0)
+Adding (has-space v0 s0)
+
+Checking next happening (time 7)
+Deleting (at v0 l0)
+Deleting (has-fuel l0 f5)
+Adding (at v0 l1)
+Adding (has-fuel l0 f4)
+
+Checking next happening (time 8)
+Deleting (in c2 v0)
+Deleting (has-space v0 s0)
+Adding (at c2 l1)
+Adding (has-space v0 s1)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 8 
+
+Successful plans:
+Value: 8
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-7.plan.pddl 8 
+

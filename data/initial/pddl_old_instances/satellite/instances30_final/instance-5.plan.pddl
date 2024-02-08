@@ -1,0 +1,7 @@
+(switch_on instrument8 satellite3)
+(calibrate satellite3 instrument8 star1)
+(turn_to satellite4 groundstation2 star3)
+(turn_to satellite3 star5 star1)
+(take_image satellite3 star5 instrument8 infrared4)
+(turn_to satellite3 star4 star5)
+; cost = 6 (unit cost)

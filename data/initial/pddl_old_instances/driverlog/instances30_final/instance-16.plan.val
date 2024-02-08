@@ -1,0 +1,77 @@
+Type-checking load-truck
+...action passes type checking.
+Type-checking unload-truck
+...action passes type checking.
+Type-checking board-truck
+...action passes type checking.
+Type-checking disembark-truck
+...action passes type checking.
+Type-checking drive-truck
+...action passes type checking.
+Type-checking walk
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/driverlog/instances30/instance-3.plan.pddl
+Plan to validate:
+
+Plan size: 7
+1:
+(board-truck driver2 truck1 s0)
+ 
+2:
+(drive-truck truck1 s0 s1 driver2)
+ 
+3:
+(load-truck package1 truck1 s1)
+ 
+4:
+(drive-truck truck1 s1 s2 driver2)
+ 
+5:
+(unload-truck package1 truck1 s2)
+ 
+6:
+(walk driver3 s3 p3-0)
+ 
+7:
+(walk driver3 p3-0 s0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at driver2 s0)
+Deleting (empty truck1)
+Adding (driving driver2 truck1)
+
+Checking next happening (time 2)
+Deleting (at truck1 s0)
+Adding (at truck1 s1)
+
+Checking next happening (time 3)
+Deleting (at package1 s1)
+Adding (in package1 truck1)
+
+Checking next happening (time 4)
+Deleting (at truck1 s1)
+Adding (at truck1 s2)
+
+Checking next happening (time 5)
+Deleting (in package1 truck1)
+Adding (at package1 s2)
+
+Checking next happening (time 6)
+Deleting (at driver3 s3)
+Adding (at driver3 p3-0)
+
+Checking next happening (time 7)
+Deleting (at driver3 p3-0)
+Adding (at driver3 s0)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 7 
+
+Successful plans:
+Value: 7
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/driverlog/instances30/instance-3.plan.pddl 7 
+

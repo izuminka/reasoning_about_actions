@@ -1,0 +1,117 @@
+Type-checking turn_to
+...action passes type checking.
+Type-checking switch_on
+...action passes type checking.
+Type-checking switch_off
+...action passes type checking.
+Type-checking calibrate
+...action passes type checking.
+Type-checking take_image
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-34.plan.pddl
+Plan to validate:
+
+Plan size: 14
+1:
+(switch_on instrument0 satellite0)
+ 
+2:
+(calibrate satellite0 instrument0 star8)
+ 
+3:
+(turn_to satellite0 phenomenon10 star8)
+ 
+4:
+(take_image satellite0 phenomenon10 instrument0 thermograph0)
+ 
+5:
+(turn_to satellite0 phenomenon14 phenomenon10)
+ 
+6:
+(take_image satellite0 phenomenon14 instrument0 thermograph0)
+ 
+7:
+(turn_to satellite0 planet11 phenomenon14)
+ 
+8:
+(take_image satellite0 planet11 instrument0 spectrograph1)
+ 
+9:
+(turn_to satellite0 planet12 planet11)
+ 
+10:
+(take_image satellite0 planet12 instrument0 infrared4)
+ 
+11:
+(turn_to satellite0 star13 planet12)
+ 
+12:
+(take_image satellite0 star13 instrument0 thermograph0)
+ 
+13:
+(turn_to satellite0 star9 star13)
+ 
+14:
+(take_image satellite0 star9 instrument0 thermograph0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (calibrated instrument0)
+Deleting (power_avail satellite0)
+Adding (power_on instrument0)
+
+Checking next happening (time 2)
+Adding (calibrated instrument0)
+
+Checking next happening (time 3)
+Deleting (pointing satellite0 star8)
+Adding (pointing satellite0 phenomenon10)
+
+Checking next happening (time 4)
+Adding (have_image phenomenon10 thermograph0)
+
+Checking next happening (time 5)
+Deleting (pointing satellite0 phenomenon10)
+Adding (pointing satellite0 phenomenon14)
+
+Checking next happening (time 6)
+Adding (have_image phenomenon14 thermograph0)
+
+Checking next happening (time 7)
+Deleting (pointing satellite0 phenomenon14)
+Adding (pointing satellite0 planet11)
+
+Checking next happening (time 8)
+Adding (have_image planet11 spectrograph1)
+
+Checking next happening (time 9)
+Deleting (pointing satellite0 planet11)
+Adding (pointing satellite0 planet12)
+
+Checking next happening (time 10)
+Adding (have_image planet12 infrared4)
+
+Checking next happening (time 11)
+Deleting (pointing satellite0 planet12)
+Adding (pointing satellite0 star13)
+
+Checking next happening (time 12)
+Adding (have_image star13 thermograph0)
+
+Checking next happening (time 13)
+Deleting (pointing satellite0 star13)
+Adding (pointing satellite0 star9)
+
+Checking next happening (time 14)
+Adding (have_image star9 thermograph0)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 14 
+
+Successful plans:
+Value: 14
+ /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-34.plan.pddl 14 
+

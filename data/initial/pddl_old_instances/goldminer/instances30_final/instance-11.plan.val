@@ -1,0 +1,124 @@
+Type-checking move
+...action passes type checking.
+Type-checking pickup-laser
+...action passes type checking.
+Type-checking pickup-bomb
+...action passes type checking.
+Type-checking putdown-laser
+...action passes type checking.
+Type-checking detonate-bomb
+...action passes type checking.
+Type-checking fire-laser
+...action passes type checking.
+Type-checking pick-gold
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/goldminer/instances30/instance-25.plan.pddl
+Plan to validate:
+
+Plan size: 13
+1:
+(move f4-0f f3-0f)
+ 
+2:
+(move f3-0f f2-0f)
+ 
+3:
+(move f2-0f f1-0f)
+ 
+4:
+(pickup-bomb f1-0f)
+ 
+5:
+(move f1-0f f0-0f)
+ 
+6:
+(detonate-bomb f0-0f f0-1f)
+ 
+7:
+(move f0-0f f1-0f)
+ 
+8:
+(pickup-bomb f1-0f)
+ 
+9:
+(move f1-0f f0-0f)
+ 
+10:
+(move f0-0f f0-1f)
+ 
+11:
+(detonate-bomb f0-1f f0-2f)
+ 
+12:
+(move f0-1f f0-2f)
+ 
+13:
+(pick-gold f0-2f)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (robot-at f4-0f)
+Adding (robot-at f3-0f)
+
+Checking next happening (time 2)
+Deleting (robot-at f3-0f)
+Adding (robot-at f2-0f)
+
+Checking next happening (time 3)
+Deleting (robot-at f2-0f)
+Adding (robot-at f1-0f)
+
+Checking next happening (time 4)
+Deleting (arm-empty)
+Adding (holds-bomb)
+
+Checking next happening (time 5)
+Deleting (robot-at f1-0f)
+Adding (robot-at f0-0f)
+
+Checking next happening (time 6)
+Deleting (holds-bomb)
+Deleting (soft-rock-at f0-1f)
+Adding (arm-empty)
+Adding (clear f0-1f)
+
+Checking next happening (time 7)
+Deleting (robot-at f0-0f)
+Adding (robot-at f1-0f)
+
+Checking next happening (time 8)
+Deleting (arm-empty)
+Adding (holds-bomb)
+
+Checking next happening (time 9)
+Deleting (robot-at f1-0f)
+Adding (robot-at f0-0f)
+
+Checking next happening (time 10)
+Deleting (robot-at f0-0f)
+Adding (robot-at f0-1f)
+
+Checking next happening (time 11)
+Deleting (holds-bomb)
+Deleting (soft-rock-at f0-2f)
+Adding (arm-empty)
+Adding (clear f0-2f)
+
+Checking next happening (time 12)
+Deleting (robot-at f0-1f)
+Adding (robot-at f0-2f)
+
+Checking next happening (time 13)
+Deleting (arm-empty)
+Adding (holds-gold)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 13 
+
+Successful plans:
+Value: 13
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/goldminer/instances30/instance-25.plan.pddl 13 
+

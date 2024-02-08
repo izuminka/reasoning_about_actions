@@ -1,0 +1,125 @@
+Type-checking load-truck
+...action passes type checking.
+Type-checking load-airplane
+...action passes type checking.
+Type-checking unload-truck
+...action passes type checking.
+Type-checking unload-airplane
+...action passes type checking.
+Type-checking drive-truck
+...action passes type checking.
+Type-checking fly-airplane
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/logistics-typed/instances30/instance-11.plan.pddl
+Plan to validate:
+
+Plan size: 14
+1:
+(load-truck p3 t2 l2-1)
+ 
+2:
+(drive-truck t2 l2-1 l2-0 c2)
+ 
+3:
+(unload-truck p3 t2 l2-0)
+ 
+4:
+(load-airplane p3 a0 l2-0)
+ 
+5:
+(fly-airplane a0 l2-0 l3-0)
+ 
+6:
+(load-airplane p2 a0 l3-0)
+ 
+7:
+(load-airplane p1 a0 l3-0)
+ 
+8:
+(fly-airplane a0 l3-0 l1-0)
+ 
+9:
+(unload-airplane p3 a0 l1-0)
+ 
+10:
+(unload-airplane p2 a0 l1-0)
+ 
+11:
+(unload-airplane p1 a0 l1-0)
+ 
+12:
+(load-truck p1 t1 l1-0)
+ 
+13:
+(drive-truck t1 l1-0 l1-1 c1)
+ 
+14:
+(unload-truck p1 t1 l1-1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at p3 l2-1)
+Adding (in p3 t2)
+
+Checking next happening (time 2)
+Deleting (at t2 l2-1)
+Adding (at t2 l2-0)
+
+Checking next happening (time 3)
+Deleting (in p3 t2)
+Adding (at p3 l2-0)
+
+Checking next happening (time 4)
+Deleting (at p3 l2-0)
+Adding (in p3 a0)
+
+Checking next happening (time 5)
+Deleting (at a0 l2-0)
+Adding (at a0 l3-0)
+
+Checking next happening (time 6)
+Deleting (at p2 l3-0)
+Adding (in p2 a0)
+
+Checking next happening (time 7)
+Deleting (at p1 l3-0)
+Adding (in p1 a0)
+
+Checking next happening (time 8)
+Deleting (at a0 l3-0)
+Adding (at a0 l1-0)
+
+Checking next happening (time 9)
+Deleting (in p3 a0)
+Adding (at p3 l1-0)
+
+Checking next happening (time 10)
+Deleting (in p2 a0)
+Adding (at p2 l1-0)
+
+Checking next happening (time 11)
+Deleting (in p1 a0)
+Adding (at p1 l1-0)
+
+Checking next happening (time 12)
+Deleting (at p1 l1-0)
+Adding (in p1 t1)
+
+Checking next happening (time 13)
+Deleting (at t1 l1-0)
+Adding (at t1 l1-1)
+
+Checking next happening (time 14)
+Deleting (in p1 t1)
+Adding (at p1 l1-1)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 14 
+
+Successful plans:
+Value: 14
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/logistics-typed/instances30/instance-11.plan.pddl 14 
+

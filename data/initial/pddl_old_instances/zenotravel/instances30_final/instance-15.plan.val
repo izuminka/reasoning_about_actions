@@ -1,0 +1,57 @@
+Type-checking board
+...action passes type checking.
+Type-checking debark
+...action passes type checking.
+Type-checking fly
+...action passes type checking.
+Type-checking zoom
+...action passes type checking.
+Type-checking refuel
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/zenotravel/instances30/instance-8.plan.pddl
+Plan to validate:
+
+Plan size: 4
+1:
+(fly plane1 city3 city2 fl5 fl4)
+ 
+2:
+(board person2 plane1 city2)
+ 
+3:
+(fly plane1 city2 city1 fl4 fl3)
+ 
+4:
+(debark person2 plane1 city1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at plane1 city3)
+Deleting (fuel-level plane1 fl5)
+Adding (at plane1 city2)
+Adding (fuel-level plane1 fl4)
+
+Checking next happening (time 2)
+Deleting (at person2 city2)
+Adding (in person2 plane1)
+
+Checking next happening (time 3)
+Deleting (at plane1 city2)
+Deleting (fuel-level plane1 fl4)
+Adding (at plane1 city1)
+Adding (fuel-level plane1 fl3)
+
+Checking next happening (time 4)
+Deleting (in person2 plane1)
+Adding (at person2 city1)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 4 
+
+Successful plans:
+Value: 4
+ /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/zenotravel/instances30/instance-8.plan.pddl 4 
+

@@ -1,0 +1,5 @@
+(load c0 v1 l4 s2 s1)
+(move v1 l4 l3 f2 f1)
+(move v1 l3 l2 f5 f4)
+(unload c0 v1 l2 s1 s2)
+; cost = 4 (unit cost)

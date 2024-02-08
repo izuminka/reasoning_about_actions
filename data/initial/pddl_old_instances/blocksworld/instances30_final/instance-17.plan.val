@@ -1,0 +1,159 @@
+Type-checking pick-up
+...action passes type checking.
+Type-checking put-down
+...action passes type checking.
+Type-checking stack
+...action passes type checking.
+Type-checking unstack
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/blocksworld-typed/instances30/instance-27.plan.pddl
+Plan to validate:
+
+Plan size: 14
+1:
+(unstack b4 b6)
+ 
+2:
+(put-down b4)
+ 
+3:
+(unstack b6 b3)
+ 
+4:
+(put-down b6)
+ 
+5:
+(pick-up b3)
+ 
+6:
+(stack b3 b2)
+ 
+7:
+(unstack b5 b9)
+ 
+8:
+(stack b5 b4)
+ 
+9:
+(unstack b9 b8)
+ 
+10:
+(stack b9 b7)
+ 
+11:
+(pick-up b8)
+ 
+12:
+(stack b8 b6)
+ 
+13:
+(unstack b5 b4)
+ 
+14:
+(stack b5 b8)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (clear b4)
+Deleting (handempty)
+Deleting (on b4 b6)
+Adding (holding b4)
+Adding (clear b6)
+
+Checking next happening (time 2)
+Deleting (holding b4)
+Adding (clear b4)
+Adding (handempty)
+Adding (ontable b4)
+
+Checking next happening (time 3)
+Deleting (clear b6)
+Deleting (handempty)
+Deleting (on b6 b3)
+Adding (holding b6)
+Adding (clear b3)
+
+Checking next happening (time 4)
+Deleting (holding b6)
+Adding (clear b6)
+Adding (handempty)
+Adding (ontable b6)
+
+Checking next happening (time 5)
+Deleting (ontable b3)
+Deleting (clear b3)
+Deleting (handempty)
+Adding (holding b3)
+
+Checking next happening (time 6)
+Deleting (holding b3)
+Deleting (clear b2)
+Adding (clear b3)
+Adding (handempty)
+Adding (on b3 b2)
+
+Checking next happening (time 7)
+Deleting (clear b5)
+Deleting (handempty)
+Deleting (on b5 b9)
+Adding (holding b5)
+Adding (clear b9)
+
+Checking next happening (time 8)
+Deleting (holding b5)
+Deleting (clear b4)
+Adding (clear b5)
+Adding (handempty)
+Adding (on b5 b4)
+
+Checking next happening (time 9)
+Deleting (clear b9)
+Deleting (handempty)
+Deleting (on b9 b8)
+Adding (holding b9)
+Adding (clear b8)
+
+Checking next happening (time 10)
+Deleting (holding b9)
+Deleting (clear b7)
+Adding (clear b9)
+Adding (handempty)
+Adding (on b9 b7)
+
+Checking next happening (time 11)
+Deleting (ontable b8)
+Deleting (clear b8)
+Deleting (handempty)
+Adding (holding b8)
+
+Checking next happening (time 12)
+Deleting (holding b8)
+Deleting (clear b6)
+Adding (clear b8)
+Adding (handempty)
+Adding (on b8 b6)
+
+Checking next happening (time 13)
+Deleting (clear b5)
+Deleting (handempty)
+Deleting (on b5 b4)
+Adding (holding b5)
+Adding (clear b4)
+
+Checking next happening (time 14)
+Deleting (holding b5)
+Deleting (clear b8)
+Adding (clear b5)
+Adding (handempty)
+Adding (on b5 b8)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 14 
+
+Successful plans:
+Value: 14
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/blocksworld-typed/instances30/instance-27.plan.pddl 14 
+

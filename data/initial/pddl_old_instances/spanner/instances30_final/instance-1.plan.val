@@ -1,0 +1,128 @@
+Type-checking walk
+...action passes type checking.
+Type-checking pickup_spanner
+...action passes type checking.
+Type-checking tighten_nut
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/spanner/instances30/instance-19.plan.pddl
+Plan to validate:
+
+Plan size: 15
+1:
+(walk shed location1 bob)
+ 
+2:
+(walk location1 location2 bob)
+ 
+3:
+(walk location2 location3 bob)
+ 
+4:
+(walk location3 location4 bob)
+ 
+5:
+(walk location4 location5 bob)
+ 
+6:
+(walk location5 location6 bob)
+ 
+7:
+(walk location6 location7 bob)
+ 
+8:
+(pickup_spanner location7 spanner3 bob)
+ 
+9:
+(walk location7 location8 bob)
+ 
+10:
+(walk location8 location9 bob)
+ 
+11:
+(pickup_spanner location9 spanner1 bob)
+ 
+12:
+(walk location9 location10 bob)
+ 
+13:
+(walk location10 gate bob)
+ 
+14:
+(tighten_nut gate spanner3 bob nut1)
+ 
+15:
+(tighten_nut gate spanner1 bob nut2)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at bob shed)
+Adding (at bob location1)
+
+Checking next happening (time 2)
+Deleting (at bob location1)
+Adding (at bob location2)
+
+Checking next happening (time 3)
+Deleting (at bob location2)
+Adding (at bob location3)
+
+Checking next happening (time 4)
+Deleting (at bob location3)
+Adding (at bob location4)
+
+Checking next happening (time 5)
+Deleting (at bob location4)
+Adding (at bob location5)
+
+Checking next happening (time 6)
+Deleting (at bob location5)
+Adding (at bob location6)
+
+Checking next happening (time 7)
+Deleting (at bob location6)
+Adding (at bob location7)
+
+Checking next happening (time 8)
+Deleting (at spanner3 location7)
+Adding (carrying bob spanner3)
+
+Checking next happening (time 9)
+Deleting (at bob location7)
+Adding (at bob location8)
+
+Checking next happening (time 10)
+Deleting (at bob location8)
+Adding (at bob location9)
+
+Checking next happening (time 11)
+Deleting (at spanner1 location9)
+Adding (carrying bob spanner1)
+
+Checking next happening (time 12)
+Deleting (at bob location9)
+Adding (at bob location10)
+
+Checking next happening (time 13)
+Deleting (at bob location10)
+Adding (at bob gate)
+
+Checking next happening (time 14)
+Deleting (loose nut1)
+Deleting (useable spanner3)
+Adding (tightened nut1)
+
+Checking next happening (time 15)
+Deleting (loose nut2)
+Deleting (useable spanner1)
+Adding (tightened nut2)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 15 
+
+Successful plans:
+Value: 15
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/spanner/instances30/instance-19.plan.pddl 15 
+

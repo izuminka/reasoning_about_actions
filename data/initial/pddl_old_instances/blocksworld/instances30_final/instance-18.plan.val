@@ -1,0 +1,238 @@
+Type-checking pick-up
+...action passes type checking.
+Type-checking put-down
+...action passes type checking.
+Type-checking stack
+...action passes type checking.
+Type-checking unstack
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/blocksworld-typed/instances30/instance-5.plan.pddl
+Plan to validate:
+
+Plan size: 22
+1:
+(unstack b7 b5)
+ 
+2:
+(stack b7 b2)
+ 
+3:
+(unstack b5 b6)
+ 
+4:
+(put-down b5)
+ 
+5:
+(unstack b6 b1)
+ 
+6:
+(stack b6 b5)
+ 
+7:
+(unstack b1 b9)
+ 
+8:
+(put-down b1)
+ 
+9:
+(pick-up b3)
+ 
+10:
+(stack b3 b1)
+ 
+11:
+(pick-up b8)
+ 
+12:
+(stack b8 b3)
+ 
+13:
+(unstack b9 b4)
+ 
+14:
+(stack b9 b7)
+ 
+15:
+(unstack b6 b5)
+ 
+16:
+(stack b6 b4)
+ 
+17:
+(unstack b9 b7)
+ 
+18:
+(stack b9 b6)
+ 
+19:
+(unstack b7 b2)
+ 
+20:
+(stack b7 b9)
+ 
+21:
+(pick-up b2)
+ 
+22:
+(stack b2 b5)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (clear b7)
+Deleting (handempty)
+Deleting (on b7 b5)
+Adding (holding b7)
+Adding (clear b5)
+
+Checking next happening (time 2)
+Deleting (holding b7)
+Deleting (clear b2)
+Adding (clear b7)
+Adding (handempty)
+Adding (on b7 b2)
+
+Checking next happening (time 3)
+Deleting (clear b5)
+Deleting (handempty)
+Deleting (on b5 b6)
+Adding (holding b5)
+Adding (clear b6)
+
+Checking next happening (time 4)
+Deleting (holding b5)
+Adding (clear b5)
+Adding (handempty)
+Adding (ontable b5)
+
+Checking next happening (time 5)
+Deleting (clear b6)
+Deleting (handempty)
+Deleting (on b6 b1)
+Adding (holding b6)
+Adding (clear b1)
+
+Checking next happening (time 6)
+Deleting (holding b6)
+Deleting (clear b5)
+Adding (clear b6)
+Adding (handempty)
+Adding (on b6 b5)
+
+Checking next happening (time 7)
+Deleting (clear b1)
+Deleting (handempty)
+Deleting (on b1 b9)
+Adding (holding b1)
+Adding (clear b9)
+
+Checking next happening (time 8)
+Deleting (holding b1)
+Adding (clear b1)
+Adding (handempty)
+Adding (ontable b1)
+
+Checking next happening (time 9)
+Deleting (ontable b3)
+Deleting (clear b3)
+Deleting (handempty)
+Adding (holding b3)
+
+Checking next happening (time 10)
+Deleting (holding b3)
+Deleting (clear b1)
+Adding (clear b3)
+Adding (handempty)
+Adding (on b3 b1)
+
+Checking next happening (time 11)
+Deleting (ontable b8)
+Deleting (clear b8)
+Deleting (handempty)
+Adding (holding b8)
+
+Checking next happening (time 12)
+Deleting (holding b8)
+Deleting (clear b3)
+Adding (clear b8)
+Adding (handempty)
+Adding (on b8 b3)
+
+Checking next happening (time 13)
+Deleting (clear b9)
+Deleting (handempty)
+Deleting (on b9 b4)
+Adding (holding b9)
+Adding (clear b4)
+
+Checking next happening (time 14)
+Deleting (holding b9)
+Deleting (clear b7)
+Adding (clear b9)
+Adding (handempty)
+Adding (on b9 b7)
+
+Checking next happening (time 15)
+Deleting (clear b6)
+Deleting (handempty)
+Deleting (on b6 b5)
+Adding (holding b6)
+Adding (clear b5)
+
+Checking next happening (time 16)
+Deleting (holding b6)
+Deleting (clear b4)
+Adding (clear b6)
+Adding (handempty)
+Adding (on b6 b4)
+
+Checking next happening (time 17)
+Deleting (clear b9)
+Deleting (handempty)
+Deleting (on b9 b7)
+Adding (holding b9)
+Adding (clear b7)
+
+Checking next happening (time 18)
+Deleting (holding b9)
+Deleting (clear b6)
+Adding (clear b9)
+Adding (handempty)
+Adding (on b9 b6)
+
+Checking next happening (time 19)
+Deleting (clear b7)
+Deleting (handempty)
+Deleting (on b7 b2)
+Adding (holding b7)
+Adding (clear b2)
+
+Checking next happening (time 20)
+Deleting (holding b7)
+Deleting (clear b9)
+Adding (clear b7)
+Adding (handempty)
+Adding (on b7 b9)
+
+Checking next happening (time 21)
+Deleting (ontable b2)
+Deleting (clear b2)
+Deleting (handempty)
+Adding (holding b2)
+
+Checking next happening (time 22)
+Deleting (holding b2)
+Deleting (clear b5)
+Adding (clear b2)
+Adding (handempty)
+Adding (on b2 b5)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 22 
+
+Successful plans:
+Value: 22
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/blocksworld-typed/instances30/instance-5.plan.pddl 22 
+

@@ -1,0 +1,7 @@
+(drive truck6 distributor8 distributor0)
+(lift hoist2 crate0 pallet2 distributor0)
+(load hoist2 crate0 truck6 distributor0)
+(drive truck6 distributor0 distributor7)
+(unload hoist9 crate0 truck6 distributor7)
+(drop hoist9 crate0 pallet9 distributor7)
+; cost = 6 (unit cost)

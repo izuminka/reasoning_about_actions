@@ -1,0 +1,57 @@
+Type-checking move
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-18.plan.pddl
+Plan to validate:
+
+Plan size: 4
+1:
+(load c0 v1 l4 s2 s1)
+ 
+2:
+(move v1 l4 l3 f2 f1)
+ 
+3:
+(move v1 l3 l2 f5 f4)
+ 
+4:
+(unload c0 v1 l2 s1 s2)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at c0 l4)
+Deleting (has-space v1 s2)
+Adding (in c0 v1)
+Adding (has-space v1 s1)
+
+Checking next happening (time 2)
+Deleting (at v1 l4)
+Deleting (has-fuel l4 f2)
+Adding (at v1 l3)
+Adding (has-fuel l4 f1)
+
+Checking next happening (time 3)
+Deleting (at v1 l3)
+Deleting (has-fuel l3 f5)
+Adding (at v1 l2)
+Adding (has-fuel l3 f4)
+
+Checking next happening (time 4)
+Deleting (in c0 v1)
+Deleting (has-space v1 s1)
+Adding (at c0 l2)
+Adding (has-space v1 s2)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 4 
+
+Successful plans:
+Value: 4
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-18.plan.pddl 4 
+

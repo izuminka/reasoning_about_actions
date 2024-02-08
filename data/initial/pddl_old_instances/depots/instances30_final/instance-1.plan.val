@@ -1,0 +1,77 @@
+Type-checking drive
+...action passes type checking.
+Type-checking lift
+...action passes type checking.
+Type-checking drop
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/depots/instances30/instance-19.plan.pddl
+Plan to validate:
+
+Plan size: 6
+1:
+(drive truck4 distributor1 distributor0)
+ 
+2:
+(lift hoist9 crate0 pallet9 distributor0)
+ 
+3:
+(load hoist9 crate0 truck4 distributor0)
+ 
+4:
+(drive truck4 distributor0 distributor1)
+ 
+5:
+(unload hoist10 crate0 truck4 distributor1)
+ 
+6:
+(drop hoist10 crate0 pallet10 distributor1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at truck4 distributor1)
+Adding (at truck4 distributor0)
+
+Checking next happening (time 2)
+Deleting (at crate0 distributor0)
+Deleting (clear crate0)
+Deleting (available hoist9)
+Deleting (on crate0 pallet9)
+Adding (lifting hoist9 crate0)
+Adding (clear pallet9)
+
+Checking next happening (time 3)
+Deleting (lifting hoist9 crate0)
+Adding (in crate0 truck4)
+Adding (available hoist9)
+
+Checking next happening (time 4)
+Deleting (at truck4 distributor0)
+Adding (at truck4 distributor1)
+
+Checking next happening (time 5)
+Deleting (in crate0 truck4)
+Deleting (available hoist10)
+Adding (lifting hoist10 crate0)
+
+Checking next happening (time 6)
+Deleting (lifting hoist10 crate0)
+Deleting (clear pallet10)
+Adding (available hoist10)
+Adding (at crate0 distributor1)
+Adding (clear crate0)
+Adding (on crate0 pallet10)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 6 
+
+Successful plans:
+Value: 6
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/depots/instances30/instance-19.plan.pddl 6 
+

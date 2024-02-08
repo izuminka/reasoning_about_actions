@@ -1,0 +1,77 @@
+Type-checking board
+...action passes type checking.
+Type-checking depart
+...action passes type checking.
+Type-checking up
+...action passes type checking.
+Type-checking down
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-28.plan.pddl
+Plan to validate:
+
+Plan size: 8
+1:
+(up f0 f1)
+ 
+2:
+(board f1 p1)
+ 
+3:
+(up f1 f2)
+ 
+4:
+(depart f2 p1)
+ 
+5:
+(up f2 f3)
+ 
+6:
+(board f3 p0)
+ 
+7:
+(up f3 f5)
+ 
+8:
+(depart f5 p0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (lift-at f0)
+Adding (lift-at f1)
+
+Checking next happening (time 2)
+Adding (boarded p1)
+
+Checking next happening (time 3)
+Deleting (lift-at f1)
+Adding (lift-at f2)
+
+Checking next happening (time 4)
+Deleting (boarded p1)
+Adding (served p1)
+
+Checking next happening (time 5)
+Deleting (lift-at f2)
+Adding (lift-at f3)
+
+Checking next happening (time 6)
+Adding (boarded p0)
+
+Checking next happening (time 7)
+Deleting (lift-at f3)
+Adding (lift-at f5)
+
+Checking next happening (time 8)
+Deleting (boarded p0)
+Adding (served p0)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 8 
+
+Successful plans:
+Value: 8
+ /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-28.plan.pddl 8 
+

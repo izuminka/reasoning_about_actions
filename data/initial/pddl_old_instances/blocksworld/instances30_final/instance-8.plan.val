@@ -1,0 +1,119 @@
+Type-checking pick-up
+...action passes type checking.
+Type-checking put-down
+...action passes type checking.
+Type-checking stack
+...action passes type checking.
+Type-checking unstack
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/blocksworld-typed/instances30/instance-13.plan.pddl
+Plan to validate:
+
+Plan size: 10
+1:
+(unstack b3 b4)
+ 
+2:
+(stack b3 b6)
+ 
+3:
+(unstack b4 b2)
+ 
+4:
+(put-down b4)
+ 
+5:
+(unstack b2 b1)
+ 
+6:
+(put-down b2)
+ 
+7:
+(pick-up b1)
+ 
+8:
+(stack b1 b3)
+ 
+9:
+(pick-up b4)
+ 
+10:
+(stack b4 b1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (clear b3)
+Deleting (handempty)
+Deleting (on b3 b4)
+Adding (holding b3)
+Adding (clear b4)
+
+Checking next happening (time 2)
+Deleting (holding b3)
+Deleting (clear b6)
+Adding (clear b3)
+Adding (handempty)
+Adding (on b3 b6)
+
+Checking next happening (time 3)
+Deleting (clear b4)
+Deleting (handempty)
+Deleting (on b4 b2)
+Adding (holding b4)
+Adding (clear b2)
+
+Checking next happening (time 4)
+Deleting (holding b4)
+Adding (clear b4)
+Adding (handempty)
+Adding (ontable b4)
+
+Checking next happening (time 5)
+Deleting (clear b2)
+Deleting (handempty)
+Deleting (on b2 b1)
+Adding (holding b2)
+Adding (clear b1)
+
+Checking next happening (time 6)
+Deleting (holding b2)
+Adding (clear b2)
+Adding (handempty)
+Adding (ontable b2)
+
+Checking next happening (time 7)
+Deleting (ontable b1)
+Deleting (clear b1)
+Deleting (handempty)
+Adding (holding b1)
+
+Checking next happening (time 8)
+Deleting (holding b1)
+Deleting (clear b3)
+Adding (clear b1)
+Adding (handempty)
+Adding (on b1 b3)
+
+Checking next happening (time 9)
+Deleting (ontable b4)
+Deleting (clear b4)
+Deleting (handempty)
+Adding (holding b4)
+
+Checking next happening (time 10)
+Deleting (holding b4)
+Deleting (clear b1)
+Adding (clear b4)
+Adding (handempty)
+Adding (on b4 b1)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 10 
+
+Successful plans:
+Value: 10
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/blocksworld-typed/instances30/instance-13.plan.pddl 10 
+

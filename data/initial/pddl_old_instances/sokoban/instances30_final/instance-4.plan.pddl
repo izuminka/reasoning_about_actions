@@ -1,0 +1,8 @@
+(move f4-0f f3-0f up)
+(push f3-0f f3-1f f3-2f right box0)
+(push f3-1f f3-2f f3-3f right box0)
+(push f3-2f f3-3f f3-4f right box0)
+(move f3-3f f2-3f up)
+(move f2-3f f2-4f right)
+(push f2-4f f3-4f f4-4f down box0)
+; cost = 7 (unit cost)

@@ -1,0 +1,159 @@
+Type-checking load-truck
+...action passes type checking.
+Type-checking unload-truck
+...action passes type checking.
+Type-checking board-truck
+...action passes type checking.
+Type-checking disembark-truck
+...action passes type checking.
+Type-checking drive-truck
+...action passes type checking.
+Type-checking walk
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/driverlog/instances30/instance-9.plan.pddl
+Plan to validate:
+
+Plan size: 18
+1:
+(load-truck package4 truck1 s1)
+ 
+2:
+(walk driver1 s0 p0-1)
+ 
+3:
+(walk driver1 p0-1 s1)
+ 
+4:
+(board-truck driver1 truck1 s1)
+ 
+5:
+(drive-truck truck1 s1 s0 driver1)
+ 
+6:
+(unload-truck package4 truck1 s0)
+ 
+7:
+(drive-truck truck1 s0 s3 driver1)
+ 
+8:
+(disembark-truck driver1 truck1 s3)
+ 
+9:
+(board-truck driver1 truck6 s3)
+ 
+10:
+(drive-truck truck6 s3 s0 driver1)
+ 
+11:
+(disembark-truck driver1 truck6 s0)
+ 
+12:
+(walk driver1 s0 p0-1)
+ 
+13:
+(walk driver1 p0-1 s1)
+ 
+14:
+(walk driver1 s1 p1-2)
+ 
+15:
+(walk driver1 p1-2 s2)
+ 
+16:
+(board-truck driver1 truck2 s2)
+ 
+17:
+(drive-truck truck2 s2 s0 driver1)
+ 
+18:
+(disembark-truck driver1 truck2 s0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at package4 s1)
+Adding (in package4 truck1)
+
+Checking next happening (time 2)
+Deleting (at driver1 s0)
+Adding (at driver1 p0-1)
+
+Checking next happening (time 3)
+Deleting (at driver1 p0-1)
+Adding (at driver1 s1)
+
+Checking next happening (time 4)
+Deleting (at driver1 s1)
+Deleting (empty truck1)
+Adding (driving driver1 truck1)
+
+Checking next happening (time 5)
+Deleting (at truck1 s1)
+Adding (at truck1 s0)
+
+Checking next happening (time 6)
+Deleting (in package4 truck1)
+Adding (at package4 s0)
+
+Checking next happening (time 7)
+Deleting (at truck1 s0)
+Adding (at truck1 s3)
+
+Checking next happening (time 8)
+Deleting (driving driver1 truck1)
+Adding (at driver1 s3)
+Adding (empty truck1)
+
+Checking next happening (time 9)
+Deleting (at driver1 s3)
+Deleting (empty truck6)
+Adding (driving driver1 truck6)
+
+Checking next happening (time 10)
+Deleting (at truck6 s3)
+Adding (at truck6 s0)
+
+Checking next happening (time 11)
+Deleting (driving driver1 truck6)
+Adding (at driver1 s0)
+Adding (empty truck6)
+
+Checking next happening (time 12)
+Deleting (at driver1 s0)
+Adding (at driver1 p0-1)
+
+Checking next happening (time 13)
+Deleting (at driver1 p0-1)
+Adding (at driver1 s1)
+
+Checking next happening (time 14)
+Deleting (at driver1 s1)
+Adding (at driver1 p1-2)
+
+Checking next happening (time 15)
+Deleting (at driver1 p1-2)
+Adding (at driver1 s2)
+
+Checking next happening (time 16)
+Deleting (at driver1 s2)
+Deleting (empty truck2)
+Adding (driving driver1 truck2)
+
+Checking next happening (time 17)
+Deleting (at truck2 s2)
+Adding (at truck2 s0)
+
+Checking next happening (time 18)
+Deleting (driving driver1 truck2)
+Adding (at driver1 s0)
+Adding (empty truck2)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 18 
+
+Successful plans:
+Value: 18
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/driverlog/instances30/instance-9.plan.pddl 18 
+

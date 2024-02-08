@@ -1,0 +1,26 @@
+Type-checking move
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/npuzzle/instances30/instance-19.plan.pddl
+Plan to validate:
+
+Plan size: 1
+1:
+(move t_3 p_2_2 p_2_1)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at t_3 p_2_2)
+Deleting (empty p_2_1)
+Adding (at t_3 p_2_1)
+Adding (empty p_2_2)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 1 
+
+Successful plans:
+Value: 1
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/npuzzle/instances30/instance-19.plan.pddl 1 
+

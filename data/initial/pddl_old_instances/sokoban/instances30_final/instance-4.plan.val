@@ -1,0 +1,84 @@
+Type-checking move
+...action passes type checking.
+Type-checking push
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/sokoban/instances30/instance-15.plan.pddl
+Plan to validate:
+
+Plan size: 7
+1:
+(move f4-0f f3-0f up)
+ 
+2:
+(push f3-0f f3-1f f3-2f right box0)
+ 
+3:
+(push f3-1f f3-2f f3-3f right box0)
+ 
+4:
+(push f3-2f f3-3f f3-4f right box0)
+ 
+5:
+(move f3-3f f2-3f up)
+ 
+6:
+(move f2-3f f2-4f right)
+ 
+7:
+(push f2-4f f3-4f f4-4f down box0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at-robot f4-0f)
+Adding (at-robot f3-0f)
+
+Checking next happening (time 2)
+Deleting (at-robot f3-0f)
+Deleting (at box0 f3-1f)
+Deleting (clear f3-2f)
+Adding (at-robot f3-1f)
+Adding (at box0 f3-2f)
+Adding (clear f3-1f)
+
+Checking next happening (time 3)
+Deleting (at-robot f3-1f)
+Deleting (at box0 f3-2f)
+Deleting (clear f3-3f)
+Adding (at-robot f3-2f)
+Adding (at box0 f3-3f)
+Adding (clear f3-2f)
+
+Checking next happening (time 4)
+Deleting (at-robot f3-2f)
+Deleting (at box0 f3-3f)
+Deleting (clear f3-4f)
+Adding (at-robot f3-3f)
+Adding (at box0 f3-4f)
+Adding (clear f3-3f)
+
+Checking next happening (time 5)
+Deleting (at-robot f3-3f)
+Adding (at-robot f2-3f)
+
+Checking next happening (time 6)
+Deleting (at-robot f2-3f)
+Adding (at-robot f2-4f)
+
+Checking next happening (time 7)
+Deleting (at-robot f2-4f)
+Deleting (at box0 f3-4f)
+Deleting (clear f4-4f)
+Adding (at-robot f3-4f)
+Adding (at box0 f4-4f)
+Adding (clear f3-4f)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 7 
+
+Successful plans:
+Value: 7
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/sokoban/instances30/instance-15.plan.pddl 7 
+

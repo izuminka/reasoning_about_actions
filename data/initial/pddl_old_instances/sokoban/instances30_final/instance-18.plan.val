@@ -1,0 +1,105 @@
+Type-checking move
+...action passes type checking.
+Type-checking push
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/sokoban/instances30/instance-21.plan.pddl
+Plan to validate:
+
+Plan size: 10
+1:
+(move f1-0f f1-1f right)
+ 
+2:
+(move f1-1f f1-2f right)
+ 
+3:
+(move f1-2f f2-2f down)
+ 
+4:
+(move f2-2f f3-2f down)
+ 
+5:
+(push f3-2f f3-3f f3-4f right box0)
+ 
+6:
+(push f3-3f f3-4f f3-5f right box0)
+ 
+7:
+(move f3-4f f2-4f up)
+ 
+8:
+(move f2-4f f2-5f right)
+ 
+9:
+(push f2-5f f3-5f f4-5f down box0)
+ 
+10:
+(push f3-5f f4-5f f5-5f down box0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at-robot f1-0f)
+Adding (at-robot f1-1f)
+
+Checking next happening (time 2)
+Deleting (at-robot f1-1f)
+Adding (at-robot f1-2f)
+
+Checking next happening (time 3)
+Deleting (at-robot f1-2f)
+Adding (at-robot f2-2f)
+
+Checking next happening (time 4)
+Deleting (at-robot f2-2f)
+Adding (at-robot f3-2f)
+
+Checking next happening (time 5)
+Deleting (at-robot f3-2f)
+Deleting (at box0 f3-3f)
+Deleting (clear f3-4f)
+Adding (at-robot f3-3f)
+Adding (at box0 f3-4f)
+Adding (clear f3-3f)
+
+Checking next happening (time 6)
+Deleting (at-robot f3-3f)
+Deleting (at box0 f3-4f)
+Deleting (clear f3-5f)
+Adding (at-robot f3-4f)
+Adding (at box0 f3-5f)
+Adding (clear f3-4f)
+
+Checking next happening (time 7)
+Deleting (at-robot f3-4f)
+Adding (at-robot f2-4f)
+
+Checking next happening (time 8)
+Deleting (at-robot f2-4f)
+Adding (at-robot f2-5f)
+
+Checking next happening (time 9)
+Deleting (at-robot f2-5f)
+Deleting (at box0 f3-5f)
+Deleting (clear f4-5f)
+Adding (at-robot f3-5f)
+Adding (at box0 f4-5f)
+Adding (clear f3-5f)
+
+Checking next happening (time 10)
+Deleting (at-robot f3-5f)
+Deleting (at box0 f4-5f)
+Deleting (clear f5-5f)
+Adding (at-robot f4-5f)
+Adding (at box0 f5-5f)
+Adding (clear f4-5f)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 10 
+
+Successful plans:
+Value: 10
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/sokoban/instances30/instance-21.plan.pddl 10 
+

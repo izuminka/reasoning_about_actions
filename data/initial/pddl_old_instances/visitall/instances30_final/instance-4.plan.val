@@ -1,0 +1,25 @@
+Type-checking move
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/visitall/instances30/instance-23.plan.pddl
+Plan to validate:
+
+Plan size: 1
+1:
+(move loc-x4-y0 loc-x3-y0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at-robot loc-x4-y0)
+Adding (at-robot loc-x3-y0)
+Adding (visited loc-x3-y0)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 1 
+
+Successful plans:
+Value: 1
+ /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/visitall/instances30/instance-23.plan.pddl 1 
+

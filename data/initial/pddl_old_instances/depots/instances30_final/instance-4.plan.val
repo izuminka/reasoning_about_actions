@@ -1,0 +1,99 @@
+Type-checking drive
+...action passes type checking.
+Type-checking lift
+...action passes type checking.
+Type-checking drop
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/depots/instances30/instance-15.plan.pddl
+Plan to validate:
+
+Plan size: 8
+1:
+(drive truck0 depot0 distributor0)
+ 
+2:
+(lift hoist0 crate1 pallet3 depot0)
+ 
+3:
+(drop hoist0 crate1 pallet0 depot0)
+ 
+4:
+(lift hoist1 crate0 pallet1 distributor0)
+ 
+5:
+(load hoist1 crate0 truck0 distributor0)
+ 
+6:
+(drive truck0 distributor0 depot0)
+ 
+7:
+(unload hoist0 crate0 truck0 depot0)
+ 
+8:
+(drop hoist0 crate0 pallet3 depot0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at truck0 depot0)
+Adding (at truck0 distributor0)
+
+Checking next happening (time 2)
+Deleting (at crate1 depot0)
+Deleting (clear crate1)
+Deleting (available hoist0)
+Deleting (on crate1 pallet3)
+Adding (lifting hoist0 crate1)
+Adding (clear pallet3)
+
+Checking next happening (time 3)
+Deleting (lifting hoist0 crate1)
+Deleting (clear pallet0)
+Adding (available hoist0)
+Adding (at crate1 depot0)
+Adding (clear crate1)
+Adding (on crate1 pallet0)
+
+Checking next happening (time 4)
+Deleting (at crate0 distributor0)
+Deleting (clear crate0)
+Deleting (available hoist1)
+Deleting (on crate0 pallet1)
+Adding (lifting hoist1 crate0)
+Adding (clear pallet1)
+
+Checking next happening (time 5)
+Deleting (lifting hoist1 crate0)
+Adding (in crate0 truck0)
+Adding (available hoist1)
+
+Checking next happening (time 6)
+Deleting (at truck0 distributor0)
+Adding (at truck0 depot0)
+
+Checking next happening (time 7)
+Deleting (in crate0 truck0)
+Deleting (available hoist0)
+Adding (lifting hoist0 crate0)
+
+Checking next happening (time 8)
+Deleting (lifting hoist0 crate0)
+Deleting (clear pallet3)
+Adding (available hoist0)
+Adding (at crate0 depot0)
+Adding (clear crate0)
+Adding (on crate0 pallet3)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 8 
+
+Successful plans:
+Value: 8
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/depots/instances30/instance-15.plan.pddl 8 
+

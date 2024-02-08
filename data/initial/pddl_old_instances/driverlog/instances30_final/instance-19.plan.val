@@ -1,0 +1,107 @@
+Type-checking load-truck
+...action passes type checking.
+Type-checking unload-truck
+...action passes type checking.
+Type-checking board-truck
+...action passes type checking.
+Type-checking disembark-truck
+...action passes type checking.
+Type-checking drive-truck
+...action passes type checking.
+Type-checking walk
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/driverlog/instances30/instance-2.plan.pddl
+Plan to validate:
+
+Plan size: 11
+1:
+(board-truck driver2 truck3 s0)
+ 
+2:
+(load-truck package3 truck3 s0)
+ 
+3:
+(load-truck package2 truck3 s0)
+ 
+4:
+(drive-truck truck3 s0 s1 driver2)
+ 
+5:
+(unload-truck package3 truck3 s1)
+ 
+6:
+(unload-truck package2 truck3 s1)
+ 
+7:
+(board-truck driver1 truck4 s1)
+ 
+8:
+(drive-truck truck4 s1 s0 driver1)
+ 
+9:
+(disembark-truck driver1 truck4 s0)
+ 
+10:
+(walk driver4 s1 p0-1)
+ 
+11:
+(walk driver4 p0-1 s0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at driver2 s0)
+Deleting (empty truck3)
+Adding (driving driver2 truck3)
+
+Checking next happening (time 2)
+Deleting (at package3 s0)
+Adding (in package3 truck3)
+
+Checking next happening (time 3)
+Deleting (at package2 s0)
+Adding (in package2 truck3)
+
+Checking next happening (time 4)
+Deleting (at truck3 s0)
+Adding (at truck3 s1)
+
+Checking next happening (time 5)
+Deleting (in package3 truck3)
+Adding (at package3 s1)
+
+Checking next happening (time 6)
+Deleting (in package2 truck3)
+Adding (at package2 s1)
+
+Checking next happening (time 7)
+Deleting (at driver1 s1)
+Deleting (empty truck4)
+Adding (driving driver1 truck4)
+
+Checking next happening (time 8)
+Deleting (at truck4 s1)
+Adding (at truck4 s0)
+
+Checking next happening (time 9)
+Deleting (driving driver1 truck4)
+Adding (at driver1 s0)
+Adding (empty truck4)
+
+Checking next happening (time 10)
+Deleting (at driver4 s1)
+Adding (at driver4 p0-1)
+
+Checking next happening (time 11)
+Deleting (at driver4 p0-1)
+Adding (at driver4 s0)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 11 
+
+Successful plans:
+Value: 11
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/driverlog/instances30/instance-2.plan.pddl 11 
+

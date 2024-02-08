@@ -1,0 +1,44 @@
+Type-checking move
+...action passes type checking.
+Type-checking pick
+...action passes type checking.
+Type-checking drop
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/grippers/instances30/instance-6.plan.pddl
+Plan to validate:
+
+Plan size: 3
+1:
+(pick robot4 ball4 room4 lgripper4)
+ 
+2:
+(move robot4 room4 room5)
+ 
+3:
+(drop robot4 ball4 room5 lgripper4)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at ball4 room4)
+Deleting (free robot4 lgripper4)
+Adding (carry robot4 ball4 lgripper4)
+
+Checking next happening (time 2)
+Deleting (at-robby robot4 room4)
+Adding (at-robby robot4 room5)
+
+Checking next happening (time 3)
+Deleting (carry robot4 ball4 lgripper4)
+Adding (at ball4 room5)
+Adding (free robot4 lgripper4)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 3 
+
+Successful plans:
+Value: 3
+ /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/grippers/instances30/instance-6.plan.pddl 3 
+

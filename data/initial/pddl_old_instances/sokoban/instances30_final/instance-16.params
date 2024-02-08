@@ -1,0 +1,1 @@
+./random/sokoban-generator-typed -n 5 -b 1 -w 9 -s 6809

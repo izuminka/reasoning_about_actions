@@ -1,0 +1,7 @@
+(load c1 v0 l3 s3 s2)
+(move v0 l3 l4 f1 f0)
+(unload c1 v0 l4 s2 s3)
+(load c0 v1 l2 s3 s2)
+(move v1 l2 l3 f8 f7)
+(unload c0 v1 l3 s2 s3)
+; cost = 6 (unit cost)

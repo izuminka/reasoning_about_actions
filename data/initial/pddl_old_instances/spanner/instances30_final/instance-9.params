@@ -1,0 +1,1 @@
+python spanner-generator.py 10 8 9 --seed 4024

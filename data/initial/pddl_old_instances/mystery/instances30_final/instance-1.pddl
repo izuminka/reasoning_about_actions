@@ -1,0 +1,66 @@
+
+
+
+(define (problem strips-mystery-l5-f4-s6-v8-c3)
+(:domain mystery-strips)
+(:objects f0 f1 f2 f3 f4 - fuel
+          s0 s1 s2 s3 s4 s5 s6 - space
+          l0 l1 l2 l3 l4 - location
+          v0 v1 v2 v3 v4 v5 v6 v7 - vehicle
+          c0 c1 c2 - cargo)
+(:init
+(fuel-neighbor f0 f1)
+(fuel-neighbor f1 f2)
+(fuel-neighbor f2 f3)
+(fuel-neighbor f3 f4)
+(space-neighbor s0 s1)
+(space-neighbor s1 s2)
+(space-neighbor s2 s3)
+(space-neighbor s3 s4)
+(space-neighbor s4 s5)
+(space-neighbor s5 s6)
+(conn l0 l1)
+(conn l1 l0)
+(conn l1 l2)
+(conn l2 l1)
+(conn l2 l3)
+(conn l3 l2)
+(conn l3 l4)
+(conn l4 l3)
+(conn l4 l0)
+(conn l0 l4)
+(has-fuel l0 f3)
+(has-fuel l1 f3)
+(has-fuel l2 f4)
+(has-fuel l3 f2)
+(has-fuel l4 f2)
+(has-space  v0 s2)
+(has-space  v1 s2)
+(has-space  v2 s2)
+(has-space  v3 s6)
+(has-space  v4 s3)
+(has-space  v5 s5)
+(has-space  v6 s2)
+(has-space  v7 s2)
+(at v0 l2)
+(at v1 l0)
+(at v2 l4)
+(at v3 l4)
+(at v4 l4)
+(at v5 l3)
+(at v6 l2)
+(at v7 l3)
+(at c0 l3)
+(at c1 l2)
+(at c2 l1)
+)
+(:goal
+(and
+(at c0 l4)
+(at c1 l4)
+(at c2 l1)
+)
+)
+)
+
+

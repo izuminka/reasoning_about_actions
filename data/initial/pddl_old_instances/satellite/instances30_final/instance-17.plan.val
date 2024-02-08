@@ -1,0 +1,106 @@
+Type-checking turn_to
+...action passes type checking.
+Type-checking switch_on
+...action passes type checking.
+Type-checking switch_off
+...action passes type checking.
+Type-checking calibrate
+...action passes type checking.
+Type-checking take_image
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-24.plan.pddl
+Plan to validate:
+
+Plan size: 12
+1:
+(switch_on instrument12 satellite5)
+ 
+2:
+(calibrate satellite5 instrument12 groundstation0)
+ 
+3:
+(switch_on instrument3 satellite1)
+ 
+4:
+(calibrate satellite1 instrument3 groundstation0)
+ 
+5:
+(turn_to satellite5 planet2 groundstation0)
+ 
+6:
+(take_image satellite5 planet2 instrument12 image0)
+ 
+7:
+(turn_to satellite2 star1 groundstation0)
+ 
+8:
+(turn_to satellite1 phenomenon3 groundstation0)
+ 
+9:
+(take_image satellite1 phenomenon3 instrument3 spectrograph2)
+ 
+10:
+(turn_to satellite1 star1 phenomenon3)
+ 
+11:
+(take_image satellite1 star1 instrument3 thermograph6)
+ 
+12:
+(turn_to satellite0 star1 groundstation0)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (calibrated instrument12)
+Deleting (power_avail satellite5)
+Adding (power_on instrument12)
+
+Checking next happening (time 2)
+Adding (calibrated instrument12)
+
+Checking next happening (time 3)
+Deleting (calibrated instrument3)
+Deleting (power_avail satellite1)
+Adding (power_on instrument3)
+
+Checking next happening (time 4)
+Adding (calibrated instrument3)
+
+Checking next happening (time 5)
+Deleting (pointing satellite5 groundstation0)
+Adding (pointing satellite5 planet2)
+
+Checking next happening (time 6)
+Adding (have_image planet2 image0)
+
+Checking next happening (time 7)
+Deleting (pointing satellite2 groundstation0)
+Adding (pointing satellite2 star1)
+
+Checking next happening (time 8)
+Deleting (pointing satellite1 groundstation0)
+Adding (pointing satellite1 phenomenon3)
+
+Checking next happening (time 9)
+Adding (have_image phenomenon3 spectrograph2)
+
+Checking next happening (time 10)
+Deleting (pointing satellite1 phenomenon3)
+Adding (pointing satellite1 star1)
+
+Checking next happening (time 11)
+Adding (have_image star1 thermograph6)
+
+Checking next happening (time 12)
+Deleting (pointing satellite0 groundstation0)
+Adding (pointing satellite0 star1)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 12 
+
+Successful plans:
+Value: 12
+ /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-24.plan.pddl 12 
+

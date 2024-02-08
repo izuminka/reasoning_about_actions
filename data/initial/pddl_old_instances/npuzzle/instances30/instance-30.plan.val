@@ -1,0 +1,197 @@
+Type-checking move
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/npuzzle/instances30/instance-30.plan.pddl
+Plan to validate:
+
+Plan size: 20
+1:
+(move t_3 p_2_3 p_1_3)
+ 
+2:
+(move t_5 p_2_2 p_2_3)
+ 
+3:
+(move t_1 p_3_2 p_2_2)
+ 
+4:
+(move t_2 p_3_1 p_3_2)
+ 
+5:
+(move t_4 p_2_1 p_3_1)
+ 
+6:
+(move t_8 p_1_1 p_2_1)
+ 
+7:
+(move t_7 p_1_2 p_1_1)
+ 
+8:
+(move t_1 p_2_2 p_1_2)
+ 
+9:
+(move t_2 p_3_2 p_2_2)
+ 
+10:
+(move t_4 p_3_1 p_3_2)
+ 
+11:
+(move t_8 p_2_1 p_3_1)
+ 
+12:
+(move t_7 p_1_1 p_2_1)
+ 
+13:
+(move t_1 p_1_2 p_1_1)
+ 
+14:
+(move t_2 p_2_2 p_1_2)
+ 
+15:
+(move t_4 p_3_2 p_2_2)
+ 
+16:
+(move t_8 p_3_1 p_3_2)
+ 
+17:
+(move t_7 p_2_1 p_3_1)
+ 
+18:
+(move t_4 p_2_2 p_2_1)
+ 
+19:
+(move t_5 p_2_3 p_2_2)
+ 
+20:
+(move t_6 p_3_3 p_2_3)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at t_3 p_2_3)
+Deleting (empty p_1_3)
+Adding (at t_3 p_1_3)
+Adding (empty p_2_3)
+
+Checking next happening (time 2)
+Deleting (at t_5 p_2_2)
+Deleting (empty p_2_3)
+Adding (at t_5 p_2_3)
+Adding (empty p_2_2)
+
+Checking next happening (time 3)
+Deleting (at t_1 p_3_2)
+Deleting (empty p_2_2)
+Adding (at t_1 p_2_2)
+Adding (empty p_3_2)
+
+Checking next happening (time 4)
+Deleting (at t_2 p_3_1)
+Deleting (empty p_3_2)
+Adding (at t_2 p_3_2)
+Adding (empty p_3_1)
+
+Checking next happening (time 5)
+Deleting (at t_4 p_2_1)
+Deleting (empty p_3_1)
+Adding (at t_4 p_3_1)
+Adding (empty p_2_1)
+
+Checking next happening (time 6)
+Deleting (at t_8 p_1_1)
+Deleting (empty p_2_1)
+Adding (at t_8 p_2_1)
+Adding (empty p_1_1)
+
+Checking next happening (time 7)
+Deleting (at t_7 p_1_2)
+Deleting (empty p_1_1)
+Adding (at t_7 p_1_1)
+Adding (empty p_1_2)
+
+Checking next happening (time 8)
+Deleting (at t_1 p_2_2)
+Deleting (empty p_1_2)
+Adding (at t_1 p_1_2)
+Adding (empty p_2_2)
+
+Checking next happening (time 9)
+Deleting (at t_2 p_3_2)
+Deleting (empty p_2_2)
+Adding (at t_2 p_2_2)
+Adding (empty p_3_2)
+
+Checking next happening (time 10)
+Deleting (at t_4 p_3_1)
+Deleting (empty p_3_2)
+Adding (at t_4 p_3_2)
+Adding (empty p_3_1)
+
+Checking next happening (time 11)
+Deleting (at t_8 p_2_1)
+Deleting (empty p_3_1)
+Adding (at t_8 p_3_1)
+Adding (empty p_2_1)
+
+Checking next happening (time 12)
+Deleting (at t_7 p_1_1)
+Deleting (empty p_2_1)
+Adding (at t_7 p_2_1)
+Adding (empty p_1_1)
+
+Checking next happening (time 13)
+Deleting (at t_1 p_1_2)
+Deleting (empty p_1_1)
+Adding (at t_1 p_1_1)
+Adding (empty p_1_2)
+
+Checking next happening (time 14)
+Deleting (at t_2 p_2_2)
+Deleting (empty p_1_2)
+Adding (at t_2 p_1_2)
+Adding (empty p_2_2)
+
+Checking next happening (time 15)
+Deleting (at t_4 p_3_2)
+Deleting (empty p_2_2)
+Adding (at t_4 p_2_2)
+Adding (empty p_3_2)
+
+Checking next happening (time 16)
+Deleting (at t_8 p_3_1)
+Deleting (empty p_3_2)
+Adding (at t_8 p_3_2)
+Adding (empty p_3_1)
+
+Checking next happening (time 17)
+Deleting (at t_7 p_2_1)
+Deleting (empty p_3_1)
+Adding (at t_7 p_3_1)
+Adding (empty p_2_1)
+
+Checking next happening (time 18)
+Deleting (at t_4 p_2_2)
+Deleting (empty p_2_1)
+Adding (at t_4 p_2_1)
+Adding (empty p_2_2)
+
+Checking next happening (time 19)
+Deleting (at t_5 p_2_3)
+Deleting (empty p_2_2)
+Adding (at t_5 p_2_2)
+Adding (empty p_2_3)
+
+Checking next happening (time 20)
+Deleting (at t_6 p_3_3)
+Deleting (empty p_2_3)
+Adding (at t_6 p_2_3)
+Adding (empty p_3_3)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 20 
+
+Successful plans:
+Value: 20
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/npuzzle/instances30/instance-30.plan.pddl 20 
+

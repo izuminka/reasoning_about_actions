@@ -1,0 +1,120 @@
+Type-checking move
+...action passes type checking.
+Type-checking load
+...action passes type checking.
+Type-checking unload
+...action passes type checking.
+Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-5.plan.pddl
+Plan to validate:
+
+Plan size: 11
+1:
+(load c1 v0 l0 s3 s2)
+ 
+2:
+(move v0 l0 l1 f7 f6)
+ 
+3:
+(unload c1 v0 l1 s2 s3)
+ 
+4:
+(move v0 l1 l0 f3 f2)
+ 
+5:
+(load c2 v0 l0 s3 s2)
+ 
+6:
+(load c5 v0 l0 s2 s1)
+ 
+7:
+(load c6 v0 l0 s1 s0)
+ 
+8:
+(move v0 l0 l1 f6 f5)
+ 
+9:
+(unload c2 v0 l1 s0 s1)
+ 
+10:
+(unload c5 v0 l1 s1 s2)
+ 
+11:
+(unload c6 v0 l1 s2 s3)
+ 
+
+Plan Validation details
+-----------------------
+
+Checking next happening (time 1)
+Deleting (at c1 l0)
+Deleting (has-space v0 s3)
+Adding (in c1 v0)
+Adding (has-space v0 s2)
+
+Checking next happening (time 2)
+Deleting (at v0 l0)
+Deleting (has-fuel l0 f7)
+Adding (at v0 l1)
+Adding (has-fuel l0 f6)
+
+Checking next happening (time 3)
+Deleting (in c1 v0)
+Deleting (has-space v0 s2)
+Adding (at c1 l1)
+Adding (has-space v0 s3)
+
+Checking next happening (time 4)
+Deleting (at v0 l1)
+Deleting (has-fuel l1 f3)
+Adding (at v0 l0)
+Adding (has-fuel l1 f2)
+
+Checking next happening (time 5)
+Deleting (at c2 l0)
+Deleting (has-space v0 s3)
+Adding (in c2 v0)
+Adding (has-space v0 s2)
+
+Checking next happening (time 6)
+Deleting (at c5 l0)
+Deleting (has-space v0 s2)
+Adding (in c5 v0)
+Adding (has-space v0 s1)
+
+Checking next happening (time 7)
+Deleting (at c6 l0)
+Deleting (has-space v0 s1)
+Adding (in c6 v0)
+Adding (has-space v0 s0)
+
+Checking next happening (time 8)
+Deleting (at v0 l0)
+Deleting (has-fuel l0 f6)
+Adding (at v0 l1)
+Adding (has-fuel l0 f5)
+
+Checking next happening (time 9)
+Deleting (in c2 v0)
+Deleting (has-space v0 s0)
+Adding (at c2 l1)
+Adding (has-space v0 s1)
+
+Checking next happening (time 10)
+Deleting (in c5 v0)
+Deleting (has-space v0 s1)
+Adding (at c5 l1)
+Adding (has-space v0 s2)
+
+Checking next happening (time 11)
+Deleting (in c6 v0)
+Deleting (has-space v0 s2)
+Adding (at c6 l1)
+Adding (has-space v0 s3)
+Plan executed successfully - checking goal
+Plan valid
+Final value: 11 
+
+Successful plans:
+Value: 11
+ /Users/paveldolin/dev/research/nsf_asp/planning/data/pddl/mystery/instances30/instance-5.plan.pddl 11 
+
