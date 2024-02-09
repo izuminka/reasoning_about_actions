@@ -19,6 +19,8 @@ TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
 MAX_TIMEOUT = 100
 
+SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
+
 
 def extract_single_variable(obj):
     return re.findall(OBJ_IN_PAREN_REGEX, obj)[0]
@@ -112,19 +114,8 @@ class QuestionGenerationHelpers:
             sequence += [random.choice(self.given_plan_sequence)]
         return sequence, index
 
-    # @staticmethod
-    # def question_phrasing_choice(questions):
-    #     # return random.choice(questions)
-    #     return questions[0]  # TODO add random choice
-
-    # def is_var_inside_paren(self, main_string, target_string):
-    #     # TODO needs testing
-    #     pattern = re.compile(r'\({}*\)'.format(re.escape(target_string)))
-    #     match = pattern.search(main_string)
-    #     return bool(match)
-
     def is_substring_within_parentheses(self, input_string, substring):
-        pattern = re.compile(r'\([^)]*{}\w*[^)]*\)'.format(re.escape(substring)))
+        pattern = re.compile(SUBSTRING_WITHIN_PARENTHESIS_REGEX.format(re.escape(substring)))
         return bool(pattern.search(input_string))
 
     def is_variable_in_fluent(self, fluent):
@@ -176,7 +167,7 @@ class QuestionGenerationHelpers:
         return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_true_answer, pos_fluents, neg_fluents):
-        sample_size = int((len(pos_fluents) + len(neg_fluents))/2)
+        sample_size = int((len(pos_fluents) + len(neg_fluents)) / 2)
         if is_pos_fluent_question:
             if is_true_answer:
                 fluents = pos_fluents
@@ -399,7 +390,8 @@ class FluentTrackingQuestions(QuestionGenerator):
         is_answer_true = random.choice([True, False])
         pos_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
         neg_fluent = random.choice(self.neg_fluent_given_plan[plan_length])
-        fluent = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+        fluent = \
+            self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
@@ -469,7 +461,6 @@ class StateTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {fluent_type} fluents represent the state completely: {nl_fluents}?"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
-
     def qa_3_4_helper(self, plan_length, is_pos_fluent_question):
         if is_pos_fluent_question:
             fluent_type = 'positive'
@@ -505,25 +496,39 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_category(self):
         return 'action_executability'
 
+    def qa_1_2_helper(self, nl_sequence_of_actions):
+        return f"Given the initial condition, I plan to perform {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
+
     def question_1(self, plan_length):
-        # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, are all the actions in the sequence executable?"
-        answer = True
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        nl_sequence_of_actions = self.asp_to_nl(self.given_plan_sequence[:plan_length],
+                                                self.domain_class.action_to_natural_language)
+        question = self.qa_1_2_helper(nl_sequence_of_actions)
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, True)
 
     def question_2(self, plan_length):
-        # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.get_random_inexecutable_sequence(plan_length)}, are all the actions in the sequence executable?"
-        answer = False
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        sequence_of_actions = self.given_plan_sequence[:plan_length]
+        if not is_answer_true:
+            random_break_ind = random.randint(0, plan_length - 1)
+            random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
+            sequence_of_actions[random_break_ind] = random_inxecutable_action
+        nl_sequence_of_actions = self.asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+        question = self.qa_1_2_helper(nl_sequence_of_actions)
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, False)
 
     def question_3(self, plan_length):
-        # TODO implement
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state, specify all the actions which are executable in the current state?"
-        answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natural_language(action) for action in
-             self.executable_actions[plan_length + 1]])
-        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        sequence_of_actions = self.given_plan_sequence[:plan_length]
+        random_break_ind = random.randint(0, plan_length - 1)
+        if not is_answer_true:
+            random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
+            sequence_of_actions[random_break_ind] = random_inxecutable_action
+        selected_action = sequence_of_actions[random_break_ind]
+
+        nl_sequence_of_actions = self.asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+        nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
+        question = f"Given the initial condition, for steps 1 through {plan_length} I plan to perform: {nl_sequence_of_actions}. Is it possible to execute {nl_selected_action} at step {random_break_ind+1}, {TRUE_OR_FALSE}?"
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_4(self, plan_length):
         # TODO implement
@@ -534,6 +539,13 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_5(self, plan_length):
+        # TODO implement
+        question = f"I plan to perform the following sequence of actions: {self.get_random_inexecutable_sequence(plan_length)} to reach the current state, what is the first inexecutable action in the sequence of actions?"
+        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
+        answer = inexecutable_action
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+
+    def question_6(self, plan_length):
         # TODO implement
         question = f"I plan to perform the following sequence of actions: {self.get_random_inexecutable_sequence(plan_length)} to reach the current state, what is the first inexecutable action in the sequence of actions?"
         inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
@@ -583,40 +595,6 @@ class EffectsQuestions(QuestionGenerator):
         neg_fluents_next_state = self.neg_fluent_given_plan[plan_length]  # TODO doube check
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be false"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, neg_fluents_next_state)
-
-
-class LoopingQuestions(QuestionGenerator):
-    def __init__(self, states_actions_all, domain_class, instance_id):
-        super().__init__(states_actions_all, domain_class, instance_id)
-
-    def question_category(self):
-        return 'looping'
-
-    def question_1(self, plan_length):
-        sequence, string_repeat_number, b1, b2 = self.domain_class.get_looping_action_sequence(self, plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, to reach the current state. In the currents state if I perform :{sequence}  Will the block {b1} be on top of block{b2}?"
-        answer = True
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
-
-    def question_2(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_3(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_4(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_5(self, plan_length):
-        # TODO implement
-        return None
-
-    def question_6(self, plan_length):
-        # TODO implement
-        return None
 
 
 class NumericalReasoningQuestions(QuestionGenerator):
@@ -816,6 +794,40 @@ class HallucinationQuestions(QuestionGenerator):
         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. Given the actions for a current_state: {corrupted_action_sequence} which action is not defined in the problem?"
         answer = corrupted_action_sequence[index]
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
+
+
+class LoopingQuestions(QuestionGenerator):
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
+
+    def question_category(self):
+        return 'looping'
+
+    def question_1(self, plan_length):
+        sequence, string_repeat_number, b1, b2 = self.domain_class.get_looping_action_sequence(self, plan_length)
+        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, to reach the current state. In the currents state if I perform :{sequence}  Will the block {b1} be on top of block{b2}?"
+        answer = True
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+
+    def question_2(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_3(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_4(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_5(self, plan_length):
+        # TODO implement
+        return None
+
+    def question_6(self, plan_length):
+        # TODO implement
+        return None
 
 
 # class CompositeQuestions(DomainQuestionGen):
