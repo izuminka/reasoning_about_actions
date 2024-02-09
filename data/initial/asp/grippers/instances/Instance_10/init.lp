@@ -1,0 +1,15 @@
+init(at(ball9,room2);
+free(robot1,rgripper1);
+at(ball1,room3);
+at(ball4,room2);
+at(ball7,room2);
+at_robby(robot1,room2);
+at(ball8,room1);
+at(ball5,room2);
+at(ball2,room1);
+at(ball11,room3);
+at(ball6,room1);
+at(ball10,room3);
+free(robot1,lgripper1);
+at(ball3,room3);
+).

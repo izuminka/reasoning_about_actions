@@ -1,0 +1,23 @@
+init(supports(instrument1, spectrograph3);
+pointing(satellite0, star1);
+supports(instrument1, spectrograph2);
+on_board(instrument2, satellite1);
+calibration_target(instrument3, groundstation0);
+pointing(satellite1, star8);
+supports(instrument1, thermograph4);
+supports(instrument2, spectrograph1);
+supports(instrument3, spectrograph2);
+on_board(instrument1, satellite1);
+power_avail(satellite2);
+supports(instrument2, thermograph0);
+on_board(instrument3, satellite2);
+calibration_target(instrument1, star1);
+calibration_target(instrument2, groundstation0);
+power_avail(satellite1);
+calibration_target(instrument0, star1);
+power_avail(satellite0);
+supports(instrument0, spectrograph1);
+on_board(instrument0, satellite0);
+pointing(satellite2, star7);
+supports(instrument2, thermograph4);
+).

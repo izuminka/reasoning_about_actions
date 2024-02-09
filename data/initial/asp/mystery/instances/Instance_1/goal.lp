@@ -1,0 +1,12 @@
+goal(at(c0,l1);
+at(c1,l0);
+at(c2,l0);
+at(c3,l0);
+at(c4,l0);
+at(c5,l1);
+at(c6,l0);
+at(c7,l0);
+at(c8,l0);
+at(c9,l0);
+at(c10,l0);
+).

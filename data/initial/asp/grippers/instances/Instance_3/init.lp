@@ -1,0 +1,11 @@
+init(at(ball3,room1);
+at(ball1,room1);
+at(ball6,room1);
+free(robot1,rgripper1);
+at(ball2,room2);
+at_robby(robot1,room4);
+at(ball5,room3);
+at(ball7,room4);
+free(robot1,lgripper1);
+at(ball4,room2);
+).

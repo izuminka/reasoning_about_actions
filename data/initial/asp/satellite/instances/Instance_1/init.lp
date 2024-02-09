@@ -1,0 +1,28 @@
+init(on_board(instrument1, satellite0);
+supports(instrument3, image3);
+calibration_target(instrument0, star9);
+calibration_target(instrument2, groundstation5);
+calibration_target(instrument2, groundstation7);
+supports(instrument3, image2);
+calibration_target(instrument2, star9);
+pointing(satellite0, groundstation3);
+on_board(instrument0, satellite0);
+calibration_target(instrument0, star1);
+supports(instrument0, infrared1);
+power_avail(satellite0);
+calibration_target(instrument3, groundstation5);
+supports(instrument1, image0);
+on_board(instrument3, satellite1);
+supports(instrument1, infrared1);
+calibration_target(instrument3, star6);
+supports(instrument2, image3);
+pointing(satellite1, phenomenon10);
+calibration_target(instrument3, star8);
+supports(instrument3, image0);
+power_avail(satellite1);
+supports(instrument1, image3);
+supports(instrument2, image2);
+supports(instrument0, image3);
+calibration_target(instrument1, groundstation0);
+on_board(instrument2, satellite0);
+).

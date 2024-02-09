@@ -9,8 +9,8 @@ occurs(action_fire_laser(f1_1f, f1_2f),8).
 occurs(action_move(f1_1f,f1_0f),9).
 occurs(action_move(f1_0f,f2_0f),10).
 occurs(action_move(f2_0f,f3_0f),11).
-occurs(action_putdown_laser(f3_0f),12).
-occurs(action_pickup_bomb(f3_0f),13).
+occurs(action_put_down_laser(f3_0f),12).
+occurs(action_pick_up_bomb(f3_0f),13).
 occurs(action_move(f3_0f,f2_0f),14).
 occurs(action_move(f2_0f,f1_0f),15).
 occurs(action_move(f1_0f,f1_1f),16).
