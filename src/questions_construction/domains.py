@@ -315,5 +315,54 @@ class Blocksworld(BaseDomain):
         #     return sequence, string_repeat_number, b
     
         
+class Depots(BaseDomain):
+    
+    def domain_name(self):
+        return 'depots'
+    
+    def actions_to_natural_language(self, action):
+        if action.startswith('drive('):
+            truck, city1, city2 = self.extract_multi_variable(action)
+            return f'drive truck {truck} from city {city1} to city {city2}'
+        elif action.startswith('lift('):
+            hoist, crate, surface, place = self.extract_multi_variable(action)
+            return f'lift the crate {crate} from the surface {surface} with the hoist {hoist} from place {place}'
+        elif action.startswith('_drop('):
+            hoist, crate, surface, place = self.extract_multi_variable(action)
+            return f'Drop the crate {crate} on the surface {surface} with the hoist {hoist} on the place {place}'
+        elif action.startswith('load('):
+            hoist, crate, truck, place = self.extract_multi_variable(action)
+            return f'load the crate {crate} by dropping it with the hoist {hoist} in the truck {truck} from the place {place}'
+        elif action.startswith('unload('):
+            hoist, crate, truck, place = self.extract_multi_variable(action)
+            return f'unload crate {crate} by lifting it with the hoist {hoist} from truck {truck} from the place {place}'
+        else:
+            raise ('action is not defined')
         
+    def fluent_to_natural_language(self, fluent):
+        if fluent.startswith('at('):
+            obj, place = self.extract_multi_variable(fluent)
+            if obj.startswith('truck'):
+                return f'truck {obj} is at place {place}'
+            elif obj.startswith('crate'):
+                return f'crate {obj} is at place {place}'
+            else:
+                return f'hoist {obj} is at place {place}'
+        elif fluent.startswith('on('):
+            obj1, obj2 = self.extract_multi_variable(fluent)
+            return f'crate {obj1} is on surface {obj2}'
+        elif fluent.startswith('in('):
+            obj1, obj2 = self.extract_multi_variable(fluent)
+            return f'crate {obj1} is in truck {obj2}'
+        elif fluent.startswith('lifting('):
+            hoist,crate = self.extract_multi_variable(fluent)
+            return f'hoist {hoist} is lifting crate {crate}'
+        elif fluent.startswith('available('):
+            hoist = self.extract_single_variable(fluent)
+            return f'hoist {hoist} is available'
+        elif fluent.startswith('clear('):
+            surface = self.extract_single_variable(fluent)
+            return f'surface {surface} is clear'
+        
+    
         
