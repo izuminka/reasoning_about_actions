@@ -166,18 +166,23 @@ class QuestionGenerationHelpers:
     def nl_question_prefix(self, plan_length):
         return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
-    def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_true_answer, pos_fluents, neg_fluents):
-        sample_size = int((len(pos_fluents) + len(neg_fluents)) / 2)
+    def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
+        def corrupted_not_corrupted_mix(not_corrupted_fluents, corrupted_fluents):
+            final_length = len(not_corrupted_fluents)
+            num_to_be_corrupted_samples = random.randint(1, final_length - 1)
+            corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
+            return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
+            
         if is_pos_fluent_question:
-            if is_true_answer:
+            if is_answer_true:
                 fluents = pos_fluents
             else:
-                fluents = random.sample(pos_fluents + [f[1:] for f in neg_fluents], sample_size)
+                fluents = corrupted_not_corrupted_mix(pos_fluents, [f[1:] for f in neg_fluents]) # remove the '-' sign
         else:
-            if is_true_answer:
+            if is_answer_true:
                 fluents = neg_fluents
             else:
-                fluents = random.sample([f"-{f}" for f in pos_fluents] + neg_fluents, sample_size)
+                fluents = corrupted_not_corrupted_mix(neg_fluents, [f"-{f}" for f in pos_fluents]) # add the '-' sign
         return fluents
 
 
@@ -286,36 +291,18 @@ class ObjectTrackingQuestions(QuestionGenerator):
                 objects_for_fluent.append(extract_single_variable(fluent))
         return objects_for_fluent
 
-    def question_1_2_helper(self, plan_length, question_num, is_true_question, min_chosen_fluents=2,
+    def question_1_2_helper(self, plan_length, is_pos_fluent_question, is_answer_true, min_chosen_fluents=2,
                             timeout=MAX_TIMEOUT):
         chosen_fluents = []
         while len(chosen_fluents) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
-            # TODO repalce with pos_neg_fluents_qa_constructor
-            if question_num == 1:
-                if is_true_question:
-                    fluents = self.pos_fluents_for_object(obj, plan_length)
-                else:
-                    fluents = self.pos_fluents_for_object(obj, plan_length) + [f[1:] for f in
-                                                                               self.neg_fluents_for_object(obj,
-                                                                                                           plan_length)]
-            elif question_num == 2:
-                if is_true_question:
-                    fluents = self.neg_fluents_for_object(obj, plan_length)
-                else:
-                    fluents = [f"-{f}" for f in
-                               self.pos_fluents_for_object(obj, plan_length)] + self.neg_fluents_for_object(obj,
-                                                                                                            plan_length)
-            else:
-                raise 'Invalid question number'
-            fluents = list(set(fluents))
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, self.pos_fluents_for_object(obj, plan_length),  self.neg_fluents_for_object(obj, plan_length))
             if min_chosen_fluents <= len(fluents):
                 num_samples = random.randint(min_chosen_fluents, len(fluents))
                 chosen_fluents = random.sample(fluents, num_samples)
             timeout -= 1
         if timeout == 0:
             raise 'Timeout error'
-        # nl_fluents = self.nl_fluents(chosen_fluents, fluent_subs=('is', 'be'))
         nl_fluents = self.nl_fluents(chosen_fluents)
         return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {nl_fluents}?"
 
@@ -333,7 +320,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
                 chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
             else:
                 chosen_fluent = random.choice(self.neg_fluent_given_plan[plan_length])
-            if '(' not in chosen_fluent:
+            if '(' not in chosen_fluent: # associated with object
                 continue
             fluent_prefix = chosen_fluent[:chosen_fluent.find('(')]
             objects_for_fluent = self.objects_for_fluent_one_object(fluent_prefix, plan_length, is_pos_fluents)
@@ -358,11 +345,13 @@ class ObjectTrackingQuestions(QuestionGenerator):
         return question, answer
 
     def question_1(self, plan_length):
+        is_pos_fluent_question = True
         is_answer_true = random.choice([True, False])
         question = self.question_1_2_helper(plan_length, 1, is_answer_true)
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_2(self, plan_length):
+        is_pos_fluent_question = False
         is_answer_true = random.choice([True, False])
         question = self.question_1_2_helper(plan_length, 2, is_answer_true)
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)

@@ -49,6 +49,9 @@ class Blocksworld(BaseDomain):
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return f'block {b1} is on block {b2}'
+        elif fluent.startswith('-on('):
+            b1, b2 = self.extract_multi_variable(fluent)
+            return f'block {b1} is not on block {b2}'
         elif fluent.startswith('clear('):
             b = self.extract_single_variable(fluent)
             return f'block {b} is clear'
@@ -58,9 +61,6 @@ class Blocksworld(BaseDomain):
         elif fluent.startswith('ontable('):
             b = self.extract_single_variable(fluent)
             return f'block {b} is on the table'
-        elif fluent.startswith('-on('):
-            b1, b2 = self.extract_multi_variable(fluent)
-            return f'block {b1} is not on block {b2}'
         elif fluent.startswith('-clear('):
             b = self.extract_single_variable(fluent)
             return f'block {b} is not clear'
