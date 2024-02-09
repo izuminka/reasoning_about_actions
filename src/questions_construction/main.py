@@ -15,9 +15,8 @@ from collections import defaultdict
 # import re
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
-
-INITIAL_CONDITION_PREFIX = 'Given the initial condition,'
-TRUE_FALSE_POSTFIX = 'True/False'
+TRUE_OR_FALSE = 'True or False'
+NONE_STATEMENT = 'Write None if there are none'
 MAX_TIMEOUT = 100
 
 
@@ -41,6 +40,7 @@ class QuestionGenerationHelpers:
         # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
         self.init_state = self.states_actions_all[0][INIT_ACTION_KEY]  # initial state
         self.objects_by_type = self.init_state[OBJECTS_KEY]
+        self.object_type_by_object_name = self.object_type_by_object_name()
         self.all_objects = [v for ls in self.objects_by_type.values() for v in ls]
         self.domain_class = domain_class
         self.states_actions = self.states_actions_all[1:]
@@ -147,24 +147,6 @@ class QuestionGenerationHelpers:
     def neg_fluents_for_object(self, obj, plan_length):
         return self.fluents_for_obj(obj, plan_length, is_true_fluents=False)
 
-    def random_true_fluent(self, plan_length, is_empty_fluent=True):
-        fluents = self.given_pos_fluent_sequence[plan_length]
-        rand_fluent = random.choice(fluents)
-        if is_empty_fluent:
-            while not self.is_variable_in_fluent(rand_fluent):
-                rand_fluent = random.choice(fluents)
-        return rand_fluent, True  # TODO change to T/F choice
-
-    def random_false_fluent(self, plan_length, is_empty_fluent=True):
-        set1 = set(self.given_neg_fluent_sequence[plan_length + 1])
-        random_no = random.choice([x for x in range(0, len(self.given_pos_fluent_sequence)) if x != plan_length + 1])
-        set2 = set(self.given_neg_fluent_sequence[random_no])
-        rand_fluent = random.choice(list(set2 - set1))
-        if is_empty_fluent:
-            while not self.is_variable_in_fluent(rand_fluent):
-                rand_fluent = random.choice(rand_fluent)
-        return rand_fluent, False  # TODO change to T/F choice
-
     def object_type_by_object_name(self):
         by_object_name = {}
         for obj_type, objects in self.objects_by_type.items():
@@ -184,12 +166,27 @@ class QuestionGenerationHelpers:
             nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
         return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
 
-
     def nl_actions_up_to(self, plan_length):
         return self.asp_to_nl(self.given_plan_sequence[:plan_length], self.domain_class.action_to_natural_language)
 
     def nl_fluents(self, fluents, fluent_subs=None):
         return self.asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
+
+    def nl_question_prefix(self, plan_length):
+        return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
+
+    def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_true_answer, pos_fluents, neg_fluents):
+        if is_pos_fluent_question:
+            if is_true_answer:
+                fluents = pos_fluents
+            else:
+                fluents = pos_fluents + [f[1:] for f in neg_fluents]
+        else:
+            if is_true_answer:
+                fluents = neg_fluents
+            else:
+                fluents = [f"-{f}" for f in pos_fluents] + neg_fluents
+        return fluents
 
 
 class QuestionGenerator(QuestionGenerationHelpers):
@@ -286,23 +283,6 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def question_category(self):
         return 'object_tracking'
 
-    # def get_objects_with_true_states(self, obj, plan_length):
-    #     true_fluents = []
-    #     for fluent in self.given_fluent_sequence[plan_length + 1]:
-    #         if obj in fluent:
-    #             true_fluents.append(fluent)
-    #     true_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
-    #                     true_fluents]
-    #     return true_fluents
-    # def get_objects_with_false_states(self, obj, plan_length):
-    #     false_fluents = []
-    #     for fluent in self.given_neg_fluent_sequence[plan_length + 1]:
-    #         if obj in fluent:
-    #             false_fluents.append(fluent)
-    #     false_fluents = [self.domain_class.fluent_to_natural_language(fluent).replace('be', 'is') for fluent in
-    #                      false_fluents]
-    #     return false_fluents
-
     def objects_for_fluent_one_object(self, fluent_prefix, plan_length, is_true_fluents=True):
         objects_for_fluent = []
         if is_true_fluents:
@@ -314,20 +294,26 @@ class ObjectTrackingQuestions(QuestionGenerator):
                 objects_for_fluent.append(extract_single_variable(fluent))
         return objects_for_fluent
 
-    def question_1_2_helper(self, plan_length, question_num, is_true_question, min_chosen_fluents=2, timeout=MAX_TIMEOUT):
+    def question_1_2_helper(self, plan_length, question_num, is_true_question, min_chosen_fluents=2,
+                            timeout=MAX_TIMEOUT):
         chosen_fluents = []
         while len(chosen_fluents) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
+            # TODO repalce with pos_neg_fluents_qa_constructor
             if question_num == 1:
                 if is_true_question:
                     fluents = self.pos_fluents_for_object(obj, plan_length)
                 else:
-                    fluents = self.pos_fluents_for_object(obj, plan_length) + [f[1:] for f in self.neg_fluents_for_object(obj, plan_length)]
+                    fluents = self.pos_fluents_for_object(obj, plan_length) + [f[1:] for f in
+                                                                               self.neg_fluents_for_object(obj,
+                                                                                                           plan_length)]
             elif question_num == 2:
                 if is_true_question:
                     fluents = self.neg_fluents_for_object(obj, plan_length)
                 else:
-                    fluents = [f"-{f}" for f in self.pos_fluents_for_object(obj, plan_length)] + self.neg_fluents_for_object(obj,plan_length)
+                    fluents = [f"-{f}" for f in
+                               self.pos_fluents_for_object(obj, plan_length)] + self.neg_fluents_for_object(obj,
+                                                                                                            plan_length)
             else:
                 raise 'Invalid question number'
             fluents = list(set(fluents))
@@ -337,40 +323,39 @@ class ObjectTrackingQuestions(QuestionGenerator):
             timeout -= 1
         if timeout == 0:
             raise 'Timeout error'
-        nl_fluents = self.nl_fluents(chosen_fluents, fluent_subs=('is', 'be'))
-        return f"{INITIAL_CONDITION_PREFIX} I perform {self.nl_actions_up_to(plan_length)}. Will {nl_fluents} after my actions? {TRUE_FALSE_POSTFIX}"
+        # nl_fluents = self.nl_fluents(chosen_fluents, fluent_subs=('is', 'be'))
+        nl_fluents = self.nl_fluents(chosen_fluents)
+        return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {nl_fluents}?"
 
-
-
-
-    def question_3_4_helper(self, plan_length, is_true_fluents=True, timeout=MAX_TIMEOUT):
+    def question_3_4_helper(self, plan_length, is_pos_fluents=True, timeout=MAX_TIMEOUT):
 
         def is_break_condition(chosen_fluent, objects_for_fluent):
-            return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and ('(' in chosen_fluent)  and len(objects_for_fluent) >= 1
+            return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and (
+                        '(' in chosen_fluent) and len(objects_for_fluent) >= 1
 
         # NOTE: only fluents for single objects, ex: ontable(block1),  NOT on(block1, block2)
         chosen_fluent = ''
         objects_for_fluent = []
         while not is_break_condition(chosen_fluent, objects_for_fluent) and timeout > 0:
-            if is_true_fluents:
+            if is_pos_fluents:
                 chosen_fluent = random.choice(self.given_pos_fluent_sequence[plan_length])
             else:
                 chosen_fluent = random.choice(self.given_neg_fluent_sequence[plan_length])
             if '(' not in chosen_fluent:
                 continue
             fluent_prefix = chosen_fluent[:chosen_fluent.find('(')]
-            objects_for_fluent = self.objects_for_fluent_one_object(fluent_prefix, plan_length, is_true_fluents)
+            objects_for_fluent = self.objects_for_fluent_one_object(fluent_prefix, plan_length, is_pos_fluents)
             timeout -= 1
         if timeout == 0:
             raise 'Timeout error'
-        by_object_name = self.object_type_by_object_name()
+
         objects_by_type = defaultdict(list)
         for obj in objects_for_fluent:
-            objects_by_type[by_object_name[obj]].append(obj)
+            objects_by_type[self.object_type_by_object_name[obj]].append(obj)
 
-        nl_object_types = 's, '.join(list(objects_by_type.keys()))+'s'
+        nl_object_types = 's, '.join(list(objects_by_type.keys())) + 's'
         nl_fluents = self.nl_fluents([chosen_fluent[:chosen_fluent.find('(')]])
-        question = f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. What {nl_object_types} are {nl_fluents} after my actions?"
+        question = f"{self.nl_question_prefix(plan_length)} what {nl_object_types} are {nl_fluents}? {NONE_STATEMENT}."
 
         answer = []
         for obj_type, objects in objects_by_type.items():
@@ -386,19 +371,20 @@ class ObjectTrackingQuestions(QuestionGenerator):
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_2(self, plan_length):
+        """negated version of question 1"""
         is_answer_true = random.choice([True, False])
         question = self.question_1_2_helper(plan_length, 2, is_answer_true)
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_3(self, plan_length):
         # NOTE: only fluents for single objects, ex: ontable(block1)
-        question, answer = self.question_3_4_helper(plan_length, is_true_fluents=True)
-        return self.qa_data_object(self.FREE_ANSWER, question,answer)
+        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
         # NOTE: only fluents for single objects, ex: -ontable(block1)
-        question, answer = self.question_3_4_helper(plan_length,  is_true_fluents=False)
-        return self.qa_data_object(self.FREE_ANSWER, question,answer)
+        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
+        return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
 
 class FluentTrackingQuestions(QuestionGenerator):
@@ -408,46 +394,59 @@ class FluentTrackingQuestions(QuestionGenerator):
     def question_category(self):
         return 'fluent_tracking'
 
+    def qa_1_2_helper(self, plan_length, is_pos_fluent_question):
+        is_answer_true = random.choice([True, False])
+        pos_fluent = random.choice(self.given_pos_fluent_sequence[plan_length])
+        neg_fluent = random.choice(self.given_neg_fluent_sequence[plan_length])
+        fluent = \
+        self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+        question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
+
+    def qa_3_4_helper(self, plan_length, is_pos_fluent_question):
+        is_answer_true = random.choice([True, False])
+        fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
+                                                      self.given_pos_fluent_sequence[plan_length],
+                                                      self.given_neg_fluent_sequence[plan_length])
+        question = f"{self.nl_question_prefix(plan_length)} are all of the following fluents {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}? {NONE_STATEMENT}"
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
+
+    def qa_5_6_helper(self, plan_length, is_pos_fluent_question):
+        obj = random.choice(self.all_objects)
+        obj_type = self.object_type_by_object_name[obj]
+        if is_pos_fluent_question:
+            fluent_type = 'positive'
+            fluents = self.pos_fluents_for_object(obj, plan_length)
+        else:
+            fluent_type = 'negative'
+            fluents = self.neg_fluents_for_object(obj, plan_length)
+        nl_fluents = self.nl_fluents(fluents)
+        question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for {obj_type} {obj}. {NONE_STATEMENT}."
+        return self.qa_data_object(self.FREE_ANSWER, question, nl_fluents.capitalize())
+
     def question_1(self, plan_length):
-        # TODO implement
-        fluent, answer = self.random_true_fluent(plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        is_pos_fluent_question = True
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question)
 
     def question_2(self, plan_length):
-        # TODO implement
-        fluent, answer = self.random_false_fluent(plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, is the condition:{self.domain_class.fluent_to_natural_language(fluent)} True/False?"
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        is_pos_fluent_question = False
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question)
 
     def question_3(self, plan_length):
-        # TODO implement
-        # pass
-        random_length = random.randint(2, plan_length - 1)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, in this are all the following {random.sample(self.given_pos_fluent_sequence[plan_length + 1], random_length)} True/False?"
-        answer = True
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        is_pos_fluent_question = True
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question)
 
     def question_4(self, plan_length):
-        # TODO implement
-        random_length = random.randint(2, plan_length - 1)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, in this are all the following {random.sample(self.given_pos_fluent_sequence[plan_length], random_length)} True/False?"
-        answer = False
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        is_pos_fluent_question = False
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question)
 
     def question_5(self, plan_length):
-        # TODO implement
-        unique_object = random.choice(StatesActionsGenerator.parse_objects())
-        true_states = self.get_objects_with_true_states(unique_object, plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, can you specify all the true fluents for {unique_object}?"
-        return self.qa_data_object(self.FREE_ANSWER, question, true_states)
+        is_pos_fluent_question = True
+        return self.qa_5_6_helper(plan_length, is_pos_fluent_question)
 
     def question_6(self, plan_length):
-        # TODO implement
-        unique_object = random.choice(StatesActionsGenerator.parse_objects())
-        false_states = self.get_objects_with_false_states(unique_object, plan_length)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, can you specify all the true fluents for {unique_object}?"
-        return self.qa_data_object(self.FREE_ANSWER, question, false_states)
+        is_pos_fluent_question = False
+        return self.qa_5_6_helper(plan_length, is_pos_fluent_question)
 
 
 class StateTrackingQuestions(QuestionGenerator):

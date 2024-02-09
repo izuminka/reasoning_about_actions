@@ -9,7 +9,9 @@ import random
 TESTS_DIR = CODE_PATH + '/tests'
 TMP_DIR = TESTS_DIR + '/tmp'
 
-
+jsonl_object = open_jsonl(TESTS_DIR + '/toy_data.blocksworld.jsonl')
+domain_class = Blocksworld()
+instance_id = 'sdf'
 
 class TestHelpers(unittest.TestCase):
     def assertListofListsIndepObjOrder(self, expected, predicted):
@@ -22,9 +24,6 @@ class TestHelpers(unittest.TestCase):
 
 
 class TestQuestionGenerationMainMethods(TestHelpers):
-    jsonl_object = open_jsonl(TESTS_DIR + '/toy_data.blocksworld.jsonl')
-    domain_class = Blocksworld()
-    instance_id = 'sdf'
     DMM = QuestionGenerationHelpers(jsonl_object, domain_class, instance_id)
 
     def test_extract_given_plan_sequence(self):
@@ -72,10 +71,9 @@ class TestQuestionGenerationMainMethods(TestHelpers):
                                 ['-ontable(b1)', '-holding(b2)', '-on(b2,b1)', '-holding(b1)', '-clear(b2)']]
         self.assertListofListsIndepObjOrder(expected_neg_fluents, self.DMM.extract_fluents_for_given_plan(NEG_FLUENTS_KEY))
 
+
+
 class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
-    jsonl_object = open_jsonl(TESTS_DIR + '/toy_data.blocksworld.jsonl')
-    instance_id = 'sdf'
-    domain_class = Blocksworld()
     qa_class = ObjectTrackingQuestions(jsonl_object, domain_class, instance_id)
 
     def test_q1(self):
@@ -123,36 +121,74 @@ class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
         self.assertEqual(expected_question,  qa_object['question'])
         self.assertEqual(expected_answer,  qa_object['answer'])
 
-class TestFluentTrackingQuestionsBlocksworld(unittest.TestCase):
-    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
-    instance_id = 'sdf'
-    domain_class = Blocksworld()
-    object_tracking_questions = FluentTrackingQuestions(jsonl_object, domain_class, instance_id)
-    plan_lengths = [1, 5, 10, 15, 20]
+class TestFluentTrackingQuestionsBlocksworld(TestHelpers):
+    qa_class = FluentTrackingQuestions(jsonl_object, domain_class, instance_id)
 
     def test_q1(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_1(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # # TODO seed issue
+        # expected_question = 'Given the initial condition, I plan to perform unstack block b2 from block b1 and put down block b2 to reach the current state. In this state, is it True or False that block b1 is clear?'
+        # expected_answer = True
+        # self.assertEqual(expected_question,  qa_object['question'])
+        # self.assertEqual(expected_answer,  qa_object['answer'])
 
     def test_q2(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_2(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
+        # expected_question = 'Given the initial condition, I plan to perform unstack block b2 from block b1 and put down block b2 to reach the current state. In this state, is it True or False that block b2 is not clear?'
+        # expected_answer = True
+        # self.assertEqual(expected_question,  qa_object['question'])
+        # self.assertEqual(expected_answer,  qa_object['answer'])
 
     def test_q3(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_3(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # # TODO seed issue
+        # expected_question = 'Given the initial condition, I plan to perform unstack block b2 from block b1 and put down block b2 to reach the current state. In this state, are all of the following fluents: hand is empty, block b2 is clear, block b1 is clear, block b1 is on the table and block b2 is on the table True or False'
+        # expected_answer = True
+        # self.assertEqual(expected_question,  qa_object['question'])
+        # self.assertEqual(expected_answer,  qa_object['answer'])
 
     def test_q4(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_4(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
 
     def test_q5(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_5(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
 
     def test_q6(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_6(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
 
 class TestStateTrackingQuestionsBlocksworld(unittest.TestCase):
     jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
