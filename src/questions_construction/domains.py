@@ -484,5 +484,127 @@ class Goldminer(BaseDomain):
         else:
             raise ('action is not defined')
         
+class Grippers(BaseDomain):
+    
+    def domain_name(self):
+        return 'grippers'
+    
+    def fluent_to_natural_language(self, fluent):
+        if fluent.startswith('at_robby('):
+            robot,room= self.extract_multi_variable(fluent)
+            return f'robot {robot} is at room {room}'
+        elif fluent.startswith('at('):
+            obj, room = self.extract_multi_variable(fluent)
+            return f'object {obj} is at room {room}'
+        elif fluent.startswith('free('):
+            robot, gripper = self.extract_multi_variable(fluent)
+            return f'robot {robot} has free gripper {gripper}'
+        elif fluent.startswith('carry('):
+            robot,obj, gripper = self.extract_multi_variable(fluent)
+            return f'robot {robot} is carrying object {obj} with gripper {gripper}'
+        else:
+            raise ('fluent is not defined')
+    
+    def action_to_natural_language(self, action):
+        if action.startswith('pick('):
+            robot,obj,room,gripper = self.extract_multi_variable(action)
+            return f'pick object {obj} from room {room} with gripper {gripper} by robot {robot}'
+        elif action.startswith('move('):
+            robot, room_from, room_to = self.extract_multi_variable(action)
+            return f'move robot {robot} from room {room_from} to room {room_to}'
+        elif action.startswith('drop('):
+            robot,obj,room,gripper = self.extract_multi_variable(action)
+            return f'drop object {obj} in room {room} with gripper {gripper} by robot {robot}'
+        else:
+            raise ('action is not defined')
+        
+class Logistics(BaseDomain):
+    
+    def domain_name(self):
+        return 'logistics'
+    
+    def fluent_to_natural_language(self, fluent):
+        if fluent.startswith('in_city('):
+            place, city = self.extract_multi_variable(fluent)
+            return f'place {place} is in city {city}'
+        elif fluent.startswith('at('):
+            physical_object, place = self.extract_multi_variable(fluent)
+            return f'object {physical_object} is at place {place}'
+        elif fluent.startswith('in('):
+            package,vehicle = self.extract_multi_variable(fluent)
+            return f'package {package} is in vehicle {vehicle}'
+        else:
+            raise ('fluent is not defined')
+        
+    def action_to_natural_language(self, action):
+        if action.startswith('load_truck('):
+            package, truck, location = self.extract_multi_variable(action)
+            return f'load package {package} in truck {truck} at location {location}'
+        elif action.startswith('load_airplane('):
+            package, airplane, location = self.extract_multi_variable(action)
+            return f'load package {package} in airplane {airplane} at location {location}'
+        elif action.startswith('unload_airplane('):
+            package, airplane, location = self.extract_multi_variable(action)
+            return f'unload package {package} from airplane {airplane} at location {location}'
+        elif action.startswith('unload_truck('):
+            package, truck, location = self.extract_multi_variable(action)
+            return f'unload package {package} from truck {truck} at location {location}'
+        elif action.startswith('drive_truck('):
+            truck,loc_from,loc_to,city = self.extract_multi_variable(action)
+            return f'drive truck {truck} from location {loc_from} to location {loc_to} in city {city}'
+        elif action.startswith('fly_airplane('):
+            airplane, airport_from, airport_to = self.extract_multi_variable(action)
+            return f'fly airplane {airplane} from airport {airport_from} to airport {airport_to}'
+        else:
+            raise ('action is not defined')
+        
+class Miconic(BaseDomain):
+    
+    def domain_name(self):
+        return 'miconic'
+    
+    def fluent_to_natural_language(self, fluent):
+        if fluent.startswith('origin('):
+            passenger, floor = self.extract_multi_variable(fluent)
+            return f'passenger {passenger} is at floor {floor}'
+        elif fluent.startswith('destin('):
+            passenger, floor = self.extract_multi_variable(fluent)
+            return f'passenger {passenger} is at floor {floor}'
+        elif fluent.startswith('above('):
+            floor1, floor2 = self.extract_multi_variable(fluent)
+            return f'floor {floor2} is above floor {floor1}'
+        elif fluent.startswith('boarded('):
+            passenger = self.extract_single_variable(fluent)
+            return f'passenger {passenger} is boarded'
+        elif fluent.startswith('served('):
+            passenger = self.extract_single_variable(fluent)
+            return f'passenger {passenger} is served'
+        elif fluent.startswith('lift_at('):
+            floor = self.extract_single_variable(fluent)
+            return f'lift is at floor {floor}'
+        else:
+            raise ('fluent is not defined')
+        
+    def action_to_natural_language(self, action):
+        if action.startswith('board('):
+            floor, passenger = self.extract_multi_variable(action)
+            return f'board passenger {passenger} at floor {floor}'
+        elif action.startswith('depart('):
+            floor, passenger = self.extract_multi_variable(action)
+            return f'depart passenger {passenger} at floor {floor}'
+        elif action.startswith('up('):
+            floor1, floor2 = self.extract_multi_variable(action)
+            return f'go up from floor {floor1} to floor {floor2}'
+        elif action.startswith('down('):
+            floor1, floor2 = self.extract_multi_variable(action)
+            return f'go down from floor {floor1} to floor {floor2}'
+        elif action.startswith('down('):
+            floor1, floor2 = self.extract_multi_variable(action)
+            return f'go down from floor {floor1} to floor {floor2}'
+        else:
+            raise ('action is not defined')
+        
+
+        
     
         
