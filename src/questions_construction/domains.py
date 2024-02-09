@@ -814,4 +814,29 @@ class Zenotravel(BaseDomain):
                 return f"refuel aircraft {aircraft} at location {city} with fuel level {flevel1} to {flevel2}"
             else:
                 raise ('action is not defined')
+
+class Visitall(BaseDomain):
+        
+        def domain_name(self):
+            return 'visitall'
+        
+        def fluent_to_natural_language(self, fluent):
+            if fluent.startswith('at_robot('):
+                place = self.extract_multi_variable(fluent)
+                return f"robot is at place {place}"
+            elif fluent.startswith('connected('):
+                place1, place2 = self.extract_multi_variable(fluent)
+                return f"place {place1} is connected to place {place2}"
+            elif fluent.startswith('visited('):
+                place = self.extract_single_variable(fluent)
+                return f"place {place} is visited"
+            else:
+                raise ('fluent is not defined')
+            
+        def action_to_natural_language(self, action):
+            if action.startswith('move('):
+                place1,place2 = self.extract_multi_variable(action)
+                return f"move from place {place1} to place {place2}"
+            else:
+                raise ('action is not defined')
             
