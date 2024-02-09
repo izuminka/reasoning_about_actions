@@ -14,11 +14,12 @@ from collections import defaultdict
 # from ..common import *
 # import re
 
-OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
+
 TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
 MAX_TIMEOUT = 100
 
+OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
 
 
@@ -198,7 +199,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
 
     def qa_data_object(self, anwswer_type, question, answer):
         return {
-            'id': uuid.uuid4(),
+            'id': str(uuid.uuid4()),
             'domain_name': self.domain_class.domain_name(),
             'instance_id': self.instance_id,
             'action_sequence': self.given_plan_sequence,

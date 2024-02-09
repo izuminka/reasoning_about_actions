@@ -1159,4 +1159,5 @@ class Visitall(BaseDomain):
                 return f"move from place {place1} to place {place2}"
             else:
                 raise ('action is not defined')
-            
+
+ALL_DOMAIN_CLASSES = [Blocksworld,Depots,Driverlog,Goldminer,Grippers,Logistics,Miconic,Mystery,Npuzzle,Satellite,Spanner,Zenotravel,Visitall]

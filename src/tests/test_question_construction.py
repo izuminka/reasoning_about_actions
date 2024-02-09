@@ -28,9 +28,12 @@ class TestHelpers(unittest.TestCase):
             for _k, v in qa_object.items():
                 self.assertIsNotNone(v)
 
+            for forbidden_char in "[]()'_-":
+                self.assertTrue(forbidden_char not in qa_object['question'])
+
         # Print manually
         plan_length = 3
-        qa_object = self.qa_class.question_6(plan_length)
+        qa_object = question_constructor(plan_length)
         print('\n\n')
         print(qa_object['question'])
         print(qa_object['answer'])
