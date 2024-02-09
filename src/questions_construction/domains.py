@@ -63,10 +63,16 @@ class Blocksworld(BaseDomain):
             return f'block {b} is on the table'
         elif fluent.startswith('-clear('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not clear'
+            return f'block {b} is not clear'        
+        elif fluent.startswith('holding('):
+            b = self.extract_single_variable(fluent)
+            return f'block {b} is being held'
         elif fluent.startswith('-holding('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not being held'
+            return f'block {b} is not being held'        
+        elif fluent.startswith('ontable('):
+            b = self.extract_single_variable(fluent)
+            return f'block {b} is on the table'
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
             return f'block {b} is not on the table'
@@ -76,17 +82,17 @@ class Blocksworld(BaseDomain):
             return f'hand is not empty'
 
 
-        elif fluent.startswith('clear'):
+        elif fluent=='clear':
             return f'clear'
-        elif fluent.startswith('-clear'):
+        elif fluent==('-clear'):
             return f'not clear'
-        elif fluent.startswith('holding'):
+        elif fluent==('holding'):
             return f'being held'
-        elif fluent.startswith('-holding'):
+        elif fluent==('-holding'):
             return f'not being held'
-        elif fluent.startswith('ontable'):
+        elif fluent==('ontable'):
             return f'on the table'
-        elif fluent.startswith('-ontable'):
+        elif fluent==('-ontable'):
             return f'not on the table'
         else:
             #TODO handle made up fluents
@@ -284,52 +290,6 @@ class Blocksworld(BaseDomain):
                 question_without_result = f"will the block {block} be on table?"
                 return question, answer, random_action, question_without_result
                 
-            # else:
-            #     b = random.choice(holding_list)
-            #     if key == True:
-            #         string_repeat_number = random.choice([2,4,6,8,10])   
-            #         random_action = [f"put_down({b})",f"pick_up({b})"]
-            #         looping_actions = []
-            #         for i in range(0,string_repeat_number):
-            #             if i%2 == 0:
-            #                 looping_actions.append(random_action[0])
-            #             else:
-            #                 looping_actions.append(random_action[1])  
-            #         actions = [self.action_to_natural_language(a) for a in looping_actions]
-            #         action_strings = [action + ' then, ' if action != actions[-1] else action for action in actions]
-            #         result = ''.join(action_strings)                     
-            #         question = f"{result}, will the block {b} be on table and clear?"
-            #         answer = True
-            #         return question, answer
-            #     else: 
-            #         string_repeat_number = random.choice([3,5,7,9,11])   
-            #         random_action = [f"put_down({b})",f"pick_up({b})"]
-            #         looping_actions = []
-            #         for i in range(0,string_repeat_number):
-            #             if i%2 == 0:
-            #                 looping_actions.append(random_action[0])
-            #             else:
-            #                 looping_actions.append(random_action[1])  
-            #         actions = [self.action_to_natural_language(a) for a in looping_actions]
-            #         action_strings = [action + ' then, ' if action != actions[-1] else action for action in actions]
-            #         result = ''.join(action_strings)                     
-            #         question = f"{result}, will the block {b} be on table and clear?"
-            #         answer = False
-            #         return question, answer                            
-                
-        #     if key == True:
-        #         sequence = string_repeat_number*f"unstack({b1},{b2}), stack({b1},{b2})"
-        #     else:
-        #         sequence = string_repeat_number*f"unstack({b1},{b2}), stack({b1},{b2}), unstack({b1},{b2})"                 
-        #     return sequence, string_repeat_number, b1, b2
-        # elif random_fluent == 'holding':
-        #     b = random.choice(holding_list)
-        #     string_repeat_number = random.randint(1,plan_length-1)   
-        #     if key == True:
-        #         sequence = string_repeat_number*f"put_down({b}), pick_up({b})"
-        #     else:
-        #         sequence = string_repeat_number*f"put_down({b}), pick_up({b}), put_down({b})"                 
-        #     return sequence, string_repeat_number, b
 
 class Depots(BaseDomain):
     
@@ -364,21 +324,57 @@ class Depots(BaseDomain):
                 return f'crate {obj} is at place {place}'
             else:
                 return f'hoist {obj} is at place {place}'
+        elif fluent.startswith('~at('):
+            obj, place = self.extract_multi_variable(fluent)
+            if obj.startswith('truck'):
+                return f'truck {obj} is not at place {place}'
+            elif obj.startswith('crate'):
+                return f'crate {obj} is not at place {place}'
+            elif obj.startswith('hoist'):
+                obj = self.extract_single_variable(fluent)
+                return f'hoist {obj} is not at place {place}'            
         elif fluent.startswith('on('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return f'crate {obj1} is on surface {obj2}'
+        elif fluent.startswith('~on('):
+            obj1, obj2 = self.extract_multi_variable(fluent)
+            return f'crate {obj1} is not on surface {obj2}'        
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return f'crate {obj1} is in truck {obj2}'
+        elif fluent.startswith('~in('):
+            obj1, obj2 = self.extract_multi_variable(fluent)
+            return f'crate {obj1} is not in truck {obj2}'        
         elif fluent.startswith('lifting('):
             hoist,crate = self.extract_multi_variable(fluent)
             return f'hoist {hoist} is lifting crate {crate}'
+        elif fluent.startswith('~lifting('):
+            hoist,crate = self.extract_multi_variable(fluent)
+            return f'hoist {hoist} is not lifting crate {crate}'    
         elif fluent.startswith('available('):
             hoist = self.extract_single_variable(fluent)
             return f'hoist {hoist} is available'
+        elif fluent.startswith('~available('):
+            hoist = self.extract_single_variable(fluent)
+            return f'hoist {hoist} is not available'
         elif fluent.startswith('clear('):
             surface = self.extract_single_variable(fluent)
             return f'surface {surface} is clear'
+        elif fluent.startswith('~clear('):
+            surface = self.extract_single_variable(fluent)
+            return f'surface {surface} is not clear'
+        elif fluent == 'at':
+            return f'at'
+        elif fluent == 'on':
+            return f'on'
+        elif fluent == 'in':
+            return f'in'
+        elif fluent == 'lifting':
+            return f'lifting'
+        elif fluent == 'available':
+            return f'available'
+        elif fluent == 'clear':
+            return f'clear'
         
 class Driverlog(BaseDomain):
         
