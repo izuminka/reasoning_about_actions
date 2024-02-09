@@ -17,6 +17,9 @@ class TestHelpers(unittest.TestCase):
         for e_ls, p_ls in zip(expected, predicted):
             self.assertEqual(set(e_ls), set(p_ls))
 
+    def setUp(self):
+        random.seed(42)
+
 
 class TestQuestionGenerationMainMethods(TestHelpers):
     jsonl_object = open_jsonl(TESTS_DIR + '/toy_data.blocksworld.jsonl')
@@ -69,14 +72,11 @@ class TestQuestionGenerationMainMethods(TestHelpers):
                                 ['-ontable(b1)', '-holding(b2)', '-on(b2,b1)', '-holding(b1)', '-clear(b2)']]
         self.assertListofListsIndepObjOrder(expected_neg_fluents, self.DMM.extract_fluents_for_given_plan(NEG_FLUENTS_KEY))
 
-class TestObjectTrackingQuestionsBlocksworld(unittest.TestCase):
+class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
     jsonl_object = open_jsonl(TESTS_DIR + '/toy_data.blocksworld.jsonl')
     instance_id = 'sdf'
     domain_class = Blocksworld()
     qa_class = ObjectTrackingQuestions(jsonl_object, domain_class, instance_id)
-
-    def setUp(self):
-        random.seed(42)
 
     def test_q1(self):
         pass

@@ -346,7 +346,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def question_3_4_helper(self, plan_length, is_true_fluents=True, timeout=MAX_TIMEOUT):
 
         def is_break_condition(chosen_fluent, objects_for_fluent):
-            return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and len(objects_for_fluent) >= 1
+            return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and ('(' in chosen_fluent)  and len(objects_for_fluent) >= 1
 
         # NOTE: only fluents for single objects, ex: ontable(block1),  NOT on(block1, block2)
         chosen_fluent = ''
@@ -356,6 +356,8 @@ class ObjectTrackingQuestions(QuestionGenerator):
                 chosen_fluent = random.choice(self.given_pos_fluent_sequence[plan_length])
             else:
                 chosen_fluent = random.choice(self.given_neg_fluent_sequence[plan_length])
+            if '(' not in chosen_fluent:
+                continue
             fluent_prefix = chosen_fluent[:chosen_fluent.find('(')]
             objects_for_fluent = self.objects_for_fluent_one_object(fluent_prefix, plan_length, is_true_fluents)
             timeout -= 1
