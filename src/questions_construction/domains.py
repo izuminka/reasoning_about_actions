@@ -37,7 +37,6 @@ class BaseDomain:
         # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
         # also need to return a NLP version of the action and params for self.action_to_natural_language child class
         raise ('Implement it in the child class')
-
 class Blocksworld(BaseDomain):
     
     list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
@@ -70,7 +69,25 @@ class Blocksworld(BaseDomain):
             return f'block {b} is not being held'
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not on the table'            
+            return f'block {b} is not on the table'
+        elif fluent.startswith('handempty'):
+            return f'hand is empty'
+        elif fluent.startswith('-handempty'):
+            return f'hand is not empty'
+
+
+        elif fluent.startswith('clear'):
+            return f'clear'
+        elif fluent.startswith('-clear'):
+            return f'not clear'
+        elif fluent.startswith('holding'):
+            return f'being held'
+        elif fluent.startswith('-holding'):
+            return f'not being held'
+        elif fluent.startswith('ontable'):
+            return f'on the table'
+        elif fluent.startswith('-ontable'):
+            return f'not on the table'
         else:
             #TODO handle made up fluents
             raise ('fluent is not defined')     
@@ -313,8 +330,7 @@ class Blocksworld(BaseDomain):
         #     else:
         #         sequence = string_repeat_number*f"put_down({b}), pick_up({b}), put_down({b})"                 
         #     return sequence, string_repeat_number, b
-    
-        
+
 class Depots(BaseDomain):
     
     def domain_name(self):
@@ -363,7 +379,6 @@ class Depots(BaseDomain):
         elif fluent.startswith('clear('):
             surface = self.extract_single_variable(fluent)
             return f'surface {surface} is clear'
-        
         
 class Driverlog(BaseDomain):
         
@@ -416,8 +431,7 @@ class Driverlog(BaseDomain):
                 return f'walk driver {driver} from location {loc_from} to location {loc_to}'
             else:
                 raise ('action is not defined')
-            
-            
+
 class Goldminer(BaseDomain):
     
     def domain_name(self):

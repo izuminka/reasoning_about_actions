@@ -2,6 +2,13 @@ import json
 import random
 import uuid
 from src.states_actions_generation import *
+from collections import defaultdict
+
+# import nltk
+# nltk.download('omw-1.4')
+# nltk.download('popular')
+# from pattern.en import pluralize
+
 
 # import sys
 # from ..common import *
@@ -141,7 +148,7 @@ class QuestionGenerationHelpers:
         return self.fluents_for_obj(obj, plan_length, is_true_fluents=False)
 
     def random_true_fluent(self, plan_length, is_empty_fluent=True):
-        fluents = self.given_pos_fluent_sequence[plan_length + 1]
+        fluents = self.given_pos_fluent_sequence[plan_length]
         rand_fluent = random.choice(fluents)
         if is_empty_fluent:
             while not self.is_variable_in_fluent(rand_fluent):
@@ -160,7 +167,7 @@ class QuestionGenerationHelpers:
 
     def object_type_by_object_name(self):
         by_object_name = {}
-        for obj_type, objects in self.objects_by_type:
+        for obj_type, objects in self.objects_by_type.items():
             for obj in objects:
                 by_object_name[obj] = obj_type
         return by_object_name
@@ -168,6 +175,8 @@ class QuestionGenerationHelpers:
     def asp_to_nl(self, obj_ls, converter, fluent_subs=None):
         and_str = ' and '
         comma_str = ', '
+        if not obj_ls:
+            raise 'Empty list'
         if len(obj_ls) <= 1:
             return converter(obj_ls[0])
         nl_obj_ls = [converter(f) for f in obj_ls]
@@ -297,9 +306,9 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def objects_for_fluent_one_object(self, fluent_prefix, plan_length, is_true_fluents=True):
         objects_for_fluent = []
         if is_true_fluents:
-            fluents = self.given_pos_fluent_sequence[plan_length + 1]
+            fluents = self.given_pos_fluent_sequence[plan_length]
         else:
-            fluents = self.given_neg_fluent_sequence[plan_length + 1]
+            fluents = self.given_neg_fluent_sequence[plan_length]
         for fluent in fluents:
             if fluent_prefix in fluent:
                 objects_for_fluent.append(extract_single_variable(fluent))
@@ -332,44 +341,62 @@ class ObjectTrackingQuestions(QuestionGenerator):
         return f"{INITIAL_CONDITION_PREFIX} I perform {self.nl_actions_up_to(plan_length)}. Will {nl_fluents} after my actions? {TRUE_FALSE_POSTFIX}"
 
 
-    def question_3_4_helper(self, plan_length, is_true_fluents=True):
+
+
+    def question_3_4_helper(self, plan_length, is_true_fluents=True, timeout=MAX_TIMEOUT):
+
+        def is_break_condition(chosen_fluent, objects_for_fluent):
+            return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and len(objects_for_fluent) >= 1
+
         # NOTE: only fluents for single objects, ex: ontable(block1),  NOT on(block1, block2)
-        chosen_fluent = None
-        while not self.is_variable_in_fluent(chosen_fluent) and ',' not in chosen_fluent:
+        chosen_fluent = ''
+        objects_for_fluent = []
+        while not is_break_condition(chosen_fluent, objects_for_fluent) and timeout > 0:
             if is_true_fluents:
-                chosen_fluent = random.choice(self.given_pos_fluent_sequence[plan_length + 1])
+                chosen_fluent = random.choice(self.given_pos_fluent_sequence[plan_length])
             else:
-                chosen_fluent = random.choice(self.given_neg_fluent_sequence[plan_length + 1])
-        objects_for_fluent = self.objects_for_fluent_one_object(chosen_fluent[:chosen_fluent.find('(')], plan_length)
+                chosen_fluent = random.choice(self.given_neg_fluent_sequence[plan_length])
+            fluent_prefix = chosen_fluent[:chosen_fluent.find('(')]
+            objects_for_fluent = self.objects_for_fluent_one_object(fluent_prefix, plan_length, is_true_fluents)
+            timeout -= 1
+        if timeout == 0:
+            raise 'Timeout error'
         by_object_name = self.object_type_by_object_name()
-        object_types = set([by_object_name[obj] for obj in objects_for_fluent])
-        return object_types, objects_for_fluent, chosen_fluent
+        objects_by_type = defaultdict(list)
+        for obj in objects_for_fluent:
+            objects_by_type[by_object_name[obj]].append(obj)
+
+        nl_object_types = 's, '.join(list(objects_by_type.keys()))+'s'
+        nl_fluents = self.nl_fluents([chosen_fluent[:chosen_fluent.find('(')]])
+        question = f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. What {nl_object_types} are {nl_fluents} after my actions?"
+
+        answer = []
+        for obj_type, objects in objects_by_type.items():
+            for obj in objects:
+                answer.append(f"{obj_type} {obj}")
+        answer = self.asp_to_nl(sorted(answer), lambda x: x)
+
+        return question, answer
 
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         question = self.question_1_2_helper(plan_length, 1, is_answer_true)
-        answer_type = self.TRUE_FALSE_ANSWER
-        return self.qa_data_object(answer_type, question, is_answer_true)
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         question = self.question_1_2_helper(plan_length, 2, is_answer_true)
-        answer_type = self.TRUE_FALSE_ANSWER
-        return self.qa_data_object(answer_type, question, is_answer_true)
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_3(self, plan_length):
         # NOTE: only fluents for single objects, ex: ontable(block1)
-        object_types, objects_for_fluent, chosen_fluent = self.question_3_4_helper(plan_length, is_true_fluents=True)
-        question = f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
-        answer_type = self.FREE_ANSWER
-        return self.qa_data_object(answer_type, question, objects_for_fluent)
+        question, answer = self.question_3_4_helper(plan_length, is_true_fluents=True)
+        return self.qa_data_object(self.FREE_ANSWER, question,answer)
 
     def question_4(self, plan_length):
         # NOTE: only fluents for single objects, ex: -ontable(block1)
-        object_types, objects_for_fluent, chosen_fluent = self.question_3_4_helper(plan_length, is_true_fluents=False)
-        question = f"Given the initial condition, I perform {self.nl_actions_up_to(plan_length)}. What {object_types} are {chosen_fluent} after my actions?"
-        answer_type = self.FREE_ANSWER
-        return self.qa_data_object(answer_type, question, objects_for_fluent)
+        question, answer = self.question_3_4_helper(plan_length,  is_true_fluents=False)
+        return self.qa_data_object(self.FREE_ANSWER, question,answer)
 
 
 class FluentTrackingQuestions(QuestionGenerator):
