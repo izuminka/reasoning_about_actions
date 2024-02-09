@@ -1,6 +1,7 @@
 from src.common import *
 import re
 
+ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
 
 def open_asp_action_sequence(plan_path):
     with open(plan_path) as f:
@@ -60,13 +61,13 @@ class StatesActionsGenerator:
 
         return set([action[0] for _, action in execute_asp_code(asp_code)])
 
-    def next_state(self, current_state_set, action, asp_code='next_state.lp'):
+    def next_state(self, current_state_set, action, asp_code_fname='next_state.lp'):
         action_occurs = f"occurs({action}, 1)."
         current_state_asp_str = self.set_to_asp_string_state(current_state_set)
         additional_asp_code = '\n' + '\n'.join([action_occurs, current_state_asp_str])
 
-        next_state_path = os.path.join(ASP_CODE_PATH, asp_code)
-        paths = [self.domain_path, next_state_path, self.asp_inst_objects_path]
+        next_state_path = os.path.join(ASP_CODE_PATH, asp_code_fname)
+        paths = [ASP_CHECK_SEQUENCE_PATH, self.domain_path, next_state_path, self.asp_inst_objects_path]
         asp_code = assemble_asp_code(paths, additional_asp_code=additional_asp_code)
         next_state = set()
         for prefix, contents in execute_asp_code(asp_code):
