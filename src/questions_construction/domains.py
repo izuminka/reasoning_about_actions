@@ -364,5 +364,125 @@ class Depots(BaseDomain):
             surface = self.extract_single_variable(fluent)
             return f'surface {surface} is clear'
         
+        
+class Driverlog(BaseDomain):
+        
+        def domain_name(self):
+            return 'driverlog'
+        
+        def fluent_to_natural_language(self, fluent):
+            if fluent.startswith('at('):
+                obj, place = self.extract_multi_variable(fluent)
+                if obj.startswith('truck'):
+                    return f'truck {obj} is at place {place}'
+                else:
+                    return f'driver {obj} is at place {place}'
+            elif fluent.startswith('in('):
+                obj1, obj2 = self.extract_multi_variable(fluent)
+                return f'package {obj1} is in truck {obj2}'
+            elif fluent.startswith('driving('):
+                obj1,obj2 = self.extract_multi_variable(fluent)
+                return f'Driver {obj1} is driving truck {obj2}'
+            elif fluent.startswith('link('):
+                obj1, obj2 = self.extract_multi_variable(fluent)
+                return f'there is a link between location {obj1} and location {obj2}'
+            elif fluent.startswith('path('):
+                obj1, obj2 = self.extract_multi_variable(fluent)
+                return f'there is a path between location {obj1} and location {obj2}'
+            elif fluent.startswith('empty('):
+                obj = self.extract_single_variable(fluent)
+                return f'truck {obj} is empty'
+            else:
+                raise ('fluent is not defined')
+            
+        def action_to_natural_language(self, action):
+            if action.startswith('load('):
+                package, truck, location = self.extract_multi_variable(action)
+                return f'load package {package} in truck {truck} at location {location}'
+            elif action.startswith('unload('):
+                package, truck, location = self.extract_multi_variable(action)
+                return f'unload package {package} from truck {truck} at location {location}'
+            elif action.startswith('board('):
+                driver, truck, location = self.extract_multi_variable(action)
+                return f'board driver {driver} in truck {truck} at location {location}'
+            elif action.startswith('disembark('):
+                driver, truck, location = self.extract_multi_variable(action)
+                return f'disembark driver {driver} from truck {truck} at location {location}'
+            elif action.startswith('drive('):
+                driver,loc_from,loc_to = self.extract_multi_variable(action)
+                return f'drive driver {driver} from location {loc_from} to location {loc_to}'
+            elif action.startwith('walk('):
+                driver,loc_from,loc_to = self.extract_multi_variable(action)
+                return f'walk driver {driver} from location {loc_from} to location {loc_to}'
+            else:
+                raise ('action is not defined')
+            
+            
+class Goldminer(BaseDomain):
+    
+    def domain_name(self):
+        return 'goldminer'
+    
+    def fluent_to_natural_language(self, fluent):
+        if fluent.startswith('robot_at('):
+            place = self.extract_single_variable(fluent)
+            return f'robot is at location {place}'
+        elif fluent.startswith('bomb_at('):
+            obj1 = self.extract_single_variable(fluent)
+            return f'bomb is at location {obj1}'
+        elif fluent.startswith('laser_at('):
+            obj1 = self.extract_single_variable(fluent)
+            return f'gold is at location {obj1}'
+        elif fluent.startswith('soft_rock_at('):
+            obj1 = self.extract_single_variable(fluent)
+            return f'soft rock is at location {obj1}'
+        elif fluent.startswith('hard_rock_at('):
+            obj1 = self.extract_single_variable(fluent)
+            return f'hard rock is at location {obj1}'
+        elif fluent.startswith('gold_at('):
+            obj1 = self.extract_single_variable(fluent)
+            return f'gold is at location {obj1}'
+        elif fluent.startswith('connected('):
+            obj1, obj2 = self.extract_multi_variable(fluent)
+            return f'there is a connection between location {obj1} and location {obj2}'
+        elif fluent.startswith('arms_empty('):
+            return f'robot arms are empty'
+        elif fluent.startswith('holds_bomb('):
+            return f'robot holds bomb'
+        elif fluent.startswith('holds_laser('):
+            return f'robot holds laser'
+        elif fluent.startswith('holds_gold('):
+            return f'robot holds gold'
+        elif fluent.startswith('clear('):
+            location = self.extract_single_variable(fluent)
+            return f'location {location} is clear'
+        else:
+            raise ('fluent is not defined')
+    
+    def action_to_natural_language(self, action):
+        if action.startswith('move('):
+            location1, location2 = self.extract_multi_variable(action)
+            return f'move robot from location {location1} to location {location2}'
+        elif action.startswith('pickup_laser('):
+            laser = self.extract_single_variable(action)
+            return f'pickup laser {laser}'
+        elif action.startswith('pickup_bomb('):
+            bomb = self.extract_single_variable(action)
+            return f'pickup bomb {bomb}'
+        elif action.startswith('putdown_laser('):
+            laser = self.extract_single_variable(action)
+            return f'putdown laser {laser}'
+        elif action.startswith('detonate_bomb('):
+            bomb = self.extract_single_variable(action)
+            return f'detonate bomb {bomb}'
+        elif action.startswith('fire_laser('):
+            laser = self.extract_single_variable(action)
+            return f'fire laser {laser}'
+        elif action.startswith('pick_gold('):
+            location = self.extract_single_variable(action)
+            return f'pick gold at location {location}'
+        else:
+            raise ('action is not defined')
+        
     
         
