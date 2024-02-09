@@ -1,4 +1,5 @@
-from src.common import *
+from common import *
+import clingo
 import re
 
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')

@@ -6,6 +6,9 @@ from src.questions_construction.main import *
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
+    # def __init__(self):
+    #     self.single_variable = self.extract_single_variable()
+    #     self.multiple_variables = self.extract_multi_variable()
 
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
@@ -115,20 +118,202 @@ class Blocksworld(BaseDomain):
             sequences_with_unknown_fluents += [random.choice(QuestionGenerator.extract_given_plan_sequence())]
         return sequences_with_unknown_fluents, unknown_fluent_index  
     
-    def get_looping_action_sequence(self,plan_length):
-        fluents = self.given_fluent_sequence[plan_length]
-        ontable_list = [x for x in fluents if "on(" in x]
-        clear_list = [re.findall(r'\((.*?)\)',x)[0] for x in fluents if "clear" in x]
-        l = []
-        for x in clear_list:
-            for y in ontable_list:
-                if x in y:
-                    l.append(y) 
-        # print(l)
-        # exit()
-        match = re.search(r'\((.*?)\)',(random.choice(l)))
-        match = match.group(1).split(',')
-        b1,b2 = match[0],match[1]
-        string_repeat_number = random.randint(1,plan_length-1)   
-        sequence = string_repeat_number*f"unstack({b1},{b2}) stack({b1},{b2}), "
-        return sequence, string_repeat_number, b1, b2
+    def get_looping_action_sequence(self,plan,seq,key):
+        fluents = seq
+        last_action = plan[-1]
+        # print(fluents)
+        print(last_action)
+        if last_action.startswith('action_unstack('):
+            block = self.extract_multi_variable(last_action)[0]
+            if key == True:
+                string_repeat_number = random.choice([2,4,6,8,10])   
+                random_action = [f"put_down({block})",f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                # print(actions)
+                # exit()                
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                # print(action_strings)
+                # exit()
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block} be on table?"
+                answer = True  
+                answer_string = 'on the table'      
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result,answer_string
+            elif key == False:
+                string_repeat_number = random.choice([3,5,7,9,11])   
+                random_action = [f"put_down({block})",f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block} be on table?"
+                answer = False       
+                answer_string = 'in the hand'
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result, answer_string
+        elif last_action.startswith('action_stack('):
+            block1, block2 = self.extract_multi_variable(last_action)
+            if key == True:
+                string_repeat_number = random.choice([2,4,6,8,10])   
+                random_action = [f"unstack({block1},{block2})",f"stack({block1},{block2})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block1} be on block {block2}?"
+                answer = True  
+                answer_string = f'on block {block2}'
+                question_without_result = f"will the block {block1} be on block {block2}?"
+                return question, answer, random_action, question_without_result
+            elif key == False:
+                string_repeat_number = random.choice([3,5,7,9,11])   
+                random_action = [f"unstack({block1},{block2})",f"stack({block1},{block2})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block1} be on block {block2}?"
+                answer = False        
+                question_without_result = f"will the block {block1} be on block {block2}?"
+                return question, answer, random_action, question_without_result
+        elif last_action.startswith('action_put_down('):
+            block = self.extract_single_variable(last_action)
+            if key == True:
+                string_repeat_number = random.choice([2,4,6,8,10])   
+                random_action = [f"pick_up({block})",f"put_down({block})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block} be on table?"
+                answer = True        
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
+            elif key == False:
+                string_repeat_number = random.choice([3,5,7,9,11])   
+                random_action = [f"pick_up({block})",f"put_down({block})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block} be on table?"
+                answer = False        
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
+        elif last_action.startswith('action_pick_up('):
+            block = self.extract_single_variable(last_action)
+            if key == True:
+                string_repeat_number = random.choice([2,4,6,8,10])   
+                random_action = [f"put_down({block})",f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ' then' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block} be on table?"
+                answer = True        
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer,random_action, question_without_result
+            elif key == False:
+                string_repeat_number = random.choice([3,5,7,9,11])   
+                random_action = [f"put_down({block})",f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0,string_repeat_number):
+                    if i%2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])  
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in enumerate(actions)]
+                result = ''.join(action_strings)                     
+                question = f"{result}, will the block {block} be on table?"
+                answer = False        
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
+                
+            # else:
+            #     b = random.choice(holding_list)
+            #     if key == True:
+            #         string_repeat_number = random.choice([2,4,6,8,10])   
+            #         random_action = [f"put_down({b})",f"pick_up({b})"]
+            #         looping_actions = []
+            #         for i in range(0,string_repeat_number):
+            #             if i%2 == 0:
+            #                 looping_actions.append(random_action[0])
+            #             else:
+            #                 looping_actions.append(random_action[1])  
+            #         actions = [self.action_to_natural_language(a) for a in looping_actions]
+            #         action_strings = [action + ' then, ' if action != actions[-1] else action for action in actions]
+            #         result = ''.join(action_strings)                     
+            #         question = f"{result}, will the block {b} be on table and clear?"
+            #         answer = True
+            #         return question, answer
+            #     else: 
+            #         string_repeat_number = random.choice([3,5,7,9,11])   
+            #         random_action = [f"put_down({b})",f"pick_up({b})"]
+            #         looping_actions = []
+            #         for i in range(0,string_repeat_number):
+            #             if i%2 == 0:
+            #                 looping_actions.append(random_action[0])
+            #             else:
+            #                 looping_actions.append(random_action[1])  
+            #         actions = [self.action_to_natural_language(a) for a in looping_actions]
+            #         action_strings = [action + ' then, ' if action != actions[-1] else action for action in actions]
+            #         result = ''.join(action_strings)                     
+            #         question = f"{result}, will the block {b} be on table and clear?"
+            #         answer = False
+            #         return question, answer                            
+                
+        #     if key == True:
+        #         sequence = string_repeat_number*f"unstack({b1},{b2}), stack({b1},{b2})"
+        #     else:
+        #         sequence = string_repeat_number*f"unstack({b1},{b2}), stack({b1},{b2}), unstack({b1},{b2})"                 
+        #     return sequence, string_repeat_number, b1, b2
+        # elif random_fluent == 'holding':
+        #     b = random.choice(holding_list)
+        #     string_repeat_number = random.randint(1,plan_length-1)   
+        #     if key == True:
+        #         sequence = string_repeat_number*f"put_down({b}), pick_up({b})"
+        #     else:
+        #         sequence = string_repeat_number*f"put_down({b}), pick_up({b}), put_down({b})"                 
+        #     return sequence, string_repeat_number, b
+    
+        
+        
+        
