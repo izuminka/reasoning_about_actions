@@ -191,35 +191,44 @@ class TestFluentTrackingQuestionsBlocksworld(TestHelpers):
         # TODO seed issue
 
 class TestStateTrackingQuestionsBlocksworld(unittest.TestCase):
-    jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
-    instance_id = 'sdf'
-    domain_class = Blocksworld()
-    object_tracking_questions = StateTrackingQuestions(jsonl_object, domain_class, instance_id)
-    plan_lengths = [1, 5, 10, 15, 20]
+    qa_class = StateTrackingQuestions(jsonl_object, domain_class, instance_id)
 
     def test_q1(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_1(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
 
     def test_q2(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_2(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
 
     def test_q3(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_3(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
+
+        # TODO seed issue
 
     def test_q4(self):
-        # todo
-        pass
+        plan_length = 2
+        qa_object = self.qa_class.question_4(plan_length)
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
 
-    def test_q5(self):
-        # todo
-        pass
+        # TODO seed issue
 
-    def test_q6(self):
-        # todo
-        pass
 
 class TestActionExecutabilityQuestionsBlocksworld(unittest.TestCase):
     jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')

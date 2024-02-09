@@ -46,8 +46,8 @@ class QuestionGenerationHelpers:
         self.states_actions = self.states_actions_all[1:]
         self.instance_id = instance_id
         self.given_plan_sequence = self.extract_given_plan_sequence()
-        self.given_pos_fluent_sequence = self.extract_fluents_for_given_plan()
-        self.given_neg_fluent_sequence = self.extract_fluents_for_given_plan(NEG_FLUENTS_KEY)
+        self.pos_fluents_given_plan = self.extract_fluents_for_given_plan()
+        self.neg_fluent_given_plan = self.extract_fluents_for_given_plan(NEG_FLUENTS_KEY)
         self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
@@ -133,9 +133,9 @@ class QuestionGenerationHelpers:
     def fluents_for_obj(self, obj, plan_length, is_true_fluents=True):
         fluents_for_object = []
         if is_true_fluents:
-            fluents = self.given_pos_fluent_sequence[plan_length]
+            fluents = self.pos_fluents_given_plan[plan_length]
         else:
-            fluents = self.given_neg_fluent_sequence[plan_length]
+            fluents = self.neg_fluent_given_plan[plan_length]
         for fluent in fluents:
             if self.is_substring_within_parentheses(fluent, obj):
                 fluents_for_object.append(fluent)
@@ -176,16 +176,17 @@ class QuestionGenerationHelpers:
         return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_true_answer, pos_fluents, neg_fluents):
+        sample_size = int((len(pos_fluents) + len(neg_fluents))/2)
         if is_pos_fluent_question:
             if is_true_answer:
                 fluents = pos_fluents
             else:
-                fluents = pos_fluents + [f[1:] for f in neg_fluents]
+                fluents = random.sample(pos_fluents + [f[1:] for f in neg_fluents], sample_size)
         else:
             if is_true_answer:
                 fluents = neg_fluents
             else:
-                fluents = [f"-{f}" for f in pos_fluents] + neg_fluents
+                fluents = random.sample([f"-{f}" for f in pos_fluents] + neg_fluents, sample_size)
         return fluents
 
 
@@ -286,9 +287,9 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def objects_for_fluent_one_object(self, fluent_prefix, plan_length, is_true_fluents=True):
         objects_for_fluent = []
         if is_true_fluents:
-            fluents = self.given_pos_fluent_sequence[plan_length]
+            fluents = self.pos_fluents_given_plan[plan_length]
         else:
-            fluents = self.given_neg_fluent_sequence[plan_length]
+            fluents = self.neg_fluent_given_plan[plan_length]
         for fluent in fluents:
             if fluent_prefix in fluent:
                 objects_for_fluent.append(extract_single_variable(fluent))
@@ -331,16 +332,16 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
         def is_break_condition(chosen_fluent, objects_for_fluent):
             return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and (
-                        '(' in chosen_fluent) and len(objects_for_fluent) >= 1
+                    '(' in chosen_fluent) and len(objects_for_fluent) >= 1
 
         # NOTE: only fluents for single objects, ex: ontable(block1),  NOT on(block1, block2)
         chosen_fluent = ''
         objects_for_fluent = []
         while not is_break_condition(chosen_fluent, objects_for_fluent) and timeout > 0:
             if is_pos_fluents:
-                chosen_fluent = random.choice(self.given_pos_fluent_sequence[plan_length])
+                chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
             else:
-                chosen_fluent = random.choice(self.given_neg_fluent_sequence[plan_length])
+                chosen_fluent = random.choice(self.neg_fluent_given_plan[plan_length])
             if '(' not in chosen_fluent:
                 continue
             fluent_prefix = chosen_fluent[:chosen_fluent.find('(')]
@@ -396,18 +397,17 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def qa_1_2_helper(self, plan_length, is_pos_fluent_question):
         is_answer_true = random.choice([True, False])
-        pos_fluent = random.choice(self.given_pos_fluent_sequence[plan_length])
-        neg_fluent = random.choice(self.given_neg_fluent_sequence[plan_length])
-        fluent = \
-        self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+        pos_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
+        neg_fluent = random.choice(self.neg_fluent_given_plan[plan_length])
+        fluent = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def qa_3_4_helper(self, plan_length, is_pos_fluent_question):
         is_answer_true = random.choice([True, False])
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
-                                                      self.given_pos_fluent_sequence[plan_length],
-                                                      self.given_neg_fluent_sequence[plan_length])
+                                                      self.pos_fluents_given_plan[plan_length],
+                                                      self.neg_fluent_given_plan[plan_length])
         question = f"{self.nl_question_prefix(plan_length)} are all of the following fluents {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}? {NONE_STATEMENT}"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
 
@@ -456,28 +456,46 @@ class StateTrackingQuestions(QuestionGenerator):
     def question_category(self):
         return 'state_tracking'
 
+    def qa_1_2_helper(self, plan_length, is_pos_fluent_question):
+        is_answer_true = random.choice([True, False])
+        pos_fluents = self.pos_fluents_given_plan[plan_length]
+        neg_fluents = self.neg_fluent_given_plan[plan_length]
+        fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
+        nl_fluents = self.nl_fluents(fluents)
+        if is_pos_fluent_question:
+            fluent_type = 'positive'
+        else:
+            fluent_type = 'negative'
+        question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {fluent_type} fluents represent the state completely: {nl_fluents}?"
+        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, is_answer_true)
+
+
+    def qa_3_4_helper(self, plan_length, is_pos_fluent_question):
+        if is_pos_fluent_question:
+            fluent_type = 'positive'
+            fluents = self.pos_fluents_given_plan[plan_length]
+        else:
+            fluent_type = 'negative'
+            fluents = self.neg_fluent_given_plan[plan_length]
+        nl_fluents = self.nl_fluents(fluents)
+        question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for this state. {NONE_STATEMENT}."
+        return self.qa_data_object(self.FREE_ANSWER, question, nl_fluents.capitalize())
+
     def question_1(self, plan_length):
-        question = f"I plan to perform the actions {self.nl_actions_up_to(plan_length)}, to reach the current state. Do the following fluents {self.given_pos_fluent_sequence[plan_length + 1]} represent the state completely?"
-        answer = True
-        return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
+        is_pos_fluent_question = True
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question)
 
     def question_2(self, plan_length):
-        # TODO implement
-        return None
+        is_pos_fluent_question = False
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question)
 
     def question_3(self, plan_length):
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, list all the conditions that will be true when I perform the sequence of actions?"
-        answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natural_language(fluent) for fluent in
-             self.given_pos_fluent_sequence[plan_length + 1]])
-        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+        is_pos_fluent_question = True
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question)
 
     def question_4(self, plan_length):
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}, list all the conditions that will not be true when I perform the sequence of actions?"
-        answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natural_language(fluent) for fluent in
-             self.given_neg_fluent_sequence[plan_length + 1]])
-        return self.qa_data_object(self.FREE_ANSWER, question, answer)
+        is_pos_fluent_question = False
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question)
 
 
 class ActionExecutabilityQuestions(QuestionGenerator):
@@ -532,8 +550,8 @@ class EffectsQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        fluents_current_state = set(self.given_pos_fluent_sequence[plan_length - 1])  # TODO doube check
-        fluents_next_state = set(self.given_pos_fluent_sequence[plan_length])
+        fluents_current_state = set(self.pos_fluents_given_plan[plan_length - 1])  # TODO doube check
+        fluents_next_state = set(self.pos_fluents_given_plan[plan_length])
 
         affected_fluents = fluents_next_state - fluents_current_state
         num_samples = len(affected_fluents)
@@ -544,8 +562,8 @@ class EffectsQuestions(QuestionGenerator):
 
     def question_2(self, plan_length):
         action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        fluents_current_state = set(self.given_pos_fluent_sequence[plan_length - 1])  # TODO doube check
-        fluents_next_state = set(self.given_pos_fluent_sequence[plan_length])
+        fluents_current_state = set(self.pos_fluents_given_plan[plan_length - 1])  # TODO doube check
+        fluents_next_state = set(self.pos_fluents_given_plan[plan_length])
 
         unaffected_fluents = fluents_next_state.intersection(fluents_current_state)
         num_samples = len(unaffected_fluents)
@@ -556,13 +574,13 @@ class EffectsQuestions(QuestionGenerator):
 
     def question_3(self, plan_length):
         action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        fluents_next_state = self.given_pos_fluent_sequence[plan_length]  # TODO doube check
+        fluents_next_state = self.pos_fluents_given_plan[plan_length]  # TODO doube check
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be true"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, fluents_next_state)
 
     def question_4(self, plan_length):
         action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        neg_fluents_next_state = self.given_neg_fluent_sequence[plan_length]  # TODO doube check
+        neg_fluents_next_state = self.neg_fluent_given_plan[plan_length]  # TODO doube check
         question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be false"
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, neg_fluents_next_state)
 
@@ -644,7 +662,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the number of executable actions {no_of_executable_actions}?"
         answer = True
         print("self.executable_actions[plan_length]---->", self.executable_actions[plan_length])
-        print("fluents---->", self.given_pos_fluent_sequence[plan_length])
+        print("fluents---->", self.pos_fluents_given_plan[plan_length])
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
     def question_4(self, plan_length):
@@ -654,7 +672,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
             [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
         question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the number of executable actions {no_of_executable_actions}?"
         print("self.executable_actions[plan_length]---->", self.executable_actions[plan_length])
-        print("fluents---->", self.given_pos_fluent_sequence[plan_length])
+        print("fluents---->", self.pos_fluents_given_plan[plan_length])
         answer = False
         return self.qa_data_object(self.TRUE_FALSE_ANSWER, question, answer)
 
@@ -695,8 +713,8 @@ class NumericalReasoningQuestions(QuestionGenerator):
         actions_to_nl = ', '.join(
             [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
         question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. How many true fluents are there in the current state?"
-        answer = len(self.given_pos_fluent_sequence[plan_length])
-        print("self.given_fluent_sequence[plan_length]---->", self.given_pos_fluent_sequence[plan_length])
+        answer = len(self.pos_fluents_given_plan[plan_length])
+        print("self.given_fluent_sequence[plan_length]---->", self.pos_fluents_given_plan[plan_length])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_9(self, plan_length):
@@ -704,8 +722,8 @@ class NumericalReasoningQuestions(QuestionGenerator):
         actions_to_nl = ', '.join(
             [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
         question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. How many false fluents are there in the current state?"
-        answer = len(self.given_neg_fluent_sequence[plan_length])
-        print("self.given_neg_fluent_sequence[plan_length]---->", self.given_neg_fluent_sequence[plan_length])
+        answer = len(self.neg_fluent_given_plan[plan_length])
+        print("self.given_neg_fluent_sequence[plan_length]---->", self.neg_fluent_given_plan[plan_length])
         return self.qa_data_object(self.FREE_ANSWER, question, answer)
 
     def question_10(self, plan_length):
