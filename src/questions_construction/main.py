@@ -170,7 +170,12 @@ class QuestionGenerationHelpers:
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
         def corrupted_not_corrupted_mix(not_corrupted_fluents, corrupted_fluents):
             final_length = len(not_corrupted_fluents)
-            num_to_be_corrupted_samples = random.randint(1, final_length - 1)
+            if final_length == 0:
+                raise 'Empty list'
+            elif final_length == 1:
+                num_to_be_corrupted_samples = 1
+            else:
+                num_to_be_corrupted_samples = random.randint(1, final_length - 1)
             corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
             return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
             
