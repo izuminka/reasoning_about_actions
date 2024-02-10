@@ -22,20 +22,20 @@ class TestHelpers(unittest.TestCase):
     def setUp(self):
         random.seed(42)
 
-    def assert_qa_objects(self, question_constructor, plan_length_range=plan_length_range):
-        for plan_length in plan_length_range:
-            qa_object = question_constructor(plan_length)
-            for _k, v in qa_object.items():
-                self.assertIsNotNone(v)
+    def assert_qa_object(self, qa_object):
+        for _k, v in qa_object.items():
+            self.assertIsNotNone(v)
 
-            self.assertTrue(qa_object['question'])
-            if qa_object[OUT_OBJ_ANSWER_TYPE] == TRUE_FALSE_ANSWER:
-                self.assertTrue(qa_object['answer'] in [True, False], msg=qa_object['answer'])
+        self.assertTrue(qa_object['question'])
+        if qa_object[OUT_OBJ_ANSWER_TYPE] == TRUE_FALSE_ANSWER:
+            self.assertTrue(qa_object['answer'] in [True, False], msg=qa_object['answer'])
 
-            for forbidden_char in "[]()'_-":
-                self.assertTrue(forbidden_char not in qa_object['question'], f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
-                if qa_object[OUT_OBJ_ANSWER_TYPE] == FREE_ANSWER:
-                    self.assertTrue(forbidden_char not in qa_object['answer'], f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
+        for forbidden_char in "[]()'_-":
+            self.assertTrue(forbidden_char not in qa_object['question'],
+                            f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
+            if qa_object[OUT_OBJ_ANSWER_TYPE] == FREE_ANSWER:
+                self.assertTrue(forbidden_char not in qa_object['answer'],
+                                f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
 
         # # Print manually
         # plan_length = 3
@@ -43,6 +43,13 @@ class TestHelpers(unittest.TestCase):
         # print('\n\n')
         # print(qa_object['question'])
         # print(qa_object['answer'])
+
+    def assert_qa_objects(self, question_constructor, plan_length_range=plan_length_range):
+        for plan_length in plan_length_range:
+            qa_object = question_constructor(plan_length)
+            self.assert_qa_object(qa_object)
+
+
 
 
 class TestQuestionGenerationMainMethods(TestHelpers):
@@ -113,6 +120,15 @@ class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
     def test_q4(self):
         self.assert_qa_objects(self.qa_class.question_4)
 
+    def test_all_questions(self):
+        multiplicity = 1
+        plan_lengths = [1, 2, 3, 4]
+        questions = self.qa_class.create_questions(multiplicity, plan_lengths)
+        self.assertEqual(len(questions), 4*len(plan_lengths))
+
+        for q in questions:
+            self.assert_qa_object(q)
+
 class TestFluentTrackingQuestionsBlocksworld(TestHelpers):
     qa_class = FluentTrackingQuestions(jsonl_object, domain_class, instance_id)
 
@@ -167,6 +183,9 @@ class TestActionExecutabilityQuestionsBlocksworld(TestHelpers):
 
     def test_q5(self):
         self.assert_qa_objects(self.qa_class.question_5)
+
+    def test_q6(self):
+        self.assert_qa_objects(self.qa_class.question_6)
 
 
 class TestEffectsQuestionsQuestionsBlocksworld(TestHelpers):

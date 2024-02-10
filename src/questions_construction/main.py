@@ -21,6 +21,7 @@ MAX_TIMEOUT = 100
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
+PLAN_LENGTHS = [1,5,10,15,20]
 
 
 def extract_single_variable(obj):
@@ -219,17 +220,19 @@ class QuestionGenerator(QuestionGenerationHelpers):
         results = {}
         while (len(results) < multiplicity) and timeout > 0:
             qa_object = question_constructor(plan_length)
-            if qa_object:  # can be None
-                qa_id = (qa_object['question'], qa_object['answer'])
-                results[qa_id] = qa_object
+            if not qa_object:
+                return []
+
+            qa_id = (qa_object['question'], qa_object['answer'])
+            results[qa_id] = qa_object
             timeout -= 1
         if timeout == 0:
-            raise ('Timeout error')
+            raise 'Timeout error'
         return list(results.values())
 
-    def create_questions(self, multiplicity=QUESTION_MULTIPLICITY):
+    def create_questions(self, multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):
         results = []
-        for plan_length in range(1, self.plan_length_max + 1):
+        for plan_length in plan_lengths:
             for question_constructor in self.question_constructors():
                 results += self.unique_questions(question_constructor, plan_length, multiplicity)
         return results
