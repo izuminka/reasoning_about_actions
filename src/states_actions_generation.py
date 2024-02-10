@@ -118,3 +118,33 @@ class StatesActionsGenerator:
     def save_data(self, save_path):
         with jsonlines.open(save_path, 'w') as w:
             w.write_all(self.data)
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate data for a given domain, instance (init, objects, plan)')
+    parser.add_argument('--domain_name', '-d', type=str, help='Specify the domain name')
+    parser.add_argument('--instance_name', '-i', type=str, help='Specify the instance name')
+    args = parser.parse_args()
+
+    domain_path = f'{DATA_PATH}/initial/asp/{args.domain_name}/domain.lp'
+    instance_path = f'{DATA_PATH}/initial/asp/{args.domain_name}/instances/{args.instance_name}'
+
+    action_sequence = open_asp_action_sequence( f'{instance_path}/plan.lp')
+    DG = StatesActionsGenerator(domain_path,  f'{instance_path}/init.lp', f'{instance_path}/objects.lp')
+    print('generating data')
+    data = DG.generate_data(action_sequence)
+
+    optimal_sequence = []
+    for timestep in data:
+        for action, value in timestep.items():
+            if value['part_of_plan?']:
+                optimal_sequence.append(action)
+    assert (optimal_sequence[1:] == action_sequence)
+    print('quick validation passed')
+    print('saving')
+
+    save_dir = f'{DATA_PATH}/generated/{args.domain_name}'
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    save_jsonl(data, f'{save_dir}/{args.instance_name}.jsonl')
