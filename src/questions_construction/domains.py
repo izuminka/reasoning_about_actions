@@ -41,9 +41,18 @@ class Blocksworld(BaseDomain):
     
     list_of_unknown_actions = ['action_shuffle','action_move','action_rotate','action_twist']
     list_of_unknown_fluents = ['belowtable','unclear','empty','broken','unstable','usable']
-    
+
+    def __init__(self):
+
+        self.domain_description_without_ram = self.domain_description_without_ram()
+        self.domain_name = self.domain_name()
+
     def domain_name(self):
         return 'blocksworld'
+    
+    def domain_description_without_ram(self):
+        domain_description = f'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. By picking up that block, it makes that block not present on the table and not clear. It also leads to the block being held and makes the hand not empty. Putting down the block can only be executed if the block is being held. Putting down the block causes that block to be clear and on the table. It also causes the hand to be not holding the block and makes the hand empty. A block can be stacked on the second block if it is being held and the second block is clear. By stacking the first block on the second, it causes the first block to clear and on top of the second block. Meanwhile, the second block is not clear, and the hand becomes empty as it is not holding the block. The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. Unstacking the first block from the second causes the second block to be clear. The first block is now being held, not clear, and not on top of the second block. Furthermore, the hand is not empty.'
+        return domain_description
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('on('):

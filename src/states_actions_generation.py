@@ -1,7 +1,8 @@
 from common import *
-import clingo
+# import clingo
 import re
-
+import sys
+sys.path.append('/data_5/data/shri/reasoning_about_actions')
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
 
 

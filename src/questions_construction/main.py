@@ -1,6 +1,8 @@
 import json
 import random
 import uuid
+import sys
+sys.path.append('/data_5/data/shri/reasoning_about_actions')
 from src.states_actions_generation import *
 from collections import defaultdict
 
@@ -160,7 +162,7 @@ class QuestionGenerationHelpers:
         nl_obj_ls = [converter(f) for f in obj_ls]
         if fluent_subs:
             nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
-        return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
+        return comma_str.join(['Initially']+nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1] + '.'
 
     def nl_fluents(self, fluents, fluent_subs=None):
         return self.asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
