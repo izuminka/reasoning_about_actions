@@ -67,7 +67,7 @@ class TestStateActionsGeneration(unittest.TestCase):
     def test_save_data_validate(self):
         plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)', 'action_pick_up(b1)', 'action_stack(b1,b2)']
         data = self.DG.generate_data(plan_sequence)
-        save_path = TMP_DIR + '/toy_data.blocksworld.jsonl'
+        save_path = TMP_DIR + '/data.jsonl'
         self.DG.save_data(save_path)
 
         data_from_file = open_jsonl(save_path)

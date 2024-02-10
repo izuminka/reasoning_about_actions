@@ -7,7 +7,7 @@ import random
 TESTS_DIR = CODE_PATH + '/tests'
 TMP_DIR = TESTS_DIR + '/tmp'
 
-jsonl_object = open_jsonl(TESTS_DIR + '/toy_data.blocksworld.jsonl')
+jsonl_object = open_jsonl(TESTS_DIR + '/data/toy_data.blocksworld.jsonl')
 domain_class = Blocksworld()
 instance_id = 'sdf'
 plan_length_range = [1, 2, 3, 4]
@@ -269,7 +269,7 @@ class TestHallucinationQuestionsBlocksworld(TestHelpers):
 class TestQuestionGenerationAll(unittest.TestCase):
 
     def test_all_questions_one_domain_one_instance(self):
-        jsonl_object = open_jsonl(TESTS_DIR + '/data20.jsonl')
+        jsonl_object = open_jsonl(TESTS_DIR + '/data/data20.jsonl')
         instance_id = 'sdf'
         domain_class = Blocksworld()
         all_questions = AllQuestions(jsonl_object, domain_class, instance_id)
