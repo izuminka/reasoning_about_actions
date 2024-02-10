@@ -19,9 +19,6 @@ class TestHelpers(unittest.TestCase):
         for e_ls, p_ls in zip(expected, predicted):
             self.assertEqual(set(e_ls), set(p_ls))
 
-    def setUp(self):
-        random.seed(42)
-
     def assert_qa_object(self, qa_object):
         for _k, v in qa_object.items():
             self.assertIsNotNone(v)
@@ -37,12 +34,10 @@ class TestHelpers(unittest.TestCase):
                 self.assertTrue(forbidden_char not in qa_object['answer'],
                                 f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
 
-        # # Print manually
-        # plan_length = 3
-        # qa_object = question_constructor(plan_length)
-        # print('\n\n')
-        # print(qa_object['question'])
-        # print(qa_object['answer'])
+        # Print manually
+        print('\n\n')
+        print(qa_object['question'])
+        print(qa_object['answer'])
 
     def assert_qa_objects(self, question_constructor, plan_length_range=plan_length_range):
         for plan_length in plan_length_range:
@@ -54,6 +49,9 @@ class TestHelpers(unittest.TestCase):
 
 class TestQuestionGenerationMainMethods(TestHelpers):
     DMM = QuestionGenerationHelpers(jsonl_object, domain_class, instance_id)
+
+    def setUp(self):
+        random.seed(42)
 
     def test_extract_given_plan_sequence(self):
         true_plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)', 'action_pick_up(b1)',
@@ -202,13 +200,6 @@ class TestEffectsQuestionsQuestionsBlocksworld(TestHelpers):
 
     def test_q4(self):
         self.assert_qa_objects(self.qa_class.question_4)
-
-    def test_q5(self):
-        self.assert_qa_objects(self.qa_class.question_5)
-
-    def test_q6(self):
-        self.assert_qa_objects(self.qa_class.question_6)
-
 
 class TestLoopingQuestionsBlocksworld(TestHelpers):
     qa_class = LoopingQuestions(jsonl_object, domain_class, instance_id)

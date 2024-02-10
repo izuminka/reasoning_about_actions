@@ -83,6 +83,7 @@ class StatesActionsGenerator:
         state_str = state_str.replace("\n", "")
         state_str = state_str.replace(prefix, "")
         state_str = state_str.replace(").", "")
+        state_str = state_str.replace(", ", ",")
         state = set(state_str.split(';'))
         if "" in state:
             state.remove("")
@@ -102,7 +103,6 @@ class StatesActionsGenerator:
                                             NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd', 'next_state_neg_fluents.lp'),
                                             OBJECTS_KEY: self.parse_objects(self.objects),
                                             EXECUTABLE_ACTION_BOOL_KEY: True}})
-        #TODO add neg fluents to init state
         for i in range(len(plan_sequence)):
             data_for_step_i = {}
             for action in all_actions:

@@ -153,43 +153,50 @@ class QuestionGenerationHelpers:
         if not obj_ls:
             raise 'Empty list'
         if len(obj_ls) <= 1:
-            return converter(obj_ls[0])
+            nl_obj = converter(obj_ls[0])
+            if fluent_subs:
+                nl_obj = nl_obj.replace(fluent_subs[0], fluent_subs[1])
+            return nl_obj
         nl_obj_ls = [converter(f) for f in obj_ls]
         if fluent_subs:
             nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
         return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
 
-    def nl_actions_up_to(self, plan_length):
-        return self.asp_to_nl(self.given_plan_sequence[:plan_length], self.domain_class.action_to_natural_language)
-
     def nl_fluents(self, fluents, fluent_subs=None):
         return self.asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
+
+    def nl_actions(self, actions, fluent_subs=None):
+        return self.asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_question_prefix(self, plan_length):
         return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
+    def nl_actions_up_to(self, plan_length):
+        return self.nl_actions(self.given_plan_sequence[:plan_length])
+
+    def corrupted_not_corrupted_mix(self, not_corrupted_fluents, corrupted_fluents):
+        final_length = len(not_corrupted_fluents)
+        if final_length == 0:
+            raise 'Empty list'
+        elif final_length == 1:
+            num_to_be_corrupted_samples = 1
+        else:
+            num_to_be_corrupted_samples = random.randint(1, final_length - 1)
+        corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
+        return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
+
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
-        def corrupted_not_corrupted_mix(not_corrupted_fluents, corrupted_fluents):
-            final_length = len(not_corrupted_fluents)
-            if final_length == 0:
-                raise 'Empty list'
-            elif final_length == 1:
-                num_to_be_corrupted_samples = 1
-            else:
-                num_to_be_corrupted_samples = random.randint(1, final_length - 1)
-            corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
-            return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
             
         if is_pos_fluent_question:
             if is_answer_true:
                 fluents = pos_fluents
             else:
-                fluents = corrupted_not_corrupted_mix(pos_fluents, [f[1:] for f in neg_fluents]) # remove the '-' sign
+                fluents = self.corrupted_not_corrupted_mix(pos_fluents, [f[1:] for f in neg_fluents]) # remove the '-' sign
         else:
             if is_answer_true:
                 fluents = neg_fluents
             else:
-                fluents = corrupted_not_corrupted_mix(neg_fluents, [f"-{f}" for f in pos_fluents]) # add the '-' sign
+                fluents = self.corrupted_not_corrupted_mix(neg_fluents, [f"-{f}" for f in pos_fluents]) # add the '-' sign
         return fluents
 
 
@@ -555,46 +562,64 @@ class EffectsQuestions(QuestionGenerator):
     def question_category(self):
         return 'effects'
 
-    def question_1(self, plan_length):
-        # TODO validate
-        action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        fluents_current_state = set(self.pos_fluents_given_plan[plan_length - 1])  # TODO doube check
-        fluents_next_state = set(self.pos_fluents_given_plan[plan_length])
+    def prefix(self, plan_length):
+        if plan_length == 0:
+            return f"Given the initial condition,"
+        else:
+            return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
-        affected_fluents = fluents_next_state - fluents_current_state
-        num_samples = len(affected_fluents)
-        sampled_fluents = random.sample(affected_fluents, num_samples)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} will {sampled_fluents}? True/False"
-        answer = True
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+
+    def qa_1_2_helper(self, plan_length, is_affected_fluents_question, is_answer_true):
+        plan_length -= 1  # since we are taking an action in this question
+        action = self.given_plan_sequence[plan_length]
+        fluents_current_state = set(self.pos_fluents_given_plan[plan_length])
+        fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1])
+
+        fluents_from_action = list(fluents_next_state - fluents_current_state)
+        unaffected_fluents = list(fluents_next_state.intersection(fluents_current_state))
+        if is_affected_fluents_question:
+            if is_answer_true:
+                fluents = fluents_from_action
+            else:
+                fluents = self.corrupted_not_corrupted_mix(fluents_from_action, unaffected_fluents)
+        else:
+            if is_answer_true:
+                fluents = unaffected_fluents
+            else:
+                fluents = self.corrupted_not_corrupted_mix(unaffected_fluents, fluents_from_action)
+        sampled_fluents = random.sample(fluents, random.randint(1, len(fluents)))
+
+        nl_fluents = self.nl_fluents(sampled_fluents, )
+        question = f"{self.prefix(plan_length)} if I perform {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {nl_fluents}?"
+        return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
+
+    def qa_3_4_helper(self, plan_length, is_positive_fluents_question):
+        plan_length -= 1  # since we are taking an action in this question
+        action = self.given_plan_sequence[plan_length]
+        if is_positive_fluents_question:
+            fluents = self.pos_fluents_given_plan[plan_length + 1]
+        else:
+            fluents = self.neg_fluent_given_plan[plan_length + 1]
+        question = f"{self.prefix(plan_length)} I perform {self.nl_actions([action])}, list all fluents that would be {is_positive_fluents_question}"
+        return self.qa_data_object(FREE_ANSWER, question,  self.nl_fluents(fluents))
+
+    def question_1(self, plan_length):
+        is_affected_fluents_question = True
+        is_answer_true = random.choice([True, False])
+        return self.qa_1_2_helper(plan_length, is_affected_fluents_question, is_answer_true)
 
     def question_2(self, plan_length):
-        # TODO validate
-        action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        fluents_current_state = set(self.pos_fluents_given_plan[plan_length - 1])  # TODO doube check
-        fluents_next_state = set(self.pos_fluents_given_plan[plan_length])
-
-        unaffected_fluents = fluents_next_state.intersection(fluents_current_state)
-        num_samples = len(unaffected_fluents)
-        sampled_fluents = random.sample(unaffected_fluents, num_samples)
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} will {sampled_fluents}? True/False"
-        answer = False
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+        is_affected_fluents_question = False
+        is_answer_true = random.choice([True, False])
+        return self.qa_1_2_helper(plan_length, is_affected_fluents_question, is_answer_true)
 
     def question_3(self, plan_length):
-        # TODO validate
-        action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        fluents_next_state = self.pos_fluents_given_plan[plan_length]  # TODO doube check
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be true"
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, fluents_next_state)
+        is_positive_fluents_question = True
+        return self.qa_3_4_helper(plan_length, is_positive_fluents_question)
 
     def question_4(self, plan_length):
-        # TODO validate
-        action = self.given_plan_sequence[plan_length - 1]  # TODO doube check
-        neg_fluents_next_state = self.neg_fluent_given_plan[plan_length]  # TODO doube check
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)}. In this state, if I {action} which fluents will be false"
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, neg_fluents_next_state)
-
+        is_positive_fluents_question = True
+        return self.qa_3_4_helper(plan_length, is_positive_fluents_question)
 
 class NumericalReasoningQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):

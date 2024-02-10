@@ -12,7 +12,7 @@ class TestStateActionsGeneration(unittest.TestCase):
                                 CODE_PATH + '/tests/asp/domains/blocksworld/instances/inst1/objects.lp')
 
     # from the initial condition
-    init_state = {'handempty', 'ontable(b1)', 'on(b2, b1)', 'clear(b2)'}
+    init_state = {'handempty', 'ontable(b1)', 'on(b2,b1)', 'clear(b2)'}
     infeasible_actions = {'action_put_down(b2)', 'action_unstack(b1,b2)', 'action_stack(b1,b2)',
                           'action_pick_up(b1)', 'action_put_down(b1)', 'action_stack(b2,b1)', 'action_pick_up(b2)'}
     feasible_actions = {'action_unstack(b2,b1)'}
