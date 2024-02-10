@@ -28,15 +28,21 @@ class TestHelpers(unittest.TestCase):
             for _k, v in qa_object.items():
                 self.assertIsNotNone(v)
 
-            for forbidden_char in "[]()'_-":
-                self.assertTrue(forbidden_char not in qa_object['question'])
+            self.assertTrue(qa_object['question'])
+            if qa_object[OUT_OBJ_ANSWER_TYPE] == TRUE_FALSE_ANSWER:
+                self.assertTrue(qa_object['answer'] in [True, False], msg=qa_object['answer'])
 
-        # Print manually
-        plan_length = 3
-        qa_object = question_constructor(plan_length)
-        print('\n\n')
-        print(qa_object['question'])
-        print(qa_object['answer'])
+            for forbidden_char in "[]()'_-":
+                self.assertTrue(forbidden_char not in qa_object['question'], f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
+                if qa_object[OUT_OBJ_ANSWER_TYPE] == FREE_ANSWER:
+                    self.assertTrue(forbidden_char not in qa_object['answer'], f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
+
+        # # Print manually
+        # plan_length = 3
+        # qa_object = question_constructor(plan_length)
+        # print('\n\n')
+        # print(qa_object['question'])
+        # print(qa_object['answer'])
 
 
 class TestQuestionGenerationMainMethods(TestHelpers):
