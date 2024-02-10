@@ -44,7 +44,7 @@ class TestStateActionsGeneration(unittest.TestCase):
 
     def test_pipeline(self):
         plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)', 'action_pick_up(b1)', 'action_stack(b1,b2)']
-        data = self.DG.generate_data(plan_sequence)
+        data = self.DG.create_data(plan_sequence)
         self.assertEqual(len(data), len(plan_sequence) + 1)
 
         part_of_plan_actions = []
@@ -66,7 +66,7 @@ class TestStateActionsGeneration(unittest.TestCase):
 
     def test_save_data_validate(self):
         plan_sequence = ['action_unstack(b2,b1)', 'action_put_down(b2)', 'action_pick_up(b1)', 'action_stack(b1,b2)']
-        data = self.DG.generate_data(plan_sequence)
+        data = self.DG.create_data(plan_sequence)
         save_path = TMP_DIR + '/data.jsonl'
         self.DG.save_data(save_path)
 

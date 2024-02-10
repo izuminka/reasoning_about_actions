@@ -4,10 +4,12 @@ import re
 
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
 
+
 def open_asp_action_sequence(plan_path):
     with open(plan_path) as f:
         plan_sequence_asp = f.read()
-    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)], key=lambda x: x[0])
+    plan_sequence = sorted([(action[1], action[0]) for _, action in execute_asp_code(plan_sequence_asp)],
+                           key=lambda x: x[0])
     return [p for _, p in plan_sequence]
 
 
@@ -16,7 +18,7 @@ class StatesActionsGenerator:
 
     CURRENT_STATE_PREFIX = "init("
     OBJECT_TYPES_REGEX = r'(\w+)\('
-    OBJECT_INSTANCES_REGEX =  r'(?<=\().+?(?=\))'
+    OBJECT_INSTANCES_REGEX = r'(?<=\().+?(?=\))'
 
     @staticmethod
     def open_asp(asp_path):
@@ -28,16 +30,15 @@ class StatesActionsGenerator:
     def parse_objects(objects):
         # objects = 'block(a;b;c).\ntruck(t1;t2;t3)'
         # return {'block': ['a', 'b', 'c'], 'truck': ['t1', 't2', 't3']}        
-        objects = objects.replace('\n', ' ')  
+        objects = objects.replace('\n', ' ')
         object_types = re.findall(StatesActionsGenerator.OBJECT_TYPES_REGEX, objects)
         object_dict = {}
         for t in object_types:
             instances = re.findall(StatesActionsGenerator.OBJECT_INSTANCES_REGEX, objects)[object_types.index(t)]
             instances = [obj.strip() for obj in instances.split(';')]
-            object_dict[t] = instances  
+            object_dict[t] = instances
         return object_dict
-    
-    
+
     def __init__(self, asp_domain_path, asp_instance_init_path, asp_instance_objects_path):
         self.domain_path = asp_domain_path
         self.asp_domain = self.open_asp(self.domain_path)
@@ -92,15 +93,14 @@ class StatesActionsGenerator:
     def set_to_asp_string_state(self, state_set, prefix=CURRENT_STATE_PREFIX):
         return prefix + ';'.join(list(state_set)) + ').'
 
-
-
-    def generate_data(self, plan_sequence):
+    def create_data(self, plan_sequence):
         current_state = self.initial_state
         all_actions = self.all_actions()
         self.data.append({INIT_ACTION_KEY: {PART_OF_PLAN_KEY: True,
                                             FLUENTS_KEY: list(current_state),
-                                            #HACK: i pass garbage like then just returns the neg fluents of the current state
-                                            NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd', 'next_state_neg_fluents.lp'),
+                                            # HACK: i pass garbage like then just returns the neg fluents of the current state
+                                            NEG_FLUENTS_KEY: self.next_state(current_state, 'sdfsdfd',
+                                                                             'next_state_neg_fluents.lp'),
                                             OBJECTS_KEY: self.parse_objects(self.objects),
                                             EXECUTABLE_ACTION_BOOL_KEY: True}})
         for i in range(len(plan_sequence)):
@@ -120,20 +120,21 @@ class StatesActionsGenerator:
             w.write_all(self.data)
 
 
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description='Generate data for a given domain, instance (init, objects, plan)')
-    parser.add_argument('--domain_name', '-d', type=str, help='Specify the domain name')
-    parser.add_argument('--instance_name', '-i', type=str, help='Specify the instance name')
-    args = parser.parse_args()
+def main(domain_name, instance_name):
+    save_dir = f'{DATA_PATH}/generated/{domain_name}'
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    save_path = f'{save_dir}/{instance_name}.jsonl'
+    if os.path.exists(save_path):
+        raise f'File {save_path} already exists'
 
-    domain_path = f'{DATA_PATH}/initial/asp/{args.domain_name}/domain.lp'
-    instance_path = f'{DATA_PATH}/initial/asp/{args.domain_name}/instances/{args.instance_name}'
+    domain_path = f'{DATA_PATH}/initial/asp/{domain_name}/domain.lp'
+    instance_path = f'{DATA_PATH}/initial/asp/{domain_name}/instances/{instance_name}'
 
-    action_sequence = open_asp_action_sequence( f'{instance_path}/plan.lp')
-    DG = StatesActionsGenerator(domain_path,  f'{instance_path}/init.lp', f'{instance_path}/objects.lp')
+    action_sequence = open_asp_action_sequence(f'{instance_path}/plan.lp')
+    states_actions_generator = StatesActionsGenerator(domain_path, f'{instance_path}/init.lp', f'{instance_path}/objects.lp')
     print('generating data')
-    data = DG.generate_data(action_sequence)
+    data = states_actions_generator.create_data(action_sequence)
 
     optimal_sequence = []
     for timestep in data:
@@ -142,9 +143,17 @@ if __name__ == '__main__':
                 optimal_sequence.append(action)
     assert (optimal_sequence[1:] == action_sequence)
     print('quick validation passed')
-    print('saving')
 
-    save_dir = f'{DATA_PATH}/generated/{args.domain_name}'
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    save_jsonl(data, f'{save_dir}/{args.instance_name}.jsonl')
+    print('saving')
+    save_jsonl(data, save_path)
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Generate data for a given domain, instance (init, objects, plan)')
+    parser.add_argument('--domain_name', '-d', type=str, help='Specify the domain name')
+    parser.add_argument('--instance_name', '-i', type=str, help='Specify the instance name')
+    args = parser.parse_args()
+
+    main(args.domain_name, args.instance_name)
