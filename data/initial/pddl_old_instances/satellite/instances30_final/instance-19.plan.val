@@ -1,87 +1,0 @@
-Type-checking turn_to
-...action passes type checking.
-Type-checking switch_on
-...action passes type checking.
-Type-checking switch_off
-...action passes type checking.
-Type-checking calibrate
-...action passes type checking.
-Type-checking take_image
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-32.plan.pddl
-Plan to validate:
-
-Plan size: 9
-1:
-(switch_on instrument7 satellite3)
- 
-2:
-(turn_to satellite3 groundstation1 star2)
- 
-3:
-(calibrate satellite3 instrument7 groundstation1)
- 
-4:
-(turn_to satellite3 phenomenon5 groundstation1)
- 
-5:
-(take_image satellite3 phenomenon5 instrument7 image0)
- 
-6:
-(turn_to satellite3 groundstation0 phenomenon5)
- 
-7:
-(turn_to satellite2 star2 groundstation3)
- 
-8:
-(turn_to satellite1 star4 groundstation0)
- 
-9:
-(turn_to satellite0 groundstation3 groundstation0)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Deleting (calibrated instrument7)
-Deleting (power_avail satellite3)
-Adding (power_on instrument7)
-
-Checking next happening (time 2)
-Deleting (pointing satellite3 star2)
-Adding (pointing satellite3 groundstation1)
-
-Checking next happening (time 3)
-Adding (calibrated instrument7)
-
-Checking next happening (time 4)
-Deleting (pointing satellite3 groundstation1)
-Adding (pointing satellite3 phenomenon5)
-
-Checking next happening (time 5)
-Adding (have_image phenomenon5 image0)
-
-Checking next happening (time 6)
-Deleting (pointing satellite3 phenomenon5)
-Adding (pointing satellite3 groundstation0)
-
-Checking next happening (time 7)
-Deleting (pointing satellite2 groundstation3)
-Adding (pointing satellite2 star2)
-
-Checking next happening (time 8)
-Deleting (pointing satellite1 groundstation0)
-Adding (pointing satellite1 star4)
-
-Checking next happening (time 9)
-Deleting (pointing satellite0 groundstation0)
-Adding (pointing satellite0 groundstation3)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 9 
-
-Successful plans:
-Value: 9
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-32.plan.pddl 9 
-

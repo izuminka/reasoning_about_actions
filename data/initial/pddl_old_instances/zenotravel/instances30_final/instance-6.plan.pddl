@@ -1,7 +1,0 @@
-(board person1 plane8 city2)
-(fly plane8 city2 city0 fl6 fl5)
-(debark person1 plane8 city0)
-(board person2 plane3 city3)
-(fly plane3 city3 city1 fl4 fl3)
-(debark person2 plane3 city1)
-; cost = 6 (unit cost)

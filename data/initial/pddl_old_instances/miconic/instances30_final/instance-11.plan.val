@@ -1,130 +1,0 @@
-Type-checking board
-...action passes type checking.
-Type-checking depart
-...action passes type checking.
-Type-checking up
-...action passes type checking.
-Type-checking down
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-18.plan.pddl
-Plan to validate:
-
-Plan size: 16
-1:
-(board f0 p2)
- 
-2:
-(up f0 f2)
- 
-3:
-(depart f2 p2)
- 
-4:
-(up f2 f6)
- 
-5:
-(board f6 p0)
- 
-6:
-(up f6 f8)
- 
-7:
-(board f8 p3)
- 
-8:
-(down f8 f3)
- 
-9:
-(board f3 p4)
- 
-10:
-(depart f3 p3)
- 
-11:
-(up f3 f4)
- 
-12:
-(board f4 p1)
- 
-13:
-(depart f4 p4)
- 
-14:
-(up f4 f5)
- 
-15:
-(depart f5 p1)
- 
-16:
-(depart f5 p0)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Adding (boarded p2)
-
-Checking next happening (time 2)
-Deleting (lift-at f0)
-Adding (lift-at f2)
-
-Checking next happening (time 3)
-Deleting (boarded p2)
-Adding (served p2)
-
-Checking next happening (time 4)
-Deleting (lift-at f2)
-Adding (lift-at f6)
-
-Checking next happening (time 5)
-Adding (boarded p0)
-
-Checking next happening (time 6)
-Deleting (lift-at f6)
-Adding (lift-at f8)
-
-Checking next happening (time 7)
-Adding (boarded p3)
-
-Checking next happening (time 8)
-Deleting (lift-at f8)
-Adding (lift-at f3)
-
-Checking next happening (time 9)
-Adding (boarded p4)
-
-Checking next happening (time 10)
-Deleting (boarded p3)
-Adding (served p3)
-
-Checking next happening (time 11)
-Deleting (lift-at f3)
-Adding (lift-at f4)
-
-Checking next happening (time 12)
-Adding (boarded p1)
-
-Checking next happening (time 13)
-Deleting (boarded p4)
-Adding (served p4)
-
-Checking next happening (time 14)
-Deleting (lift-at f4)
-Adding (lift-at f5)
-
-Checking next happening (time 15)
-Deleting (boarded p1)
-Adding (served p1)
-
-Checking next happening (time 16)
-Deleting (boarded p0)
-Adding (served p0)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 16 
-
-Successful plans:
-Value: 16
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-18.plan.pddl 16 
-

@@ -1,7 +1,0 @@
-(board-truck driver1 truck1 s0)
-(drive-truck truck1 s0 s1 driver1)
-(load-truck package3 truck1 s1)
-(drive-truck truck1 s1 s0 driver1)
-(unload-truck package3 truck1 s0)
-(drive-truck truck1 s0 s1 driver1)
-; cost = 6 (unit cost)

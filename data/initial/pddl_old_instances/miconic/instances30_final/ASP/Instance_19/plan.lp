@@ -1,9 +1,0 @@
-occurs(action_up(f0,f4),1).
-occurs(action_board(f4,p0),2).
-occurs(action_board(f4,p2),3).
-occurs(action_up(f4,f5),4).
-occurs(action_board(f5,p1),5).
-occurs(action_depart(f5,p2),6).
-occurs(action_depart(f5,p0),7).
-occurs(action_down(f5,f2),8).
-occurs(action_depart(f2,p1),9).

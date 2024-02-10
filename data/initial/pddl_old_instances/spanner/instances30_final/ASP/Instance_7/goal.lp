@@ -1,2 +1,0 @@
-goal(tightened(nut1);
-).

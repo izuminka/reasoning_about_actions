@@ -1,9 +1,0 @@
-occurs(action_refuel(plane1,city5,fl1,fl2),1).
-occurs(action_refuel(plane1,city5,fl2,fl3),2).
-occurs(action_board(person1,plane1,city5),3).
-occurs(action_fly(plane1,city5,city4,fl3,fl2),4).
-occurs(action_board(person2,plane1,city4),5).
-occurs(action_debark(person1,plane1,city4),6).
-occurs(action_fly(plane1,city4,city7,fl2,fl1),7).
-occurs(action_debark(person2,plane1,city7),8).
-occurs(action_fly(plane1,city7,city8,fl1,fl0),9).

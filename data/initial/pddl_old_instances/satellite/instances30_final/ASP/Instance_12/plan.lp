@@ -1,9 +1,0 @@
-occurs(action_switch_on(instrument0,satellite0),1).
-occurs(action_turn_to(satellite0,star0,star1),2).
-occurs(action_calibrate(satellite0,instrument0,star0),3).
-occurs(action_turn_to(satellite0,planet3,star0),4).
-occurs(action_take_image(satellite0,planet3,instrument0,spectrograph0),5).
-occurs(action_turn_to(satellite0,star1,planet3),6).
-occurs(action_take_image(satellite0,star1,instrument0,spectrograph0),7).
-occurs(action_turn_to(satellite0,star2,star1),8).
-occurs(action_take_image(satellite0,star2,instrument0,spectrograph0),9).

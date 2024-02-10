@@ -1,85 +1,0 @@
-Type-checking turn_to
-...action passes type checking.
-Type-checking switch_on
-...action passes type checking.
-Type-checking switch_off
-...action passes type checking.
-Type-checking calibrate
-...action passes type checking.
-Type-checking take_image
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-6.plan.pddl
-Plan to validate:
-
-Plan size: 9
-1:
-(switch_on instrument2 satellite1)
- 
-2:
-(calibrate satellite1 instrument2 star0)
- 
-3:
-(turn_to satellite1 phenomenon6 star0)
- 
-4:
-(take_image satellite1 phenomenon6 instrument2 thermograph3)
- 
-5:
-(turn_to satellite1 planet5 phenomenon6)
- 
-6:
-(take_image satellite1 planet5 instrument2 spectrograph0)
- 
-7:
-(turn_to satellite1 planet7 planet5)
- 
-8:
-(take_image satellite1 planet7 instrument2 thermograph2)
- 
-9:
-(turn_to satellite0 planet5 phenomenon6)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Deleting (calibrated instrument2)
-Deleting (power_avail satellite1)
-Adding (power_on instrument2)
-
-Checking next happening (time 2)
-Adding (calibrated instrument2)
-
-Checking next happening (time 3)
-Deleting (pointing satellite1 star0)
-Adding (pointing satellite1 phenomenon6)
-
-Checking next happening (time 4)
-Adding (have_image phenomenon6 thermograph3)
-
-Checking next happening (time 5)
-Deleting (pointing satellite1 phenomenon6)
-Adding (pointing satellite1 planet5)
-
-Checking next happening (time 6)
-Adding (have_image planet5 spectrograph0)
-
-Checking next happening (time 7)
-Deleting (pointing satellite1 planet5)
-Adding (pointing satellite1 planet7)
-
-Checking next happening (time 8)
-Adding (have_image planet7 thermograph2)
-
-Checking next happening (time 9)
-Deleting (pointing satellite0 phenomenon6)
-Adding (pointing satellite0 planet5)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 9 
-
-Successful plans:
-Value: 9
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-6.plan.pddl 9 
-

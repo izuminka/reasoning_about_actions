@@ -1,93 +1,0 @@
-Type-checking turn_to
-...action passes type checking.
-Type-checking switch_on
-...action passes type checking.
-Type-checking switch_off
-...action passes type checking.
-Type-checking calibrate
-...action passes type checking.
-Type-checking take_image
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-35.plan.pddl
-Plan to validate:
-
-Plan size: 10
-1:
-(switch_on instrument13 satellite2)
- 
-2:
-(calibrate satellite2 instrument13 star4)
- 
-3:
-(switch_on instrument3 satellite1)
- 
-4:
-(turn_to satellite2 phenomenon9 star4)
- 
-5:
-(take_image satellite2 phenomenon9 instrument13 thermograph6)
- 
-6:
-(turn_to satellite1 star4 groundstation2)
- 
-7:
-(calibrate satellite1 instrument3 star4)
- 
-8:
-(turn_to satellite1 phenomenon8 star4)
- 
-9:
-(take_image satellite1 phenomenon8 instrument3 image4)
- 
-10:
-(turn_to satellite1 groundstation0 phenomenon8)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Deleting (calibrated instrument13)
-Deleting (power_avail satellite2)
-Adding (power_on instrument13)
-
-Checking next happening (time 2)
-Adding (calibrated instrument13)
-
-Checking next happening (time 3)
-Deleting (calibrated instrument3)
-Deleting (power_avail satellite1)
-Adding (power_on instrument3)
-
-Checking next happening (time 4)
-Deleting (pointing satellite2 star4)
-Adding (pointing satellite2 phenomenon9)
-
-Checking next happening (time 5)
-Adding (have_image phenomenon9 thermograph6)
-
-Checking next happening (time 6)
-Deleting (pointing satellite1 groundstation2)
-Adding (pointing satellite1 star4)
-
-Checking next happening (time 7)
-Adding (calibrated instrument3)
-
-Checking next happening (time 8)
-Deleting (pointing satellite1 star4)
-Adding (pointing satellite1 phenomenon8)
-
-Checking next happening (time 9)
-Adding (have_image phenomenon8 image4)
-
-Checking next happening (time 10)
-Deleting (pointing satellite1 phenomenon8)
-Adding (pointing satellite1 groundstation0)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 10 
-
-Successful plans:
-Value: 10
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-35.plan.pddl 10 
-

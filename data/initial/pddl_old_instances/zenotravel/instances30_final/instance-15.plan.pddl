@@ -1,5 +1,0 @@
-(fly plane1 city3 city2 fl5 fl4)
-(board person2 plane1 city2)
-(fly plane1 city2 city1 fl4 fl3)
-(debark person2 plane1 city1)
-; cost = 4 (unit cost)

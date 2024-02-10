@@ -1,9 +1,0 @@
-occurs(action_load_truck(p2,t2,l0_1),1).
-occurs(action_drive_truck(t2,l0_1,l0_2,c0),2).
-occurs(action_unload_truck(p2,t2,l0_2),3).
-occurs(action_load_truck(p1,t1,l0_0),4).
-occurs(action_drive_truck(t1,l0_0,l0_1,c0),5).
-occurs(action_unload_truck(p1,t1,l0_1),6).
-occurs(action_load_truck(p0,t1,l0_1),7).
-occurs(action_drive_truck(t1,l0_1,l0_0,c0),8).
-occurs(action_unload_truck(p0,t1,l0_0),9).

@@ -1,9 +1,0 @@
-occurs(action_pick(robot2,ball2,room2,lgripper2),1).
-occurs(action_move(robot2,room2,room7),2).
-occurs(action_drop(robot2,ball2,room7,lgripper2),3).
-occurs(action_move(robot2,room7,room6),4).
-occurs(action_pick(robot2,ball1,room6,lgripper2),5).
-occurs(action_pick(robot2,ball3,room6,rgripper2),6).
-occurs(action_move(robot2,room6,room8),7).
-occurs(action_drop(robot2,ball1,room8,lgripper2),8).
-occurs(action_drop(robot2,ball3,room8,rgripper2),9).

@@ -1,7 +1,0 @@
-(walk driver1 s0 p0-1)
-(walk driver1 p0-1 s1)
-(walk driver2 s0 p0-1)
-(walk driver2 p0-1 s1)
-(walk driver3 s0 p0-1)
-(walk driver3 p0-1 s1)
-; cost = 6 (unit cost)

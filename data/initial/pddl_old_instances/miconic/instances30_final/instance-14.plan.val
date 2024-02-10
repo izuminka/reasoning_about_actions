@@ -1,50 +1,0 @@
-Type-checking board
-...action passes type checking.
-Type-checking depart
-...action passes type checking.
-Type-checking up
-...action passes type checking.
-Type-checking down
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-33.plan.pddl
-Plan to validate:
-
-Plan size: 4
-1:
-(up f0 f5)
- 
-2:
-(board f5 p0)
- 
-3:
-(down f5 f4)
- 
-4:
-(depart f4 p0)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Deleting (lift-at f0)
-Adding (lift-at f5)
-
-Checking next happening (time 2)
-Adding (boarded p0)
-
-Checking next happening (time 3)
-Deleting (lift-at f5)
-Adding (lift-at f4)
-
-Checking next happening (time 4)
-Deleting (boarded p0)
-Adding (served p0)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 4 
-
-Successful plans:
-Value: 4
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-33.plan.pddl 4 
-

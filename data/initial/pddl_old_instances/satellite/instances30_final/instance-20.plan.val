@@ -1,59 +1,0 @@
-Type-checking turn_to
-...action passes type checking.
-Type-checking switch_on
-...action passes type checking.
-Type-checking switch_off
-...action passes type checking.
-Type-checking calibrate
-...action passes type checking.
-Type-checking take_image
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-28.plan.pddl
-Plan to validate:
-
-Plan size: 5
-1:
-(switch_on instrument14 satellite3)
- 
-2:
-(calibrate satellite3 instrument14 groundstation6)
- 
-3:
-(turn_to satellite3 planet9 groundstation6)
- 
-4:
-(take_image satellite3 planet9 instrument14 spectrograph3)
- 
-5:
-(turn_to satellite2 groundstation1 planet9)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Deleting (calibrated instrument14)
-Deleting (power_avail satellite3)
-Adding (power_on instrument14)
-
-Checking next happening (time 2)
-Adding (calibrated instrument14)
-
-Checking next happening (time 3)
-Deleting (pointing satellite3 groundstation6)
-Adding (pointing satellite3 planet9)
-
-Checking next happening (time 4)
-Adding (have_image planet9 spectrograph3)
-
-Checking next happening (time 5)
-Deleting (pointing satellite2 planet9)
-Adding (pointing satellite2 groundstation1)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 5 
-
-Successful plans:
-Value: 5
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/satellite/instances30/instance-28.plan.pddl 5 
-

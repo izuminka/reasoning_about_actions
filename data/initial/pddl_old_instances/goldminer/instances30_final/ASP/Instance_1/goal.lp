@@ -1,2 +1,0 @@
-goal(holds_gold;
-).

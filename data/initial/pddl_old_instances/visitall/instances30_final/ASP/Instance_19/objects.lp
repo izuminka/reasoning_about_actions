@@ -1,1 +1,0 @@
-place(loc_x3_y1; loc_x3_y2; loc_x1_y3; loc_x5_y3; loc_x6_y1; loc_x1_y2; loc_x5_y2; loc_x2_y3; loc_x2_y0; loc_x4_y3; loc_x0_y0; loc_x1_y0; loc_x4_y2; loc_x6_y0; loc_x4_y1; loc_x0_y3; loc_x0_y1; loc_x0_y2; loc_x2_y2; loc_x4_y0; loc_x2_y1; loc_x1_y1; loc_x5_y1; loc_x5_y0; loc_x6_y3; loc_x6_y2; loc_x3_y3).

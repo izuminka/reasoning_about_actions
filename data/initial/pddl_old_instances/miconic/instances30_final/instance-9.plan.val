@@ -1,161 +1,0 @@
-Type-checking board
-...action passes type checking.
-Type-checking depart
-...action passes type checking.
-Type-checking up
-...action passes type checking.
-Type-checking down
-...action passes type checking.
-Checking plan: /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-22.plan.pddl
-Plan to validate:
-
-Plan size: 21
-1:
-(board f0 p0)
- 
-2:
-(board f0 p1)
- 
-3:
-(board f0 p3)
- 
-4:
-(board f0 p4)
- 
-5:
-(board f0 p5)
- 
-6:
-(board f0 p7)
- 
-7:
-(up f0 f1)
- 
-8:
-(board f1 p6)
- 
-9:
-(board f1 p8)
- 
-10:
-(up f1 f2)
- 
-11:
-(board f2 p2)
- 
-12:
-(depart f2 p8)
- 
-13:
-(depart f2 p7)
- 
-14:
-(depart f2 p6)
- 
-15:
-(depart f2 p5)
- 
-16:
-(depart f2 p1)
- 
-17:
-(depart f2 p0)
- 
-18:
-(down f2 f1)
- 
-19:
-(depart f1 p4)
- 
-20:
-(depart f1 p3)
- 
-21:
-(depart f1 p2)
- 
-
-Plan Validation details
------------------------
-
-Checking next happening (time 1)
-Adding (boarded p0)
-
-Checking next happening (time 2)
-Adding (boarded p1)
-
-Checking next happening (time 3)
-Adding (boarded p3)
-
-Checking next happening (time 4)
-Adding (boarded p4)
-
-Checking next happening (time 5)
-Adding (boarded p5)
-
-Checking next happening (time 6)
-Adding (boarded p7)
-
-Checking next happening (time 7)
-Deleting (lift-at f0)
-Adding (lift-at f1)
-
-Checking next happening (time 8)
-Adding (boarded p6)
-
-Checking next happening (time 9)
-Adding (boarded p8)
-
-Checking next happening (time 10)
-Deleting (lift-at f1)
-Adding (lift-at f2)
-
-Checking next happening (time 11)
-Adding (boarded p2)
-
-Checking next happening (time 12)
-Deleting (boarded p8)
-Adding (served p8)
-
-Checking next happening (time 13)
-Deleting (boarded p7)
-Adding (served p7)
-
-Checking next happening (time 14)
-Deleting (boarded p6)
-Adding (served p6)
-
-Checking next happening (time 15)
-Deleting (boarded p5)
-Adding (served p5)
-
-Checking next happening (time 16)
-Deleting (boarded p1)
-Adding (served p1)
-
-Checking next happening (time 17)
-Deleting (boarded p0)
-Adding (served p0)
-
-Checking next happening (time 18)
-Deleting (lift-at f2)
-Adding (lift-at f1)
-
-Checking next happening (time 19)
-Deleting (boarded p4)
-Adding (served p4)
-
-Checking next happening (time 20)
-Deleting (boarded p3)
-Adding (served p3)
-
-Checking next happening (time 21)
-Deleting (boarded p2)
-Adding (served p2)
-Plan executed successfully - checking goal
-Plan valid
-Final value: 21 
-
-Successful plans:
-Value: 21
- /Users/paveldolin/dev/research/nsf_asp/planning/jen_data/pddl/miconic/instances30/instance-22.plan.pddl 21 
-
