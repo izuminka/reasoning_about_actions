@@ -7,5 +7,5 @@ Data Computation
 `states_actions_generation.py`
 - Given ASP domain, instance and plan `jsonl` file is computed with states and actions branching (depth 1) from the given plan
 
-`/question_construction`
+`/questions_construction`
 - Given computed `jsonl` and domain name questions are generated
