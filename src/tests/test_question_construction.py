@@ -223,6 +223,7 @@ class TestLoopingQuestionsBlocksworld(TestHelpers):
         self.assert_qa_objects(self.qa_class.question_6)
 
 
+
 class TestNumericalReasoningQuestionsBlocksworld(TestHelpers):
     qa_class = NumericalReasoningQuestions(jsonl_object, domain_class, instance_id)
 
@@ -244,6 +245,23 @@ class TestNumericalReasoningQuestionsBlocksworld(TestHelpers):
     def test_q6(self):
         self.assert_qa_objects(self.qa_class.question_6)
 
+    def test_q7(self):
+        self.assert_qa_objects(self.qa_class.question_7)
+
+    def test_q8(self):
+        self.assert_qa_objects(self.qa_class.question_8)
+
+    def test_q9(self):
+        self.assert_qa_objects(self.qa_class.question_9)
+
+    def test_q10(self):
+        self.assert_qa_objects(self.qa_class.question_10)
+
+    def test_q11(self):
+        self.assert_qa_objects(self.qa_class.question_12)
+
+    def test_q13(self):
+        self.assert_qa_objects(self.qa_class.question_13)
 
 class TestHallucinationQuestionsBlocksworld(TestHelpers):
     qa_class = HallucinationQuestions(jsonl_object, domain_class, instance_id)
