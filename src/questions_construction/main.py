@@ -178,12 +178,14 @@ class QuestionGenerationHelpers:
 
     def corrupted_not_corrupted_mix(self, not_corrupted_fluents, corrupted_fluents):
         final_length = len(not_corrupted_fluents)
-        if final_length == 0:
+        len_corrupted_fluents = len(corrupted_fluents)
+
+        if final_length == 0 or len_corrupted_fluents == 0:
             raise 'Empty list'
-        elif final_length == 1:
+        elif final_length == 1 or len_corrupted_fluents == 1:
             num_to_be_corrupted_samples = 1
         else:
-            num_to_be_corrupted_samples = random.randint(1, final_length - 1)
+            num_to_be_corrupted_samples = random.randint(1, min(len_corrupted_fluents, final_length) - 1)
         corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
         return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
 
@@ -236,7 +238,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
             results[qa_id] = qa_object
             timeout -= 1
         if timeout == 0:
-            raise 'Timeout error'
+            raise RuntimeError(f'Timeout error\n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} ')
         return list(results.values())
 
     def create_questions(self, multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):

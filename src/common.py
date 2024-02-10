@@ -5,6 +5,8 @@ from clyngor import ASP
 CODE_PATH = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.dirname(CODE_PATH)
 DATA_PATH = f'{PROJECT_PATH}/data'
+QUESTIONS_PATH = f'{DATA_PATH}/questions'
+STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
 
 ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = f'{CODE_PATH}/ASP'

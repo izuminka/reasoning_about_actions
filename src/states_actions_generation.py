@@ -122,7 +122,7 @@ class StatesActionsGenerator:
 
 
 def main(domain_name, instance_name):
-    save_dir = f'{DATA_PATH}/generated/{domain_name}'
+    save_dir = f'{STATES_ACTIONS_PATH}/{domain_name}'
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     save_path = f'{save_dir}/{instance_name}.jsonl'
