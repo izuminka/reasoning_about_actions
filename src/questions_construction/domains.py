@@ -101,20 +101,6 @@ class Blocksworld(BaseDomain):
             return f'hand is empty'
         elif fluent.startswith('-handempty'):
             return f'hand is not empty'
-
-
-        elif fluent == 'clear':
-            return f'clear'
-        elif fluent == '-clear':
-            return f'not clear'
-        elif fluent == 'holding':
-            return f'being held'
-        elif fluent == '-holding':
-            return f'not being held'
-        elif fluent == 'ontable':
-            return f'on the table'
-        elif fluent == '-ontable':
-            return f'not on the table'
         else:
             # TODO handle made up fluents
             raise ('fluent is not defined')
@@ -211,19 +197,9 @@ class Depots(BaseDomain):
         elif fluent.startswith('-clear('):
             surface = self.extract_single_variable(fluent)
             return f'surface {surface} is not clear'
-
-        elif fluent == 'at':
-            return f'at'
-        elif fluent == 'on':
-            return f'on'
-        elif fluent == 'in':
-            return f'in'
-        elif fluent == 'lifting':
-            return f'lifting'
-        elif fluent == 'available':
-            return f'available'
-        elif fluent == 'clear':
-            return f'clear'
+        else:
+            # TODO for hallucination
+            raise ('fluent is not defined')
 
 
 class Driverlog(BaseDomain):
@@ -272,20 +248,6 @@ class Driverlog(BaseDomain):
         elif fluent.startswith('-empty('):
             obj = self.extract_single_variable(fluent)
             return f'truck {obj} is not empty'
-
-        # TODO for object detection
-        elif fluent == 'at':
-            return 'at'
-        elif fluent == 'in':
-            return 'in'
-        elif fluent == 'driving':
-            return 'driving'
-        elif fluent == 'link':
-            return 'link'
-        elif fluent == 'path':
-            return 'path'
-        elif fluent == 'empty':
-            return 'empty'
         else:
             # TODO for hallucination
             raise ('fluent is not defined')
@@ -311,7 +273,7 @@ class Driverlog(BaseDomain):
             driver, loc_from, loc_to = self.extract_multi_variable(action)
             return f'driver {driver} walks from location {loc_from} to location {loc_to}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Goldminer(BaseDomain):
@@ -457,14 +419,6 @@ class Grippers(BaseDomain):
         elif fluent.startswith('-carry('):
             robot, obj, gripper = self.extract_multi_variable(fluent)
             return f'robot {robot} is not carrying object {obj} with gripper {gripper}'
-        elif fluent == 'at_robby':
-            return f'robot is at room'
-        elif fluent == 'at':
-            return f'object is at room'
-        elif fluent == 'free':
-            return f'robot has free gripper'
-        elif fluent == 'carry':
-            return f'robot is carrying object with gripper'
         else:
             raise ('fluent is not defined')
 
@@ -480,7 +434,7 @@ class Grippers(BaseDomain):
             robot, obj, room, gripper = self.extract_multi_variable(action)
             return f'object {obj} is dropped in room {room} with gripper {gripper} by robot {robot}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Logistics(BaseDomain):
@@ -505,14 +459,6 @@ class Logistics(BaseDomain):
         elif fluent.startswith('-in('):
             package, vehicle = self.extract_multi_variable(fluent)
             return f'package {package} is not in vehicle {vehicle}'
-
-        #TODO for object detection
-        elif fluent == 'in_city':
-            return f'in city'
-        elif fluent == 'at':
-            return f'at'
-        elif fluent == 'in':
-            return f'in'
         else:
             #TODO for hallucination
             raise ('fluent is not defined')
@@ -581,20 +527,6 @@ class Miconic(BaseDomain):
         elif fluent.startswith('-lift_at('):
             floor = self.extract_single_variable(fluent)
             return f'lift is not at floor {floor}'
-
-        #TODO for object detection
-        elif fluent == 'origin':
-            return f'origin'
-        elif fluent == 'destin':
-            return f'destin'
-        elif fluent == 'above':
-            return f'above'
-        elif fluent == 'boarded':
-            return f'boarded'
-        elif fluent == 'served':
-            return f'served'
-        elif fluent == 'lift_at':
-            return f'lift_at'
         else:
             #TODO for hallucination
             raise ('fluent is not defined')
@@ -636,10 +568,10 @@ class Mystery(BaseDomain):
                 return f'cargo {obj} is not at location {location}'
         elif fluent.startswith('conn('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return f'there is a connection between location {location1} and location {location2}'
+            return f'{location1} is connected to location {location2}'
         elif fluent.startswith('-conn('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return f'there is no connection between location {location1} and location {location2}'
+            return f'location {location1} is not connected to location {location2}'
         elif fluent.startswith('has_fuel('):
             location, fuel = self.extract_multi_variable(fluent)
             return f'location {location} has fuel {fuel}'
@@ -670,22 +602,6 @@ class Mystery(BaseDomain):
         elif fluent.startswith('-space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
             return f'space {s1} is not neighbor of space {s2}'
-
-        #TODO for object detection
-        elif fluent == 'at':
-            return f'at'
-        elif fluent == 'conn':
-            return f"connection"
-        elif fluent == 'has_fuel':
-            return f'has fuel'
-        elif fluent == 'fuel_neighbor':
-            return f'fuel neighbor'
-        elif fluent == 'in':
-            return f'in'
-        elif fluent == 'has_space':
-            return f'has space'
-        elif fluent == 'space_neighbor':
-            return f'space neighbor'
         else:
             #TODO for hallucination
             raise 'fluent is not defined'
@@ -717,24 +633,16 @@ class Npuzzle(BaseDomain):
             return f'tile {tile} is not at position {position}'
         elif fluent.startswith('neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
-            return f'position {position1} is neighbor of position {position2}'
+            return f'position {position1} is a neighbor of position {position2}'
         elif fluent.startswith('-neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
-            return f'position {position1} is not neighbor of position {position2}'
+            return f'position {position1} is not a neighbor of position {position2}'
         elif fluent.startswith('empty('):
             position = self.extract_single_variable(fluent)
             return f'position {position} is empty'
         elif fluent.startswith('-empty('):
             position = self.extract_single_variable(fluent)
             return f'position {position} is not empty'
-
-        #TODO for object detection
-        elif fluent == 'at':
-            return f'at'
-        elif fluent == 'neighbor':
-            return f'neighbor'
-        elif fluent == 'empty':
-            return f'empty'
         else:
             #TODO for hallucination
             raise 'fluent is not defined'
@@ -800,24 +708,8 @@ class Satellite(BaseDomain):
         elif fluent.startswith('-calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
             return f'instrument {instrument} is not calibrated to direction {direction}'
-        elif fluent == 'on_board':
-            return f'on board'
-        elif fluent == 'supports':
-            return f'supports'
-        elif fluent == 'pointing':
-            return f'pointing'
-        elif fluent == 'power_avail':
-            return f'power available'
-        elif fluent == 'power_on':
-            return f'power on'
-        elif fluent == 'calibrated':
-            return f'calibrated'
-        elif fluent == 'have_image':
-            return f'have image'
-        elif fluent == 'calibration_target':
-            return f'calibration target'
         else:
-            raise ('fluent is not defined')
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
@@ -1014,14 +906,6 @@ class Visitall(BaseDomain):
         elif fluent.startswith('-visited('):
             place = self.extract_single_variable(fluent)
             return f"place {place} is not visited"
-
-        #TODO for object detection
-        elif fluent == 'at_robot':
-            return f'at robot'
-        elif fluent == 'connected':
-            return f'connected'
-        elif fluent == 'visited':
-            return f'visited'
         else:
             #TODO for hallucination
             raise 'fluent is not defined'

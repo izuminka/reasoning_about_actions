@@ -183,9 +183,6 @@ class TestActionExecutabilityQuestionsBlocksworld(TestHelpers):
     def test_q5(self):
         self.assert_qa_objects(self.qa_class.question_5)
 
-    def test_q6(self):
-        self.assert_qa_objects(self.qa_class.question_6)
-
 
 class TestEffectsQuestionsQuestionsBlocksworld(TestHelpers):
     qa_class = EffectsQuestions(jsonl_object, domain_class, instance_id)

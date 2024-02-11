@@ -36,7 +36,7 @@ class AllQuestions:
 
 if __name__ == '__main__':
 
-    # domain = Zenotravel() #ALL_DOMAIN_CLASSES[2]() #Blocksworld()#
+    domain = Grippers() #ALL_DOMAIN_CLASSES[2]() #Blocksworld()#
     # for domain_class in ALL_DOMAIN_CLASSES:
     # domain = domain_class()
     # for i in range(1, 11):
