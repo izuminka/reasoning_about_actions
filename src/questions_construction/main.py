@@ -36,19 +36,19 @@ class AllQuestions:
 
 if __name__ == '__main__':
 
-    domain = ALL_DOMAIN_CLASSES[12]() #Blocksworld()#
+    domain = Grippers() #ALL_DOMAIN_CLASSES[2]() #Blocksworld()#
     # for domain_class in ALL_DOMAIN_CLASSES:
     # domain = domain_class()
     # for i in range(1, 11):
     i = 1
-    # try:
+    #     try:
     instance_name = f'Instance_{i}'
     jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
     all_questions = AllQuestions(jsonl_instance, domain, instance_name)
     all_questions.generate_all_questions()
     all_questions.save_questions()
-    # except Exception as e:
-    #     print(e)
+        # except Exception as e:
+        #     print(e)
     #     print(f'Failed for {domain.DOMAIN_NAME} {instance_name}')
 
 

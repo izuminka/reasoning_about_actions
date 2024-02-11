@@ -182,13 +182,14 @@ class QuestionGenerationHelpers:
     def nl_actions_up_to(self, plan_length):
         return self.nl_actions(self.given_plan_sequence[:plan_length])
 
-    def corrupted_not_corrupted_mix(self, not_corrupted_fluents, corrupted_fluents):
+    @staticmethod
+    def corrupted_not_corrupted_mix(not_corrupted_fluents, corrupted_fluents):
         final_length = len(not_corrupted_fluents)
         len_corrupted_fluents = len(corrupted_fluents)
 
-        if final_length == 0 or len_corrupted_fluents == 0:
+        if len_corrupted_fluents == 0:
             raise 'Empty list'
-        elif final_length == 1 or len_corrupted_fluents == 1:
+        elif final_length in (0, 1) or len_corrupted_fluents == 1:
             num_to_be_corrupted_samples = 1
         else:
             num_to_be_corrupted_samples = random.randint(1, min(len_corrupted_fluents, final_length) - 1)
@@ -196,19 +197,16 @@ class QuestionGenerationHelpers:
         return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
 
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
-
         if is_pos_fluent_question:
             if is_answer_true:
                 fluents = pos_fluents
             else:
-                fluents = self.corrupted_not_corrupted_mix(pos_fluents,
-                                                           [f[1:] for f in neg_fluents])  # remove the '-' sign
+                fluents = self.corrupted_not_corrupted_mix(pos_fluents, [f[1:] for f in neg_fluents])  # remove the '-' sign
         else:
             if is_answer_true:
                 fluents = neg_fluents
             else:
-                fluents = self.corrupted_not_corrupted_mix(neg_fluents,
-                                                           [f"-{f}" for f in pos_fluents])  # add the '-' sign
+                fluents = self.corrupted_not_corrupted_mix(neg_fluents, [f"-{f}" for f in pos_fluents])  # add the '-' sign
         return fluents
 
 
@@ -344,9 +342,11 @@ class ObjectTrackingQuestions(QuestionGenerator):
         chosen_fluents = []
         while len(chosen_fluents) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
-            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
-                                                          self.pos_fluents_for_object(obj, plan_length),
-                                                          self.neg_fluents_for_object(obj, plan_length))
+            pos_fluents = self.pos_fluents_for_object(obj, plan_length)
+            neg_fluents = self.neg_fluents_for_object(obj, plan_length)
+            if not (len(pos_fluents) and len(neg_fluents)):
+                continue
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
             if min_chosen_fluents <= len(fluents):
                 num_samples = random.randint(min_chosen_fluents, len(fluents))
                 chosen_fluents = random.sample(fluents, num_samples)
@@ -442,15 +442,20 @@ class FluentTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} are all of the following fluents {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
-    def qa_5_6_helper(self, plan_length, is_pos_fluent_question):
-        obj = random.choice(self.all_objects)
-        obj_type = self.object_type_by_object_name[obj]
-        if is_pos_fluent_question:
-            fluent_type = 'positive'
-            fluents = self.pos_fluents_for_object(obj, plan_length)
-        else:
-            fluent_type = 'negative'
-            fluents = self.neg_fluents_for_object(obj, plan_length)
+    def qa_5_6_helper(self, plan_length, is_pos_fluent_question, timeout=MAX_TIMEOUT):
+        fluents = []
+        while not fluents:
+            obj = random.choice(self.all_objects)
+            obj_type = self.object_type_by_object_name[obj]
+            if is_pos_fluent_question:
+                fluent_type = 'positive'
+                fluents = self.pos_fluents_for_object(obj, plan_length)
+            else:
+                fluent_type = 'negative'
+                fluents = self.neg_fluents_for_object(obj, plan_length)
+            timeout -= 1
+        if timeout == 0:
+            raise 'Timeout error'
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for {obj_type} {obj}. {NONE_STATEMENT}."
         return self.qa_data_object(FREE_ANSWER, question, nl_fluents)
