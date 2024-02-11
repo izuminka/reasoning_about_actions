@@ -663,7 +663,7 @@ class EffectsQuestions(QuestionGenerator):
         return self.qa_3_4_helper(plan_length, is_positive_fluents_question)
 
     def question_4(self, plan_length):
-        is_positive_fluents_question = True
+        is_positive_fluents_question = False
         return self.qa_3_4_helper(plan_length, is_positive_fluents_question)
 
 
@@ -674,7 +674,8 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_category(self):
         return 'numerical_reasoning'
 
-    def random_count(self, original_count):
+    @staticmethod
+    def random_count(original_count):
         bound = int(0.3 * original_count) + 1
         return original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)])
 
@@ -698,15 +699,13 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
-        fluents_count = len(
-            [f for f in self.pos_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
+        fluents_count = len([f for f in self.pos_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
         return self.true_false_qa_helper(plan_length, is_answer_true, 'positive fluents', fluents_count)
 
     def question_3(self, plan_length):
         is_answer_true = random.choice([True, False])
         chosen_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
-        fluents_count = len(
-            [f for f in self.neg_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
+        fluents_count = len([f for f in self.neg_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
         return self.true_false_qa_helper(plan_length, is_answer_true, 'negative fluents', fluents_count)
 
     def question_4(self, plan_length):
@@ -721,8 +720,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_6(self, plan_length):
         is_answer_true = random.choice([True, False])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'actions that lead to the current state',
-                                         plan_length)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'actions that lead to the current state',plan_length)
 
     def question_7(self, plan_length):
         name_count = 'objects'
