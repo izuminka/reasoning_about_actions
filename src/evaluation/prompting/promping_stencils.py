@@ -37,8 +37,12 @@ def zero_shot_prompt(domain_class, jsonl_instance):
             domain_description = domain_class.domain_description_without_ram
             if len(dictionary_item.keys()) == 0:
                 continue
-            dictionary_item['zero_shot_model_input'] = f'{domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}.\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
-            results.append(dictionary_item)
+            if dictionary_item['answer_type'] == 'true_false_answer':
+                dictionary_item['zero_shot_model_input'] = f'{domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]} Answer either True or False.\n\n[ANSWER]:\n'
+                results.append(dictionary_item)
+            else:
+                dictionary_item['zero_shot_model_input'] = f'{domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
+                results.append(dictionary_item)    
     return results
 
 import os
