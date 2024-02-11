@@ -273,6 +273,7 @@ class Driverlog(BaseDomain):
             obj = self.extract_single_variable(fluent)
             return f'truck {obj} is not empty'
 
+        # TODO for object detection
         elif fluent == 'at':
             return 'at'
         elif fluent == 'in':
@@ -286,6 +287,7 @@ class Driverlog(BaseDomain):
         elif fluent == 'empty':
             return 'empty'
         else:
+            # TODO for hallucination
             raise ('fluent is not defined')
 
     def action_to_natural_language(self, action):
@@ -298,13 +300,13 @@ class Driverlog(BaseDomain):
             return f'unload package {package} from truck {truck} at location {location}'
         elif action.startswith('board_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return f'driver {driver} boards in truck {truck} at location {location}'
+            return f'driver {driver} boards truck {truck} at location {location}'
         elif action.startswith('disembark_truck('):
             driver, truck, location = self.extract_multi_variable(action)
             return f'driver {driver} disembarks from truck {truck} at location {location}'
         elif action.startswith('drive_truck('):
             truck, driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return f'driver {driver} drives in truck {truck} from location {loc_from} to location {loc_to}'
+            return f'driver {driver} drives truck {truck} from location {loc_from} to location {loc_to}'
         elif action.startswith('walk('):
             driver, loc_from, loc_to = self.extract_multi_variable(action)
             return f'driver {driver} walks from location {loc_from} to location {loc_to}'
@@ -358,21 +360,21 @@ class Goldminer(BaseDomain):
         elif fluent.startswith('-connected('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return f'there is no connection between location {obj1} and location {obj2}'
-        elif fluent.startswith('arms_empty('):
-            return f'robot arms are empty'
-        elif fluent.startswith('-arms_empty('):
-            return f'robot arms are not empty'
-        elif fluent.startswith('holds_bomb('):
-            return f'robot holds bomb'
-        elif fluent.starstwith('-holds_bomb('):
-            return f'robot does not hold bomb'
-        elif fluent.startswith('holds_laser('):
+        elif fluent.startswith('arm_empty'):
+            return f"robot's arm is empty"
+        elif fluent.startswith('-arm_empty'):
+            return f"robot's arm is not empty"
+        elif fluent.startswith('holds_bomb'):
+            return f'robot holds a bomb'
+        elif fluent.startswith('-holds_bomb'):
+            return f'robot does not hold a bomb'
+        elif fluent.startswith('holds_laser'):
             return f'robot holds laser'
-        elif fluent.startswith('-holds_laser('):
+        elif fluent.startswith('-holds_laser'):
             return f'robot does not hold laser'
-        elif fluent.startswith('holds_gold('):
+        elif fluent.startswith('holds_gold'):
             return f'robot holds gold'
-        elif fluent.startswith('-holds_gold('):
+        elif fluent.startswith('-holds_gold'):
             return f'robot does not hold gold'
         elif fluent.startswith('clear('):
             location = self.extract_single_variable(fluent)
@@ -380,6 +382,8 @@ class Goldminer(BaseDomain):
         elif fluent.startswith('-clear('):
             location = self.extract_single_variable(fluent)
             return f'location {location} is not clear'
+
+        #TODO for object detection
         elif fluent == 'robot_at':
             return f'robot is at'
         elif fluent == 'bomb_at':
@@ -395,6 +399,7 @@ class Goldminer(BaseDomain):
         elif fluent == 'connected':
             return f'connected'
         else:
+            #TODO for hallucination
             raise ('fluent is not defined')
 
     def action_to_natural_language(self, action):
@@ -413,7 +418,7 @@ class Goldminer(BaseDomain):
             return f'laser {laser} is put down'
         elif action.startswith('detonate_bomb('):
             bomb = self.extract_single_variable(action)
-            return f'bomb {bomb} is detonate'
+            return f'bomb {bomb} is detonated'
         elif action.startswith('fire_laser('):
             laser = self.extract_single_variable(action)
             return f'laser {laser} is fired'
@@ -500,6 +505,8 @@ class Logistics(BaseDomain):
         elif fluent.startswith('-in('):
             package, vehicle = self.extract_multi_variable(fluent)
             return f'package {package} is not in vehicle {vehicle}'
+
+        #TODO for object detection
         elif fluent == 'in_city':
             return f'in city'
         elif fluent == 'at':
@@ -507,6 +514,7 @@ class Logistics(BaseDomain):
         elif fluent == 'in':
             return f'in'
         else:
+            #TODO for hallucination
             raise ('fluent is not defined')
 
     def action_to_natural_language(self, action):
@@ -519,7 +527,7 @@ class Logistics(BaseDomain):
             return f'package {package} is unloaded from truck {truck} at location {location}'
         elif action.startswith('load_airplane('):
             package, airplane, location = self.extract_multi_variable(action)
-            return f'package {package} is loaded in airplane {airplane} at location {location}'
+            return f'package {package} is loaded into airplane {airplane} at location {location}'
         elif action.startswith('unload_airplane('):
             package, airplane, location = self.extract_multi_variable(action)
             return f'package {package} is unloaded from airplane {airplane} at location {location}'
@@ -530,7 +538,7 @@ class Logistics(BaseDomain):
             airplane, airport_from, airport_to = self.extract_multi_variable(action)
             return f'airplane {airplane} is flown from airport {airport_from} to airport {airport_to}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Miconic(BaseDomain):
@@ -539,16 +547,16 @@ class Miconic(BaseDomain):
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return f'passenger {passenger} is at floor {floor}'
+            return f'passenger {passenger} enters at floor {floor}'
         elif fluent.startswith('-origin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return f'passenger {passenger} is not at floor {floor}'
+            return f'passenger {passenger} does not enter at floor {floor}'
         elif fluent.startswith('destin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return f'passenger {passenger} is at floor {floor}'
+            return f'passenger {passenger} exits at floor {floor}'
         elif fluent.startswith('-destin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return f'passenger {passenger} is not at floor {floor}'
+            return f'passenger {passenger} does not exit at floor {floor}'
         elif fluent.startswith('above('):
             floor1, floor2 = self.extract_multi_variable(fluent)
             return f'floor {floor2} is above floor {floor1}'
@@ -573,6 +581,8 @@ class Miconic(BaseDomain):
         elif fluent.startswith('-lift_at('):
             floor = self.extract_single_variable(fluent)
             return f'lift is not at floor {floor}'
+
+        #TODO for object detection
         elif fluent == 'origin':
             return f'origin'
         elif fluent == 'destin':
@@ -586,16 +596,17 @@ class Miconic(BaseDomain):
         elif fluent == 'lift_at':
             return f'lift_at'
         else:
+            #TODO for hallucination
             raise ('fluent is not defined')
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             floor, passenger = self.extract_multi_variable(action)
-            return f'passenger {passenger} is boarded at floor {floor}'
+            return f'passenger {passenger} boards at floor {floor}'
         elif action.startswith('depart('):
             floor, passenger = self.extract_multi_variable(action)
-            return f'passenger {passenger} is departed at floor {floor}'
+            return f'passenger {passenger} departs at floor {floor}'
         elif action.startswith('up('):
             floor1, floor2 = self.extract_multi_variable(action)
             return f'elevator goes up from floor {floor1} to floor {floor2}'
@@ -603,25 +614,26 @@ class Miconic(BaseDomain):
             floor1, floor2 = self.extract_multi_variable(action)
             return f'elevator goes down from floor {floor1} to floor {floor2}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Mystery(BaseDomain):
+    #TODO: double check NL for this domain
     DOMAIN_NAME = 'mystery'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
-            obj, room = self.extract_multi_variable(fluent)
+            obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
-                return f'vehicle {obj} is at room {room}'
+                return f'vehicle {obj} is at location {location}'
             else:
-                return f'cargo {obj} is at room {room}'
+                return f'cargo {obj} is at location {location}'
         elif fluent.startswith('-at('):
-            obj, room = self.extract_multi_variable(fluent)
+            obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
-                return f'vehicle {obj} is not at room {room}'
+                return f'vehicle {obj} is not at location {location}'
             else:
-                return f'cargo {obj} is not at room {room}'
+                return f'cargo {obj} is not at location {location}'
         elif fluent.startswith('conn('):
             location1, location2 = self.extract_multi_variable(fluent)
             return f'there is a connection between location {location1} and location {location2}'
@@ -658,6 +670,8 @@ class Mystery(BaseDomain):
         elif fluent.startswith('-space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
             return f'space {s1} is not neighbor of space {s2}'
+
+        #TODO for object detection
         elif fluent == 'at':
             return f'at'
         elif fluent == 'conn':
@@ -673,7 +687,8 @@ class Mystery(BaseDomain):
         elif fluent == 'space_neighbor':
             return f'space neighbor'
         else:
-            raise ('fluent is not defined')
+            #TODO for hallucination
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
@@ -687,7 +702,7 @@ class Mystery(BaseDomain):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
             return f'cargo {cargo} is unloaded from vehicle {vehicle} at location {location} with space {space1} to space {space2}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Npuzzle(BaseDomain):
@@ -712,6 +727,8 @@ class Npuzzle(BaseDomain):
         elif fluent.startswith('-empty('):
             position = self.extract_single_variable(fluent)
             return f'position {position} is not empty'
+
+        #TODO for object detection
         elif fluent == 'at':
             return f'at'
         elif fluent == 'neighbor':
@@ -719,7 +736,8 @@ class Npuzzle(BaseDomain):
         elif fluent == 'empty':
             return f'empty'
         else:
-            raise ('fluent is not defined')
+            #TODO for hallucination
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
@@ -727,7 +745,7 @@ class Npuzzle(BaseDomain):
             tile, source, destination = self.extract_multi_variable(action)
             return f'tile {tile} moves from position {source} to position {destination}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Satellite(BaseDomain):
@@ -829,31 +847,31 @@ class Spanner(BaseDomain):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('man'):
-                return f"Man {obj} is at location {location}"
+                return f"man {obj} is at location {location}"
             elif obj.startswith('nut'):
-                return f"Nut {obj} is at location {location}"
+                return f"nut {obj} is at location {location}"
             else:
                 return f"spanner {obj} is at location {location}"
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('man'):
-                return f"Man {obj} is not at location {location}"
+                return f"man {obj} is not at location {location}"
             elif obj.startswith('nut'):
-                return f"Nut {obj} is not at location {location}"
+                return f"nut {obj} is not at location {location}"
             else:
                 return f"spanner {obj} is not at location {location}"
         elif fluent.startswith('carrying('):
             man, spanner = self.extract_multi_variable(fluent)
-            return f"Man {man} is carrying spanner {spanner}"
+            return f"man {man} is carrying spanner {spanner}"
         elif fluent.startswith('-carrying('):
             man, spanner = self.extract_multi_variable(fluent)
-            return f'Man {man} is not carrying spanner {spanner}'
-        elif fluent.startswith('useable('):
+            return f'man {man} is not carrying spanner {spanner}'
+        elif fluent.startswith('usable('):
             spanner = self.extract_single_variable(fluent)
-            return f"spanner {spanner} is useable"
-        elif fluent.startswith('-useable('):
+            return f"spanner {spanner} is usable"
+        elif fluent.startswith('-usable('):
             spanner = self.extract_single_variable(fluent)
-            return f"spanner {spanner} is not useable"
+            return f"spanner {spanner} is not usable"
         elif fluent.startswith('tightened('):
             nut = self.extract_single_variable(fluent)
             return f"nut {nut} is tightened"
@@ -872,6 +890,8 @@ class Spanner(BaseDomain):
         elif fluent.startswith('-link('):
             location1, location2 = self.extract_multi_variable(fluent)
             return f"location {location1} is not linked to location {location2}"
+
+        #TODO for object detection
         elif fluent == 'at':
             return f'at'
         elif fluent == 'carrying':
@@ -885,21 +905,22 @@ class Spanner(BaseDomain):
         elif fluent == 'link':
             return f'link'
         else:
-            raise ('fluent is not defined')
+            #TODO for hallucination
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('walk'):
             start, end, man = self.extract_multi_variable(action)
-            return f"the man {man} walks from location {start} to location {end}"
+            return f"man {man} walks from location {start} to location {end}"
         elif action.startswith('pick_up_spanner('):
             loc, spanner, man = self.extract_multi_variable(action)
-            return f"the man {man} picks up spanner {spanner} from location {loc}"
+            return f"man {man} picks up spanner {spanner} from location {loc}"
         elif action.startswith('tighten_nut('):
             loc, spanner, man, nut = self.extract_multi_variable(action)
-            return f"the man {man} tightens the nut {nut} with spanner {spanner} at location {loc}"
+            return f"man {man} tightens the nut {nut} with spanner {spanner} at location {loc}"
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Zenotravel(BaseDomain):
@@ -936,6 +957,8 @@ class Zenotravel(BaseDomain):
         elif fluent.startswith('-next('):
             fuel1, fuel2 = self.extract_multi_variable(fluent)
             return f"fuel level {fuel2} is not next to fuel level {fuel1}"
+
+        #TODO for object detection
         elif fluent == 'at':
             return f'at'
         elif fluent == 'in':
@@ -945,16 +968,17 @@ class Zenotravel(BaseDomain):
         elif fluent == 'next':
             return f'next'
         else:
-            raise ('fluent is not defined')
+            #TODO for hallucination
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)
-            return f"person {person} boards the airplane {aircraft} at location {city}"
-        elif action.startswith('depark('):
+            return f"person {person} boards the aircraft {aircraft} at location {city}"
+        elif action.startswith('debark('):
             person, aircraft, city = self.extract_multi_variable(action)
-            return f"passenger {person} depart the airplane {aircraft} at location {city}"
+            return f"passenger {person} depart the aircraft {aircraft} at location {city}"
         elif action.startswith('fly('):
             aircraft, city1, city2, fleve1, flevel2 = self.extract_multi_variable(action)
             return f"aircraft {aircraft} flies from location {city1} to location {city2} with fuel level {fleve1} to {flevel2}"
@@ -965,7 +989,7 @@ class Zenotravel(BaseDomain):
             aircraft, city, flevel1, flevel2 = self.extract_multi_variable(action)
             return f"aircraft {aircraft} gets refueled at location {city} with fuel level {flevel1} to {flevel2}"
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Visitall(BaseDomain):
@@ -990,6 +1014,8 @@ class Visitall(BaseDomain):
         elif fluent.startswith('-visited('):
             place = self.extract_single_variable(fluent)
             return f"place {place} is not visited"
+
+        #TODO for object detection
         elif fluent == 'at_robot':
             return f'at robot'
         elif fluent == 'connected':
@@ -997,7 +1023,8 @@ class Visitall(BaseDomain):
         elif fluent == 'visited':
             return f'visited'
         else:
-            raise ('fluent is not defined')
+            #TODO for hallucination
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
@@ -1005,7 +1032,7 @@ class Visitall(BaseDomain):
             place1, place2 = self.extract_multi_variable(action)
             return f"move from place {place1} to place {place2}"
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,

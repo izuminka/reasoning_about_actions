@@ -85,7 +85,8 @@ class QuestionGenerationHelpers:
                     given_plan_sequence.append(action)
         return given_plan_sequence
 
-    def is_action_executable(self, state_info):
+    @staticmethod
+    def is_action_executable(state_info):
         return state_info[EXECUTABLE_ACTION_BOOL_KEY] and len(state_info[FLUENTS_KEY]) > 0
 
     def extract_actions(self, is_executable):
