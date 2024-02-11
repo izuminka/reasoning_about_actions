@@ -4,6 +4,9 @@ import uuid
 import sys
 from src.states_actions_generation import *
 from collections import defaultdict
+import warnings
+from copy import deepcopy
+import copy
 
 # import nltk
 # nltk.download('omw-1.4')
@@ -22,7 +25,13 @@ MAX_TIMEOUT = 100
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
-PLAN_LENGTHS = [1,5,10,15,20]
+PLAN_LENGTHS = [1, 5, 10, 15, 20]
+
+
+def get_fluent_prefix(fluent):
+    if fluent.find('(') == -1:
+        return fluent
+    return fluent[:fluent.find('(')]
 
 
 def extract_single_variable(obj):
@@ -34,6 +43,7 @@ def extract_variables(obj):
         return extract_single_variable(obj)
     match = re.search(OBJ_IN_PAREN_REGEX, obj)
     return match.group(1).split(',')
+
 
 def asp_to_nl(obj_ls, converter, fluent_subs=None):
     and_str = ' and '
@@ -67,7 +77,7 @@ class QuestionGenerationHelpers:
         self.instance_id = instance_id
         self.given_plan_sequence = self.extract_given_plan_sequence()
         self.pos_fluents_given_plan = self.extract_fluents_for_given_plan()
-        self.neg_fluent_given_plan = self.extract_fluents_for_given_plan(NEG_FLUENTS_KEY)
+        self.neg_fluents_given_plan = self.extract_fluents_for_given_plan(NEG_FLUENTS_KEY)
         self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
@@ -144,7 +154,7 @@ class QuestionGenerationHelpers:
         if is_true_fluents:
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
-            fluents = self.neg_fluent_given_plan[plan_length]
+            fluents = self.neg_fluents_given_plan[plan_length]
         for fluent in fluents:
             if self.is_substring_within_parentheses(fluent, obj):
                 fluents_for_object.append(fluent)
@@ -164,10 +174,10 @@ class QuestionGenerationHelpers:
         return by_object_name
 
     def nl_fluents(self, fluents, fluent_subs=None):
-        return self.asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
+        return asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_actions(self, actions, fluent_subs=None):
-        return self.asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
+        return asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_question_prefix(self, plan_length):
         return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
@@ -189,17 +199,19 @@ class QuestionGenerationHelpers:
         return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
 
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
-            
+
         if is_pos_fluent_question:
             if is_answer_true:
                 fluents = pos_fluents
             else:
-                fluents = self.corrupted_not_corrupted_mix(pos_fluents, [f[1:] for f in neg_fluents]) # remove the '-' sign
+                fluents = self.corrupted_not_corrupted_mix(pos_fluents,
+                                                           [f[1:] for f in neg_fluents])  # remove the '-' sign
         else:
             if is_answer_true:
                 fluents = neg_fluents
             else:
-                fluents = self.corrupted_not_corrupted_mix(neg_fluents, [f"-{f}" for f in pos_fluents]) # add the '-' sign
+                fluents = self.corrupted_not_corrupted_mix(neg_fluents,
+                                                           [f"-{f}" for f in pos_fluents])  # add the '-' sign
         return fluents
 
 
@@ -210,17 +222,18 @@ class QuestionGenerator(QuestionGenerationHelpers):
 
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-    
+
     def qa_data_object(self, anwswer_type, question, answer):
         return {
             OUT_OBJ_ID: str(uuid.uuid4()),
-            OUT_OBJ_DOMAIN_NAME: self.domain_class.domain_name(),
+            OUT_OBJ_DOMAIN_NAME: self.domain_class.domain_name,
             OUT_OBJ_INSTANCE_ID: self.instance_id,
+            OUT_OBJ_INITIAL_STATE: self.init_state,
             OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence,
             OUT_OBJ_QUESTION_TYPE: self.question_category(),
             OUT_OBJ_QUESTION: question,
             OUT_OBJ_ANSWER_TYPE: anwswer_type,
-            OUT_OBJ_ANSWER: answer}
+            OUT_OBJ_ANSWER: str(answer)}
 
     def question_category(self):
         raise 'Implement it in the child class'
@@ -237,7 +250,8 @@ class QuestionGenerator(QuestionGenerationHelpers):
             results[qa_id] = qa_object
             timeout -= 1
         if timeout == 0:
-            raise RuntimeError(f'Timeout error\n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} ')
+            warn_str = f'Timeout!!! {question_constructor} \n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} '
+            warnings.warn(warn_str)
         return list(results.values())
 
     def create_questions(self, multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):
@@ -309,6 +323,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def question_15(self, plan_length):
         return None
 
+
 class ObjectTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -321,7 +336,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
         if is_true_fluents:
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
-            fluents = self.neg_fluent_given_plan[plan_length]
+            fluents = self.neg_fluents_given_plan[plan_length]
         for fluent in fluents:
             if fluent_prefix in fluent:
                 objects_for_fluent.append(extract_single_variable(fluent))
@@ -332,7 +347,9 @@ class ObjectTrackingQuestions(QuestionGenerator):
         chosen_fluents = []
         while len(chosen_fluents) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
-            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, self.pos_fluents_for_object(obj, plan_length),  self.neg_fluents_for_object(obj, plan_length))
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
+                                                          self.pos_fluents_for_object(obj, plan_length),
+                                                          self.neg_fluents_for_object(obj, plan_length))
             if min_chosen_fluents <= len(fluents):
                 num_samples = random.randint(min_chosen_fluents, len(fluents))
                 chosen_fluents = random.sample(fluents, num_samples)
@@ -355,10 +372,10 @@ class ObjectTrackingQuestions(QuestionGenerator):
             if is_pos_fluents:
                 chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
             else:
-                chosen_fluent = random.choice(self.neg_fluent_given_plan[plan_length])
-            if '(' not in chosen_fluent: # associated with object
+                chosen_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
+            if '(' not in chosen_fluent:  # associated with object
                 continue
-            fluent_prefix = chosen_fluent[:chosen_fluent.find('(')]
+            fluent_prefix = get_fluent_prefix(chosen_fluent)
             objects_for_fluent = self.objects_for_fluent_one_object(fluent_prefix, plan_length, is_pos_fluents)
             timeout -= 1
         if timeout == 0:
@@ -369,14 +386,14 @@ class ObjectTrackingQuestions(QuestionGenerator):
             objects_by_type[self.object_type_by_object_name[obj]].append(obj)
 
         nl_object_types = 's, '.join(list(objects_by_type.keys())) + 's'
-        nl_fluents = self.nl_fluents([chosen_fluent[:chosen_fluent.find('(')]])
+        nl_fluents = self.nl_fluents([get_fluent_prefix(chosen_fluent)])
         question = f"{self.nl_question_prefix(plan_length)} what {nl_object_types} are {nl_fluents}? {NONE_STATEMENT}."
 
         answer = []
         for obj_type, objects in objects_by_type.items():
             for obj in objects:
                 answer.append(f"{obj_type} {obj}")
-        answer = self.asp_to_nl(sorted(answer), lambda x: x)
+        answer = asp_to_nl(sorted(answer), lambda x: x)
 
         return question, answer
 
@@ -413,7 +430,7 @@ class FluentTrackingQuestions(QuestionGenerator):
     def qa_1_2_helper(self, plan_length, is_pos_fluent_question):
         is_answer_true = random.choice([True, False])
         pos_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
-        neg_fluent = random.choice(self.neg_fluent_given_plan[plan_length])
+        neg_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
         fluent = \
             self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
@@ -423,8 +440,8 @@ class FluentTrackingQuestions(QuestionGenerator):
         is_answer_true = random.choice([True, False])
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
                                                       self.pos_fluents_given_plan[plan_length],
-                                                      self.neg_fluent_given_plan[plan_length])
-        question = f"{self.nl_question_prefix(plan_length)} are all of the following fluents {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}? {NONE_STATEMENT}"
+                                                      self.neg_fluents_given_plan[plan_length])
+        question = f"{self.nl_question_prefix(plan_length)} are all of the following fluents {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def qa_5_6_helper(self, plan_length, is_pos_fluent_question):
@@ -475,7 +492,7 @@ class StateTrackingQuestions(QuestionGenerator):
     def qa_1_2_helper(self, plan_length, is_pos_fluent_question):
         is_answer_true = random.choice([True, False])
         pos_fluents = self.pos_fluents_given_plan[plan_length]
-        neg_fluents = self.neg_fluent_given_plan[plan_length]
+        neg_fluents = self.neg_fluents_given_plan[plan_length]
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
         nl_fluents = self.nl_fluents(fluents)
         if is_pos_fluent_question:
@@ -491,7 +508,7 @@ class StateTrackingQuestions(QuestionGenerator):
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
             fluent_type = 'negative'
-            fluents = self.neg_fluent_given_plan[plan_length]
+            fluents = self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for this state. {NONE_STATEMENT}."
         return self.qa_data_object(FREE_ANSWER, question, nl_fluents.capitalize())
@@ -513,6 +530,15 @@ class StateTrackingQuestions(QuestionGenerator):
         return self.qa_3_4_helper(plan_length, is_pos_fluent_question)
 
 
+
+from copy import deepcopy
+def corrupt_action_sequence(true_actions, inexecutable_actions_timestep, plan_length):
+    corrupted_actions = deepcopy(true_actions)
+    random_break_ind = random.randint(0, plan_length - 1)
+    random_inxecutable_action = random.choice(inexecutable_actions_timestep[random_break_ind])
+    corrupted_actions[random_break_ind] = random_inxecutable_action
+    return corrupted_actions, random_break_ind
+
 class ActionExecutabilityQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -524,34 +550,33 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return f"Given the initial condition, I plan to perform {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
 
     def question_1(self, plan_length):
-        nl_sequence_of_actions = self.asp_to_nl(self.given_plan_sequence[:plan_length],
-                                                self.domain_class.action_to_natural_language)
+        nl_sequence_of_actions = asp_to_nl(self.given_plan_sequence[:plan_length],
+                                           self.domain_class.action_to_natural_language)
         question = self.qa_1_2_helper(nl_sequence_of_actions)
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, True)
 
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
-        sequence_of_actions = self.given_plan_sequence[:plan_length]
         if not is_answer_true:
-            random_break_ind = random.randint(0, plan_length - 1)
-            random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
-            sequence_of_actions[random_break_ind] = random_inxecutable_action
-        nl_sequence_of_actions = self.asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+        else:
+            sequence_of_actions = self.given_plan_sequence[:plan_length]
+        nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         question = self.qa_1_2_helper(nl_sequence_of_actions)
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, False)
 
     def question_3(self, plan_length):
         is_answer_true = random.choice([True, False])
-        sequence_of_actions = self.given_plan_sequence[:plan_length]
-        random_break_ind = random.randint(0, plan_length - 1)
         if not is_answer_true:
-            random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
-            sequence_of_actions[random_break_ind] = random_inxecutable_action
+            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+        else:
+            sequence_of_actions = self.given_plan_sequence[:plan_length]
+            random_break_ind = random.randint(0, plan_length - 1)
         selected_action = sequence_of_actions[random_break_ind]
 
-        nl_sequence_of_actions = self.asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+        nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
-        question = f"Given the initial condition, for steps 1 through {plan_length} I plan to perform: {nl_sequence_of_actions}. Is it possible to execute {nl_selected_action} at step {random_break_ind+1}, {TRUE_OR_FALSE}?"
+        question = f"Given the initial condition, for steps 1 through {plan_length} I plan to perform: {nl_sequence_of_actions}. Is it possible to execute {nl_selected_action} at step {random_break_ind + 1}, {TRUE_OR_FALSE}?"
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_4(self, plan_length):
@@ -590,9 +615,7 @@ class EffectsQuestions(QuestionGenerator):
         else:
             return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
-
     def qa_1_2_helper(self, plan_length, is_affected_fluents_question, is_answer_true):
-        plan_length -= 1  # since we are taking an action in this question
         action = self.given_plan_sequence[plan_length]
         fluents_current_state = set(self.pos_fluents_given_plan[plan_length])
         fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1])
@@ -616,14 +639,13 @@ class EffectsQuestions(QuestionGenerator):
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def qa_3_4_helper(self, plan_length, is_positive_fluents_question):
-        plan_length -= 1  # since we are taking an action in this question
         action = self.given_plan_sequence[plan_length]
         if is_positive_fluents_question:
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
-            fluents = self.neg_fluent_given_plan[plan_length + 1]
+            fluents = self.neg_fluents_given_plan[plan_length + 1]
         question = f"{self.prefix(plan_length)} I perform {self.nl_actions([action])}, list all fluents that would be {is_positive_fluents_question}"
-        return self.qa_data_object(FREE_ANSWER, question,  self.nl_fluents(fluents))
+        return self.qa_data_object(FREE_ANSWER, question, self.nl_fluents(fluents))
 
     def question_1(self, plan_length):
         is_affected_fluents_question = True
@@ -643,6 +665,7 @@ class EffectsQuestions(QuestionGenerator):
         is_positive_fluents_question = True
         return self.qa_3_4_helper(plan_length, is_positive_fluents_question)
 
+
 class NumericalReasoningQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -650,134 +673,96 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_category(self):
         return 'numerical_reasoning'
 
+    def random_count(self, original_count):
+        bound = int(0.3 * original_count) + 1
+        return original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)])
+
+    def true_false_qa_helper(self, plan_length, is_answer_true, name_count, count):
+        if is_answer_true:
+            total_count = count
+        else:
+            total_count = self.random_count(count)
+        question = f"{self.nl_question_prefix(plan_length)} is the number of {name_count} equal to {total_count}? {TRUE_OR_FALSE}"
+        return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
+
+    def free_answer_qa_helper(self, plan_length, name_count, count):
+        question = f"{self.nl_question_prefix(plan_length)} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}"
+        return self.qa_data_object(FREE_ANSWER, question, count)
+
     def question_1(self, plan_length):
-        # TODO validate
-        # obj, no_of_unique_objects = StatesActionsGenerator.parse_objects(objects)
-        unique_blocks = [block for action in self.given_plan_sequence for block in re.findall(r'\((.*?)\)', action)]
-        unique_blocks = [block.split(',') for block in unique_blocks]
-        unique_blocks = list({block for sublist in unique_blocks for block in sublist})
-        len_of_unique_blocks = len(unique_blocks)
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the current number of objects {len_of_unique_blocks}?"
-        answer = True
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        total_objects = len(self.all_objects)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects)
 
     def question_2(self, plan_length):
-        # TODO validate
-        unique_blocks = [block for action in self.given_plan_sequence for block in re.findall(r'\((.*?)\)', action)]
-        unique_blocks = [block.split(',') for block in unique_blocks]
-        unique_blocks = list({block for sublist in unique_blocks for block in sublist})
-        len_of_unique_blocks_corrupted = len(unique_blocks) + random.randint(1, 10)
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        # print(self.given_plan_sequence[:plan_length])
-        # sys.exit(0)
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the number of objects {len_of_unique_blocks_corrupted}?"
-        # return None
-        answer = False
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
+        fluents_count = len(
+            [f for f in self.pos_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'positive fluents', fluents_count)
 
     def question_3(self, plan_length):
-        # TODO validate
-        no_of_executable_actions = len(self.executable_actions[plan_length])
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the number of executable actions {no_of_executable_actions}?"
-        answer = True
-        print("self.executable_actions[plan_length]---->", self.executable_actions[plan_length])
-        print("fluents---->", self.pos_fluents_given_plan[plan_length])
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        chosen_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
+        fluents_count = len(
+            [f for f in self.neg_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'negative fluents', fluents_count)
 
     def question_4(self, plan_length):
-        # TODO validate
-        no_of_executable_actions = len(self.executable_actions[plan_length]) + random.randint(1, 10)
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the number of executable actions {no_of_executable_actions}?"
-        print("self.executable_actions[plan_length]---->", self.executable_actions[plan_length])
-        print("fluents---->", self.pos_fluents_given_plan[plan_length])
-        answer = False
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        actions_count = len(self.executable_actions[plan_length])
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'executable actions', actions_count)
 
     def question_5(self, plan_length):
-        # TODO validate
-        total_no_of_actions = plan_length
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the total number of actions {total_no_of_actions}?"
-        answer = True
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
-        # return None
+        is_answer_true = random.choice([True, False])
+        actions_count = len(self.inexecutable_actions[plan_length])
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count)
 
     def question_6(self, plan_length):
-        # TODO validate
-        total_no_of_actions = plan_length + random.randint(1, 10)
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state is the total number of actions {total_no_of_actions}?"
-        answer = False
-        return self.qa_data_object(TRUE_FALSE_ANSWER, question, answer)
+        is_answer_true = random.choice([True, False])
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'actions that lead to the current state',
+                                         plan_length)
 
     def question_7(self, plan_length):
-        # TODO validate
-        # no_of_unique_objects = sum([len(instances) for instances in StatesActionsGenerator.parse_objects(objects).values()]) 
-        unique_blocks = [block for action in self.given_plan_sequence for block in re.findall(r'\((.*?)\)', action)]
-        unique_blocks = [block.split(',') for block in unique_blocks]
-        unique_blocks = list({block for sublist in unique_blocks for block in sublist})
-        len_of_unique_blocks = len(unique_blocks)
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. In current state what is the total number of objects?"
-        answer = len_of_unique_blocks
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'objects'
+        count = len(self.pos_fluents_given_plan[plan_length])
+        return self.free_answer_qa_helper(plan_length, name_count, count)
 
     def question_8(self, plan_length):
-        # TODO validate
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. How many true fluents are there in the current state?"
-        answer = len(self.pos_fluents_given_plan[plan_length])
-        print("self.given_fluent_sequence[plan_length]---->", self.pos_fluents_given_plan[plan_length])
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'positive fluents'
+        count = len(self.pos_fluents_given_plan[plan_length])
+        return self.free_answer_qa_helper(plan_length, name_count, count)
 
     def question_9(self, plan_length):
-        # TODO validate
-        actions_to_nl = ', '.join(
-            [self.domain_class.action_to_natural_language(a) for a in self.given_plan_sequence[:plan_length]])
-        question = f"I plan to perform the following sequence of actions: {actions_to_nl} to reach the current state. How many false fluents are there in the current state?"
-        answer = len(self.neg_fluent_given_plan[plan_length])
-        print("self.given_neg_fluent_sequence[plan_length]---->", self.neg_fluent_given_plan[plan_length])
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'negative fluents'
+        count = len(self.neg_fluents_given_plan[plan_length])
+        return self.free_answer_qa_helper(plan_length, name_count, count)
 
     def question_10(self, plan_length):
-        # TODO validate
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state. How many executable actions are there from the current state?"
-        answer = len(self.executable_actions[plan_length])
-        print("self.executable_actions[plan_length]---->", self.executable_actions[plan_length])
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'executable actions'
+        count = len(self.executable_actions[plan_length])
+        return self.free_answer_qa_helper(plan_length, name_count, count)
 
     def question_11(self, plan_length):
-        # TODO validate
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state. How many inexecutable actions are there from the current state?"
-        answer = len(self.inexecutable_actions[plan_length])
-        print("self.inexecutable_actions[plan_length]---->", self.inexecutable_actions[plan_length])
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'inexecutable actions'
+        count = len(self.inexecutable_actions[plan_length])
+        return self.free_answer_qa_helper(plan_length, name_count, count)
 
     def question_12(self, plan_length):
-        # TODO validate
-        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
-        question = f"I plan to perform the following sequence of actions: {inexecutable_action} to reach the current state. What is the first inexecutable action in the sequence of actions?"
-        answer = inexecutable_action[index]
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'actions that lead to the current state'
+        count = plan_length
+        return self.free_answer_qa_helper(plan_length, name_count, count)
 
     def question_13(self, plan_length):
-        # TODO validate
-        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
-        question = f"I plan to perform the following sequence of actions: {inexecutable_action} to reach the current state. How many actions are there before the first inexecutable action?"
-        print("inexecutable_action---->", inexecutable_action)
-        answer = index
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        name_count = 'actions are there in the sequence before the first inexecutable action'
+        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+        prefix = f"Given the initial condition, I plan to perform {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
+        question = f"{prefix} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}"
+        return self.qa_data_object(FREE_ANSWER, question, random_break_ind)
+
+    def question_14(self, plan_length):
+        name_count = 'actions are there in the sequence before the first inexecutable action'
+        return self.free_answer_qa_helper(plan_length, name_count, 'None')
 
 
 class HallucinationQuestions(QuestionGenerator):
@@ -850,6 +835,163 @@ class LoopingQuestions(QuestionGenerator):
 
     def question_category(self):
         return 'looping'
+
+    def get_looping_action_sequence(self, plan, seq, key):
+        fluents = seq
+        last_action = plan[-1]
+        # print(fluents)
+        print(last_action)
+        if last_action.startswith('action_unstack('):
+            block = self.extract_multi_variable(last_action)[0]
+            if key == True:
+                string_repeat_number = random.choice([2, 4, 6, 8, 10])
+                random_action = [f"put_down({block})", f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                # print(actions)
+                # exit()
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                # print(action_strings)
+                # exit()
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block} be on table?"
+                answer = True
+                answer_string = 'on the table'
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result, answer_string
+            elif key == False:
+                string_repeat_number = random.choice([3, 5, 7, 9, 11])
+                random_action = [f"put_down({block})", f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block} be on table?"
+                answer = False
+                answer_string = 'in the hand'
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result, answer_string
+        elif last_action.startswith('action_stack('):
+            block1, block2 = self.extract_multi_variable(last_action)
+            if key == True:
+                string_repeat_number = random.choice([2, 4, 6, 8, 10])
+                random_action = [f"unstack({block1},{block2})", f"stack({block1},{block2})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block1} be on block {block2}?"
+                answer = True
+                answer_string = f'on block {block2}'
+                question_without_result = f"will the block {block1} be on block {block2}?"
+                return question, answer, random_action, question_without_result
+            elif key == False:
+                string_repeat_number = random.choice([3, 5, 7, 9, 11])
+                random_action = [f"unstack({block1},{block2})", f"stack({block1},{block2})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block1} be on block {block2}?"
+                answer = False
+                question_without_result = f"will the block {block1} be on block {block2}?"
+                return question, answer, random_action, question_without_result
+        elif last_action.startswith('action_put_down('):
+            block = self.extract_single_variable(last_action)
+            if key == True:
+                string_repeat_number = random.choice([2, 4, 6, 8, 10])
+                random_action = [f"pick_up({block})", f"put_down({block})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block} be on table?"
+                answer = True
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
+            elif key == False:
+                string_repeat_number = random.choice([3, 5, 7, 9, 11])
+                random_action = [f"pick_up({block})", f"put_down({block})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block} be on table?"
+                answer = False
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
+        elif last_action.startswith('action_pick_up('):
+            block = self.extract_single_variable(last_action)
+            if key == True:
+                string_repeat_number = random.choice([2, 4, 6, 8, 10])
+                random_action = [f"put_down({block})", f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ' then' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block} be on table?"
+                answer = True
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
+            elif key == False:
+                string_repeat_number = random.choice([3, 5, 7, 9, 11])
+                random_action = [f"put_down({block})", f"pick_up({block})"]
+                looping_actions = []
+                for i in range(0, string_repeat_number):
+                    if i % 2 == 0:
+                        looping_actions.append(random_action[0])
+                    else:
+                        looping_actions.append(random_action[1])
+                actions = [self.action_to_natural_language(a) for a in looping_actions]
+                action_strings = [action + ', then ' if i < len(actions) - 1 else action for i, action in
+                                  enumerate(actions)]
+                result = ''.join(action_strings)
+                question = f"{result}, will the block {block} be on table?"
+                answer = False
+                question_without_result = f"will the block {block} be on table?"
+                return question, answer, random_action, question_without_result
 
     def question_1(self, plan_length):
         # TODO validate

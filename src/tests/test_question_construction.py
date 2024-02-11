@@ -10,7 +10,7 @@ TMP_DIR = TESTS_DIR + '/tmp'
 jsonl_object = open_jsonl(TESTS_DIR + '/data/toy_data.blocksworld.jsonl')
 domain_class = Blocksworld()
 instance_id = 'sdf'
-plan_length_range = [1, 2, 3, 4]
+plan_length_range = [1, 2, 3]
 
 
 class TestHelpers(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestHelpers(unittest.TestCase):
 
         self.assertTrue(qa_object['question'])
         if qa_object[OUT_OBJ_ANSWER_TYPE] == TRUE_FALSE_ANSWER:
-            self.assertTrue(qa_object['answer'] in [True, False], msg=qa_object['answer'])
+            self.assertTrue(qa_object['answer'] in ['True', 'False'], msg=qa_object['answer'])
 
         for forbidden_char in "[]()'_-":
             self.assertTrue(forbidden_char not in qa_object['question'],
@@ -262,6 +262,9 @@ class TestNumericalReasoningQuestionsBlocksworld(TestHelpers):
         self.assert_qa_objects(self.qa_class.question_12)
 
     def test_q13(self):
+        self.assert_qa_objects(self.qa_class.question_13)
+
+    def test_q14(self):
         self.assert_qa_objects(self.qa_class.question_13)
 
 class TestHallucinationQuestionsBlocksworld(TestHelpers):
