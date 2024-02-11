@@ -455,7 +455,7 @@ class FluentTrackingQuestions(QuestionGenerator):
             fluents = self.neg_fluents_for_object(obj, plan_length)
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for {obj_type} {obj}. {NONE_STATEMENT}."
-        return self.qa_data_object(FREE_ANSWER, question, nl_fluents.capitalize())
+        return self.qa_data_object(FREE_ANSWER, question, nl_fluents)
 
     def question_1(self, plan_length):
         is_pos_fluent_question = True
@@ -511,7 +511,7 @@ class StateTrackingQuestions(QuestionGenerator):
             fluents = self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for this state. {NONE_STATEMENT}."
-        return self.qa_data_object(FREE_ANSWER, question, nl_fluents.capitalize())
+        return self.qa_data_object(FREE_ANSWER, question, nl_fluents)
 
     def question_1(self, plan_length):
         is_pos_fluent_question = True
@@ -531,7 +531,7 @@ class StateTrackingQuestions(QuestionGenerator):
 
 
 
-from copy import deepcopy
+
 def corrupt_action_sequence(true_actions, inexecutable_actions_timestep, plan_length):
     corrupted_actions = deepcopy(true_actions)
     random_break_ind = random.randint(0, plan_length - 1)
@@ -580,26 +580,22 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_4(self, plan_length):
-        # TODO validate
-        question = f"I plan to perform the following sequence of actions: {self.nl_actions_up_to(plan_length)} to reach the current state, specify all the actions which are inexecutable in the current state?"
-        answer = self.ACTION_JOIN_STR.join(
-            [self.domain_class.fluent_to_natural_language(action) for action in
-             self.inexecutable_actions[plan_length + 1]])
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        question = f"{self.nl_question_prefix(plan_length)} list all executable actions. {NONE_STATEMENT}."
+        return self.qa_data_object(FREE_ANSWER, question, self.nl_actions(self.executable_actions[plan_length]))
 
     def question_5(self, plan_length):
-        # TODO validate
-        question = f"I plan to perform the following sequence of actions: {self.get_random_inexecutable_sequence(plan_length)} to reach the current state, what is the first inexecutable action in the sequence of actions?"
-        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
-        answer = inexecutable_action
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        question = f"{self.nl_question_prefix(plan_length)} list all inexecutable actions. {NONE_STATEMENT}."
+        return self.qa_data_object(FREE_ANSWER, question, self.nl_actions(self.inexecutable_actions[plan_length]))
 
     def question_6(self, plan_length):
-        # TODO validate
-        question = f"I plan to perform the following sequence of actions: {self.get_random_inexecutable_sequence(plan_length)} to reach the current state, what is the first inexecutable action in the sequence of actions?"
-        inexecutable_action, index = self.get_random_inexecutable_sequence(plan_length)
-        answer = inexecutable_action
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+        question = f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
+
+        is_answer_true = random.choice([True, False])
+        if not is_answer_true:
+            return self.qa_data_object(FREE_ANSWER, question, 'None')
+        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+        inexecutable_action = sequence_of_actions[random_break_ind]
+        return self.qa_data_object(FREE_ANSWER, question,  self.nl_actions([inexecutable_action]))
 
 
 class EffectsQuestions(QuestionGenerator):
