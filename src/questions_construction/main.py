@@ -5,7 +5,6 @@ import sys
 sys.path.append('/data_5/data/shri/reasoning_about_actions')
 from src.states_actions_generation import *
 from collections import defaultdict
-import warnings
 
 # import nltk
 # nltk.download('omw-1.4')
@@ -37,7 +36,6 @@ def extract_variables(obj):
     match = re.search(OBJ_IN_PAREN_REGEX, obj)
     return match.group(1).split(',')
 
-
 def asp_to_nl(obj_ls, converter, fluent_subs=None):
     and_str = ' and '
     comma_str = ', '
@@ -51,8 +49,7 @@ def asp_to_nl(obj_ls, converter, fluent_subs=None):
     nl_obj_ls = [converter(f) for f in obj_ls]
     if fluent_subs:
         nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
-    return comma_str.join(['Initially']+nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1] + '.'
-
+    return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1] 
 
 class QuestionGenerationHelpers:
     """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
@@ -167,10 +164,10 @@ class QuestionGenerationHelpers:
         return by_object_name
 
     def nl_fluents(self, fluents, fluent_subs=None):
-        return asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
+        return self.asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_actions(self, actions, fluent_subs=None):
-        return asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
+        return self.asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_question_prefix(self, plan_length):
         return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
@@ -217,9 +214,8 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def qa_data_object(self, anwswer_type, question, answer):
         return {
             OUT_OBJ_ID: str(uuid.uuid4()),
-            OUT_OBJ_DOMAIN_NAME: self.domain_class.domain_name,
+            OUT_OBJ_DOMAIN_NAME: self.domain_class.domain_name(),
             OUT_OBJ_INSTANCE_ID: self.instance_id,
-            OUT_OBJ_INITIAL_STATE: self.init_state,
             OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence,
             OUT_OBJ_QUESTION_TYPE: self.question_category(),
             OUT_OBJ_QUESTION: question,
@@ -241,8 +237,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
             results[qa_id] = qa_object
             timeout -= 1
         if timeout == 0:
-            warn_str = f'Timeout!!! {question_constructor} \n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} '
-            warnings.warn(warn_str)
+            raise RuntimeError(f'Timeout error\n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} ')
         return list(results.values())
 
     def create_questions(self, multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):
@@ -381,7 +376,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
         for obj_type, objects in objects_by_type.items():
             for obj in objects:
                 answer.append(f"{obj_type} {obj}")
-        answer = asp_to_nl(sorted(answer), lambda x: x)
+        answer = self.asp_to_nl(sorted(answer), lambda x: x)
 
         return question, answer
 
@@ -529,7 +524,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return f"Given the initial condition, I plan to perform {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
 
     def question_1(self, plan_length):
-        nl_sequence_of_actions = asp_to_nl(self.given_plan_sequence[:plan_length],
+        nl_sequence_of_actions = self.asp_to_nl(self.given_plan_sequence[:plan_length],
                                                 self.domain_class.action_to_natural_language)
         question = self.qa_1_2_helper(nl_sequence_of_actions)
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, True)
@@ -541,7 +536,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
             random_break_ind = random.randint(0, plan_length - 1)
             random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
             sequence_of_actions[random_break_ind] = random_inxecutable_action
-        nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+        nl_sequence_of_actions = self.asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         question = self.qa_1_2_helper(nl_sequence_of_actions)
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, False)
 
@@ -554,7 +549,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
             sequence_of_actions[random_break_ind] = random_inxecutable_action
         selected_action = sequence_of_actions[random_break_ind]
 
-        nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+        nl_sequence_of_actions = self.asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
         question = f"Given the initial condition, for steps 1 through {plan_length} I plan to perform: {nl_sequence_of_actions}. Is it possible to execute {nl_selected_action} at step {random_break_ind+1}, {TRUE_OR_FALSE}?"
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
