@@ -25,7 +25,7 @@ MAX_TIMEOUT = 100
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
-PLAN_LENGTHS = [1, 5, 10, 15, 20]
+PLAN_LENGTHS = [1, 5, 10, 15, 19]
 
 
 def get_fluent_prefix(fluent):
