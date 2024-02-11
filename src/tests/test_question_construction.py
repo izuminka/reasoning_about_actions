@@ -1,5 +1,5 @@
 from ..questions_construction.domains import *
-from ..questions_construction.main import *
+from ..questions_construction.questions import *
 import unittest
 from ..common import *
 import random

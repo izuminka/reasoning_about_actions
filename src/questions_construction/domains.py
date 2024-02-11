@@ -1,16 +1,8 @@
-# from collections import defaultdict
-# import random
-# import re
-# from src.states_actions_generation import *
-from src.questions_construction.main import *
+from src.questions_construction.questions import *
 
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
-
-    # def __init__(self):
-    #     self.single_variable = self.extract_single_variable()
-    #     self.multiple_variables = self.extract_multi_variable()
 
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
@@ -42,18 +34,16 @@ class BaseDomain:
 
 
 class Blocksworld(BaseDomain):
+    DOMAIN_NAME = 'blocksworld'
+
     list_of_unknown_actions = ['action_shuffle', 'action_move', 'action_rotate', 'action_twist']
     list_of_unknown_fluents = ['belowtable', 'unclear', 'empty', 'broken', 'unstable', 'usable']
 
     def __init__(self):
-
         self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_name = self.domain_name()
 
-    def domain_name(self):
-        return 'blocksworld'
-
-    def domain_description_without_ram(self):
+    @staticmethod
+    def domain_description_without_ram():
         domain_description = ('Picking up a block is only possible if that block is clear, on the table, and the hand '
                               'is empty. By picking up that block, it makes that block not present on the table and '
                               'not clear. It also leads to the block being held and makes the hand not empty. Putting '
@@ -146,9 +136,7 @@ class Blocksworld(BaseDomain):
 
 
 class Depots(BaseDomain):
-
-    def domain_name(self):
-        return 'depots'
+    DOMAIN_NAME ='depots'
 
     def actions_to_natural_language(self, action):
         if action.startswith('drive('):
@@ -232,9 +220,7 @@ class Depots(BaseDomain):
 
 
 class Driverlog(BaseDomain):
-
-    def domain_name(self):
-        return 'driverlog'
+    DOMAIN_NAME = 'driverlog'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
@@ -318,9 +304,8 @@ class Driverlog(BaseDomain):
 
 
 class Goldminer(BaseDomain):
+    DOMAIN_NAME = 'goldminer'
 
-    def domain_name(self):
-        return 'goldminer'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('robot_at('):
@@ -431,9 +416,7 @@ class Goldminer(BaseDomain):
 
 
 class Grippers(BaseDomain):
-
-    def domain_name(self):
-        return 'grippers'
+    DOMAIN_NAME = 'grippers'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at_robby('):
@@ -486,9 +469,7 @@ class Grippers(BaseDomain):
 
 
 class Logistics(BaseDomain):
-
-    def domain_name(self):
-        return 'logistics'
+    DOMAIN_NAME = 'logistics'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('in_city('):
@@ -542,9 +523,7 @@ class Logistics(BaseDomain):
 
 
 class Miconic(BaseDomain):
-
-    def domain_name(self):
-        return 'miconic'
+    DOMAIN_NAME = 'miconic'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('origin('):
@@ -619,9 +598,7 @@ class Miconic(BaseDomain):
 
 
 class Mystery(BaseDomain):
-
-    def domain_name(self):
-        return 'mystery'
+    DOMAIN_NAME = 'mystery'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
@@ -704,9 +681,7 @@ class Mystery(BaseDomain):
 
 
 class Npuzzle(BaseDomain):
-
-    def domain_name(self):
-        return 'npuzzle'
+    DOMAIN_NAME = 'npuzzle'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
@@ -745,9 +720,7 @@ class Npuzzle(BaseDomain):
 
 
 class Satellite(BaseDomain):
-
-    def domain_name(self):
-        return 'satellite'
+    DOMAIN_NAME = 'satellite'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('on_board('):
@@ -838,9 +811,7 @@ class Satellite(BaseDomain):
 
 
 class Spanner(BaseDomain):
-
-    def domain_name(self):
-        return 'spanner'
+    DOMAIN_NAME = 'spanner'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
@@ -919,9 +890,7 @@ class Spanner(BaseDomain):
 
 
 class Zenotravel(BaseDomain):
-
-    def domain_name(self):
-        return 'zenotravel'
+    DOMAIN_NAME = 'zenotravel'
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
@@ -1026,5 +995,4 @@ class Visitall(BaseDomain):
             raise ('action is not defined')
 
 
-ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
-                      Satellite, Spanner, Zenotravel, Visitall]
+ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle, Satellite, Spanner, Zenotravel, Visitall]

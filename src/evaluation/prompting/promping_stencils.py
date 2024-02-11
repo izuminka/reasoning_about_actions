@@ -9,7 +9,7 @@ import sys
 sys.path.append('/data_5/data/shri/reasoning_about_actions')
 from src.common import *
 from src.questions_construction.domains import *
-from src.questions_construction.main import *
+from src.questions_construction.questions import *
 # jsonl_instance = '/data_5/data/shri/reasoning_about_actions/src/tests/data20.jsonl'
 # with open(jsonl_instance, 'r') as f:
 #     data = f.readlines()
