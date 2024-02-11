@@ -1,12 +1,17 @@
-import json
 import random
 import uuid
-from src.states_actions_generation import *
+import re
 from collections import defaultdict
 import warnings
 from copy import deepcopy
 
+import os, sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+from src.common import *
+
+INITIAL_CONDITION_PREFIX = 'Given the initial condition'
+QUESTION_PREFIX = f'{INITIAL_CONDITION_PREFIX}, the following actions are performed:'
 TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
 MAX_TIMEOUT = 100
@@ -167,10 +172,11 @@ class QuestionGenerationHelpers:
         return asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_actions(self, actions, fluent_subs=None):
+        actions = [a[len('action_'):] for a in actions]
         return asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
 
     def nl_question_prefix(self, plan_length):
-        return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
+        return f"{QUESTION_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
     def nl_actions_up_to(self, plan_length):
         return self.nl_actions(self.given_plan_sequence[:plan_length])
@@ -239,8 +245,9 @@ class QuestionGenerator(QuestionGenerationHelpers):
             results[qa_id] = qa_object
             timeout -= 1
         if timeout == 0:
-            warn_str = f'Timeout!!! {question_constructor} \n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} '
-            warnings.warn(warn_str)
+            pass
+            # warn_str = f'Timeout!!! {question_constructor} \n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} '
+            # warnings.warn(warn_str)
         return list(results.values())
 
     def create_questions(self, multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):
@@ -352,7 +359,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
         def is_break_condition(chosen_fluent, objects_for_fluent):
             return self.is_variable_in_fluent(chosen_fluent) and (',' not in chosen_fluent) and (
-                    '(' in chosen_fluent) and len(objects_for_fluent) >= 1
+                        '(' in chosen_fluent) and len(objects_for_fluent) >= 1
 
         # NOTE: only fluents for single objects, ex: ontable(block1),  NOT on(block1, block2)
         chosen_fluent = ''
@@ -389,24 +396,25 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         is_pos_fluent_question = True
         is_answer_true = random.choice([True, False])
-        question = self.question_1_2_helper(plan_length, 1, is_answer_true)
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_2(self, plan_length):
         is_pos_fluent_question = False
         is_answer_true = random.choice([True, False])
-        question = self.question_1_2_helper(plan_length, 2, is_answer_true)
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
-    def question_3(self, plan_length):
-        # NOTE: only fluents for single objects, ex: ontable(block1)
-        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
-        return self.qa_data_object(FREE_ANSWER, question, answer)
-
-    def question_4(self, plan_length):
-        # NOTE: only fluents for single objects, ex: -ontable(block1)
-        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
-        return self.qa_data_object(FREE_ANSWER, question, answer)
+    # TODO fix
+    # def question_3(self, plan_length):
+    #     # NOTE: only fluents for single objects, ex: ontable(block1)
+    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
+    #     return self.qa_data_object(FREE_ANSWER, question, answer)
+    #
+    # def question_4(self, plan_length):
+    #     # NOTE: only fluents for single objects, ex: -ontable(block1)
+    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
+    #     return self.qa_data_object(FREE_ANSWER, question, answer)
 
 
 class FluentTrackingQuestions(QuestionGenerator):
@@ -519,14 +527,13 @@ class StateTrackingQuestions(QuestionGenerator):
         return self.qa_3_4_helper(plan_length, is_pos_fluent_question)
 
 
-
-
 def corrupt_action_sequence(true_actions, inexecutable_actions_timestep, plan_length):
     corrupted_actions = deepcopy(true_actions)
     random_break_ind = random.randint(0, plan_length - 1)
     random_inxecutable_action = random.choice(inexecutable_actions_timestep[random_break_ind])
     corrupted_actions[random_break_ind] = random_inxecutable_action
     return corrupted_actions, random_break_ind
+
 
 class ActionExecutabilityQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
@@ -536,7 +543,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return 'action_executability'
 
     def qa_1_2_helper(self, nl_sequence_of_actions):
-        return f"Given the initial condition, I plan to perform {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
+        return f"{QUESTION_PREFIX} {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
 
     def question_1(self, plan_length):
         nl_sequence_of_actions = asp_to_nl(self.given_plan_sequence[:plan_length],
@@ -547,7 +554,8 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         if not is_answer_true:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
+                                                                            self.inexecutable_actions, plan_length)
         else:
             sequence_of_actions = self.given_plan_sequence[:plan_length]
         nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
@@ -557,7 +565,8 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_3(self, plan_length):
         is_answer_true = random.choice([True, False])
         if not is_answer_true:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
+                                                                            self.inexecutable_actions, plan_length)
         else:
             sequence_of_actions = self.given_plan_sequence[:plan_length]
             random_break_ind = random.randint(0, plan_length - 1)
@@ -565,7 +574,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
         nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
-        question = f"Given the initial condition, for steps 1 through {plan_length} I plan to perform: {nl_sequence_of_actions}. Is it possible to execute {nl_selected_action} at step {random_break_ind + 1}, {TRUE_OR_FALSE}?"
+        question = f"{INITIAL_CONDITION_PREFIX}, for steps 1 through {plan_length} the following actions will be executed: {nl_sequence_of_actions}. Is it possible to execute {nl_selected_action} at step {random_break_ind + 1}, {TRUE_OR_FALSE}?"
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 
     def question_4(self, plan_length):
@@ -577,14 +586,15 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return self.qa_data_object(FREE_ANSWER, question, self.nl_actions(self.inexecutable_actions[plan_length]))
 
     def question_6(self, plan_length):
-        question = f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
+        question = f"{QUESTION_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
 
         is_answer_true = random.choice([True, False])
         if not is_answer_true:
             return self.qa_data_object(FREE_ANSWER, question, 'None')
-        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
+                                                                        self.inexecutable_actions, plan_length)
         inexecutable_action = sequence_of_actions[random_break_ind]
-        return self.qa_data_object(FREE_ANSWER, question,  self.nl_actions([inexecutable_action]))
+        return self.qa_data_object(FREE_ANSWER, question, self.nl_actions([inexecutable_action]))
 
 
 class EffectsQuestions(QuestionGenerator):
@@ -596,9 +606,9 @@ class EffectsQuestions(QuestionGenerator):
 
     def prefix(self, plan_length):
         if plan_length == 0:
-            return f"Given the initial condition,"
+            return f"{INITIAL_CONDITION_PREFIX},"
         else:
-            return f"Given the initial condition, I plan to perform {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
+            return f"{QUESTION_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
     def qa_1_2_helper(self, plan_length, is_affected_fluents_question, is_answer_true):
         action = self.given_plan_sequence[plan_length]
@@ -740,8 +750,9 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_13(self, plan_length):
         name_count = 'actions are there in the sequence before the first inexecutable action'
-        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
-        prefix = f"Given the initial condition, I plan to perform {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
+        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
+                                                                        self.inexecutable_actions, plan_length)
+        prefix = f"{QUESTION_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
         question = f"{prefix} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}"
         return self.qa_data_object(FREE_ANSWER, question, random_break_ind)
 
@@ -1005,7 +1016,6 @@ class LoopingQuestions(QuestionGenerator):
         # TODO implement
         return None
 
-
 # class CompositeQuestions(DomainQuestionGen):
 #         def __init__(self, states_actions_jsonl_path, instance_id):
 #             super().__init__(states_actions_jsonl_path, instance_id)
@@ -1039,5 +1049,3 @@ class LoopingQuestions(QuestionGenerator):
 #         def question_4(self, plan_length):
 #             # TODO implement
 #             pass
-
-

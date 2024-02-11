@@ -1,11 +1,12 @@
+
 from domains import *
 from questions import *
-
 
 class AllQuestions:
     def __init__(self, jsonl_instance, domain_class, instance_id):
         self.jsonl_instance = jsonl_instance
         self.domain_class = domain_class
+        self.instance_id = instance_id
         self.question_multiplicity = QUESTION_MULTIPLICITY
         self.plan_lengths = PLAN_LENGTHS
         self.all_questions = []
@@ -19,28 +20,35 @@ class AllQuestions:
                         # LoopingQuestions(jsonl_instance, domain_class, instance_id),
                         ]
 
-
     def generate_all_questions(self):
         for q_type in self.q_types:
             self.all_questions += q_type.create_questions(self.question_multiplicity, self.plan_lengths)
         return self.all_questions
 
+    def save_questions(self, save_dir = None):
+        if save_dir is None:
+            save_dir = QUESTIONS_PATH + f'/{self.domain_class.DOMAIN_NAME}'
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        save_path = f'{save_dir}/{self.instance_id}.jsonl'
+        save_jsonl(self.all_questions, save_path)
 
 
 if __name__ == '__main__':
 
-    multiplicity = 2
+    domain = Driverlog() #Blocksworld()#
+    # for domain_class in ALL_DOMAIN_CLASSES:
+    # domain = domain_class()
+    # for i in range(1, 11):
+    i = 1
+    # try:
+    instance_name = f'Instance_{i}'
+    jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
+    all_questions = AllQuestions(jsonl_instance, domain, instance_name)
+    all_questions.generate_all_questions()
+    all_questions.save_questions()
+    # except Exception as e:
+    #     print(e)
+    #     print(f'Failed for {domain.DOMAIN_NAME} {instance_name}')
 
-    domain_name = 'blocksworld'
-    domain_class = Blocksworld()
 
-
-    all_questions = []
-    for domain_class in domain_list:
-        for instance_jsonl in instance_list:
-            domain_instance = domain_class(instance_jsonl)
-            all_questions += domain_instance.create_questions()
-    # TODO add batching
-    with open('questions.jsonl', 'w') as f:
-        for question in all_questions:
-            f.write(json.dumps(question) + '\n')

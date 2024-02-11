@@ -1,6 +1,13 @@
 from common import *
 import re
+
 import sys
+import os
+sys.path.append(os.path.realpath(__file__))
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+
+
+
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
 
 
