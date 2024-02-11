@@ -635,7 +635,7 @@ class EffectsQuestions(QuestionGenerator):
                 fluents = self.corrupted_not_corrupted_mix(unaffected_fluents, fluents_from_action)
         sampled_fluents = random.sample(fluents, random.randint(1, len(fluents)))
 
-        nl_fluents = self.nl_fluents(sampled_fluents, )
+        nl_fluents = self.nl_fluents(sampled_fluents)
         question = f"{self.prefix(plan_length)} if I perform {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {nl_fluents}?"
         return self.qa_data_object(TRUE_FALSE_ANSWER, question, is_answer_true)
 

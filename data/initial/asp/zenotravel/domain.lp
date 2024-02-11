@@ -50,7 +50,7 @@ member(in(P, A), cond_exec_debark(P, A, C)) :- person(P), aircraft(A), city(C).
 member(at(A, C), cond_exec_debark(P, A, C)) :- person(P), aircraft(A), city(C).
 
 causes(action_debark(P, A, C), -in(P, A), cond_causes_debark(P, A, C)) :- person(P), aircraft(A), city(C).
-causes(action_debark(P, A, C), at(P, A), cond_causes_debark(P, A, C)) :- person(P), aircraft(A), city(C).
+causes(action_debark(P, A, C), at(P, C), cond_causes_debark(P, A, C)) :- person(P), aircraft(A), city(C).
 
 % Action Fly
 member(at(A, C1), cond_exec_fly(A, C1, C2, F1, F2)) :- aircraft(A), city(C1), flevel(F1), city(C2), C1 != C2, flevel(F2), F1!=F2.
