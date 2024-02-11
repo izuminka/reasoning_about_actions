@@ -1,0 +1,311 @@
+{"response": "b9"}
+{"response": "b1, b2, b3, b4, b5, b6, b7, b8, b9"}
+{"response": "b1, b2, b3, b6, b8, b9"}
+{"response": "False"}
+{"response": "True"}
+{"response": " False"}
+{"response": "False"}
+{"response": "b2, b4, b5, b7, b9"}
+{"response": "b9, b4, b5"}
+{"response": "b1, b2, b3, b4, b7, b8, b9"}
+{"response": "b1, b2, b3, b5, b6, b7, b8, b9"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "clear"}
+{"response": "None"}
+{"response": "- not clear\n- not on table"}
+{"response": "None"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "on_table"}
+{"response": "on_table"}
+{"response": "- clear(b5)\n- on(b5, table)"}
+{"response": "- clear"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "on-table(b4)"}
+{"response": "clear"}
+{"response": "On table, Clear, Holding, On, Top"}
+{"response": "- on(b2, b6)\n- on-top-of(b2, b6)"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "on_table(b6)"}
+{"response": "ontable(b7)"}
+{"response": "- notOnTable(b4)\n- notClear(b4)"}
+{"response": "- Clear(b7)"}
+{"response": "False"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "on(b1, b3)"}
+{"response": "on-table(b6)"}
+{"response": "- clear\n- ontable"}
+{"response": "notOnTable"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "- block_clear(b2)\n- block_on_table(b4)\n- block_on_table(b5)\n- block_on_table(b7)\n- block_on(b3, b6)\n- block_on(b6, b2)\n- block_on(b8, b1)\n- block_on(b1, b7)\n- hand_empty"}
+{"response": "- Clear(b9)\n- On(b9, b8)\n- On(b8, b1)"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "- Clear(b2)\n- Clear(b4)\n- Clear(b5)\n- Clear(b6)\n- Clear(b7)\n- Clear(b8)\n- Clear(b9)\n- On(b1, b7)\n- On(b3, b4)\n- On(b5, table)\n- On(b6, table)\n- On(b7, table)\n- On(b8, table)\n- On(b9, table)\n- Empty(hand)"}
+{"response": "- block b9 is not clear\n- block b9 is not on table\n- block b2 is not clear\n- block b2 is not on table\n- block b9 is on block b8 \n- block b2 is on block b6 \n- block b6 is on block b3"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "- on(b7, table)\n- on(b5, table)\n- clear(b2)\n- on(b3, b4)\n- clear(b6)\n- on(b4, table)\n- on(b5, b2)\n- on(b3, b9)\n- on(b8, b4)\n- on(b2, b5)"}
+{"response": "- Clear(b6)\n- Clear(b9)\n- Clear(b5)\n- Clear(b8)\n- On(b9, b8)\n- On(b2, b6)\n- On(b6, b3)\n- On(b3, b4)\n- On(b8, b1)\n- On(b2, b5)\n- On(b1, b7)"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "- on(b7, table)\n- on(b5, table)\n- clear(b2)\n- on(b3, b4)\n- clear(b4)\n- on(b6, table)\n- clear(b9)\n- on(b8, b4)\n- on(b1, b7)\n- hand_empty"}
+{"response": "- clear(b6)\n- clear(b8)\n- clear(b9)\n- on_table(b7)"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "- ontable(b5)\n- clear(b5)\n- on(b4,table)\n- on(b9,b5)\n- on(b2,b8)\n- on(b3,b2)\n- on(b1,b3)\n- on(b7,b9)\n- on(b6,table)\n- handEmpty"}
+{"response": "- NotOnTable(b1)\n- NotOnTable(b2)\n- NotOnTable(b3)\n- NotOnTable(b6)\n- NotOnTable(b7)\n- NotOnTable(b8)\n- NotOnTable(b9)\n- NotClear(b1)\n- NotClear(b2)\n- NotClear(b3)\n- NotClear(b5)\n- NotClear(b6)\n- NotClear(b7)\n- NotClear(b8)\n- NotClear(b9)\n- Holding(b1)\n- Holding(b2)\n- Holding(b3)\n- Holding(b6)\n- Holding(b7)\n- Holding(b8)\n- Holding(b9)\n- On(b6, b3)\n- On(b8, b1)\n- On(b9, b8)"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "- on-table b9\n- clear b9\n- empty-hand"}
+{"response": "- b9 is on the table\n- b9 is clear\n- b8 is clear\n- hand is empty"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "- block_on_table(b5)\n- clear(b2)\n- block_on(b3, b4)\n- block_on(b1, b7)\n- hand_empty\n- clear(b9)\n- block_on_table(b4)\n- block_on(b6, b3)\n- clear(b5)\n- block_on(b8, b1)\n- block_on(b9, b8)\n- block_on(b2, b6)\n- block_on_table(b6)"}
+{"response": "- block_b7_on_table\n- block_b5_on_table\n- block_b2_clear\n- block_b3_on_block_b4\n- block_b1_on_block_b7\n- hand_empty\n- block_b9_clear\n- block_b4_on_table\n- block_b6_on_block_b3\n- block_b5_clear\n- block_b8_on_block_b1\n- block_b9_on_block_b8\n- block_b2_on_block_b6\n- block_b6_on_table"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "- block(b7)\n- on(b7,table)\n- clear(b2)\n- on(b3,block(b4))\n- on(b1,block(b7))\n- empty(hand)\n- clear(block(b9))\n- on(block(b4),table)\n- on(block(b6),block(b3))\n- clear(block(b5))\n- on(block(b8),block(b1))\n- on(block(b9),block(b8))\n- on(block(b2),block(b6))\n- on(block(b8),table)\n- clear(block(b3))\n- on(block(b9),table)"}
+{"response": "- block_clear(b9)\n- block_clear(b5)\n- block_clear(b6)\n- block_clear(b3)\n- block_clear(b2)\n- block_clear(b1)\n- block_clear(b8)\n- block_on_table(b9)\n- block_on_table(b5)\n- block_on_table(b6)\n- block_on_table(b3)\n- block_on_table(b4)\n- block_on_table(b7)\n- block_on_table(b2)\n- block_on_table(b1)\n- block_on_table(b8)\n- hand_empty"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "- block(b1)\n- block(b2)\n- block(b3)\n- block(b4)\n- block(b5)\n- block(b6)\n- block(b7)\n- block(b8)\n- block(b9)\n- on(b2, b5)\n- on(b3, b9)\n- on(b6, b3)\n- on(b8, b4)\n- ontable(b4)\n- ontable(b5)\n- ontable(b7)\n- clear(b1)\n- clear(b2)\n- clear(b3)\n- clear(b6)\n- clear(b8)\n- clear(b9)\n- handempty"}
+{"response": "- b7 on table\n- b9 clear\n- b4 on table\n- b1 on b3\n- b3 clear\n- b2 on b8\n- hand empty"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "- block_being_held(b7)\n- not clear(b7)\n- not on_table(b7)\n- on_table(b4)\n- on_table(b3)\n- on_table(b2)\n- on(b6,b3)\n- on(b5,b4)\n- on(b9,b2)\n- on(b8,b9)\n- on(b1,b8)\n- empty_hand"}
+{"response": "- block(b6)\n- block(b7)\n- clear(b5)\n- clear(b6)\n- clear(b8)\n- clear(b9)\n- handEmpty\n- on(b1, b3)\n- on(b2, b8)\n- on(b3, b9)\n- on(b4, table)\n- on(b5, table)\n- on(b6, b7)\n- on(b7, table)\n- on(b8, b4)\n- on(b9, table)"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "Put down block b9"}
+{"response": "None"}
+{"response": "Unstack block b9 from block b8"}
+{"response": "Unstack block b9 from block b8"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "False"}
+{"response": "Stack block b2 on block b6"}
+{"response": "- Pick up block b7\n- Pick up block b5\n- Pick up block b2\n- Pick up block b3\n- Pick up block b1\n- Stack block b9 on block b8\n- Stack block b2 on block b6\n- Stack block b6 on block b3"}
+{"response": "Unstack block b9 from block b8"}
+{"response": "Put down block b9"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "Stack block b9 from block b5"}
+{"response": "None"}
+{"response": "Unstack block b9 from block b8"}
+{"response": "Unstack block b9 from block b8"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "Put down block b9"}
+{"response": "None"}
+{"response": "Stack block b2 from block b8"}
+{"response": "Unstack block b3 from block b9"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "Stack block b7 from block b1, Unstack block b6 from block b7, Put down block b6, Unstack block b5 from block b2, Stack block b5 from block b6, Pickup block b2, Stack block b2 from block b1, Pickup block b4, Stack block b4 from block b2, Pickup block b3, Stack block b3 from block b4, Pickup block b1, Stack block b1 from block b9, Unstack block b8 from block b4, Stack block b8 from block b1, Pickup block b9, Stack block b9 from block b8, Pickup block b7, Stack block b7 from block b9"}
+{"response": "Stack block b8 from block b4\nStack block b2 from block b8"}
+{"response": "Pickup block b7"}
+{"response": "Put down block b9"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "10"}
+{"response": "0.6"}
+{"response": "0.5"}
+{"response": "2.0"}
+{"response": "7.5"}
+{"response": "None"}
+{"response": "RECITATION"}
+{"response": "RECITATION"}
+{"response": "6.0"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "12"}
+{"response": "4.0"}
+{"response": "0.2"}
+{"response": "1.0"}
+{"response": "3.5"}
+{"response": "RECITATION"}
+{"response": "5.0"}
+{"response": "RECITATION"}
+{"response": "RECITATION"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "10"}
+{"response": "0.7"}
+{"response": "0.5"}
+{"response": "2.0"}
+{"response": "0.3"}
+{"response": "RECITATION"}
+{"response": "10"}
+{"response": "10"}
+{"response": "8.0"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "15"}
+{"response": "0.6875"}
+{"response": "0"}
+{"response": "2.0"}
+{"response": "0.75"}
+{"response": "RECITATION"}
+{"response": "13"}
+{"response": "12.0"}
+{"response": "13.0"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "17.0"}
+{"response": "5.3"}
+{"response": "None"}
+{"response": "2.0"}
+{"response": "0.6"}
+{"response": "89.0"}
+{"response": "6"}
+{"response": "RECITATION"}
+{"response": "18"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "False"}
+{"response": "b9"}
+{"response": "b1, b9"}
+{"response": "b1, b2, b3, b4, b5, b6, b7, b8, b9"}
+{"response": "b1, b2, b3, b4, b5, b6, b7, b9"}
+{"response": "True"}
+{"response": "True"}
+{"response": "True"}
+{"response": "False"}
+{"response": "b4, b5, b7"}
+{"response": "b9"}
+{"response": "b1, b2, b3, b4, b5, b6, b7, b8, b9"}
+{"response": "b1, b2, b3, b4, b5, b6, b7, b8, b9"}
+{"response": "False"}
+{"response": "False"}
+{"response": "True"}
+{"response": "True"}
+{"response": "b7, b5, b4"}
+{"response": "b5, b7, b9"}
+{"response": "b4, b5, b6, b9"}
+{"response": "b1, b2, b3, b4, b5, b6, b7, b8, b9"}
+{"response": "False"}
+{"response": "True"}
+{"response": "False"}
+{"response": "True"}
+{"response": "b9, b5, b4"}
+{"response": "b1"}

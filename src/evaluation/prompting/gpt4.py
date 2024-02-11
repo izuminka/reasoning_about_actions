@@ -8,7 +8,7 @@ if __name__ == '__main__':
     try:
         for idx, ele in tqdm(enumerate(data)):
             response = get_response('gpt4', ele)
-            write_data(response, idx)
+            write_data(response, idx, '')
     except Exception as e:
         print(e)
         print('Stopped at index', idx+1)
