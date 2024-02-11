@@ -831,6 +831,10 @@ class LoopingQuestions(QuestionGenerator):
 
     def question_category(self):
         return 'looping'
+    
+    ############################################################################################################
+    # The stuff i did below is pretty bad, Just the logic works but not a clean and a good code. Lots of repetetive stuff.
+    #Probably just wrote whatever came to mind just for the sake of testiong and decided to clean it later.
 
     def get_looping_action_sequence(self, plan, seq, key):
         fluents = seq
