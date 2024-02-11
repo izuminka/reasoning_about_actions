@@ -215,8 +215,9 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def qa_data_object(self, anwswer_type, question, answer):
         return {
             OUT_OBJ_ID: str(uuid.uuid4()),
-            OUT_OBJ_DOMAIN_NAME: self.domain_class.domain_name(),
+            OUT_OBJ_DOMAIN_NAME: self.domain_class.domain_name,
             OUT_OBJ_INSTANCE_ID: self.instance_id,
+            OUT_OBJ_INITIAL_STATE: self.init_state,
             OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence,
             OUT_OBJ_QUESTION_TYPE: self.question_category(),
             OUT_OBJ_QUESTION: question,

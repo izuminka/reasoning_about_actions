@@ -119,8 +119,9 @@ class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
         self.assert_qa_objects(self.qa_class.question_4)
 
     def test_all_questions(self):
-        multiplicity = 1
         plan_lengths = [1, 2, 3, 4]
+        multiplicity = 1
+
         questions = self.qa_class.create_questions(multiplicity, plan_lengths)
         self.assertEqual(len(questions), 4*len(plan_lengths))
 
