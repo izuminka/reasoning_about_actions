@@ -6,8 +6,7 @@ from pathlib import Path
 
 # pip install -q -U google-generativeai
 import google.generativeai as genai
-GEMINI_API_KEY = 'AIzaSyCGKrdLLppJg3aXB-uAsWaSSGXqfhLUpV8'
-GEMINI_API_KEY = 'AIzaSyCGKrdLLppJg3aXB-uAsWaSSGXqfhLUpV8'
+GEMINI_API_KEY = ''
 genai.configure(api_key=GEMINI_API_KEY)
 
 # pip install openai
