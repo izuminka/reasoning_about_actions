@@ -210,14 +210,18 @@ class Driverlog(BaseDomain):
             obj, place = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
                 return f'truck {obj} is at place {place}'
-            else:
+            elif obj.startswith('driver'):
                 return f'driver {obj} is at place {place}'
+            else:
+                return f'package {obj} is at place {place}'
         elif fluent.startswith('-at('):
             obj, place = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
                 return f'truck {obj} is not at place {place}'
-            else:
+            elif obj.startswith('driver'):
                 return f'driver {obj} is not at place {place}'
+            else:
+                return f'package {obj} is not at place {place}'
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return f'package {obj1} is in truck {obj2}'
