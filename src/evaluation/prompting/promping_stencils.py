@@ -53,14 +53,15 @@ class generate_prompting_template:
         return results
     
         
-#instantiate class
-root_directory = '/data_5/data/shri/reasoning_about_actions/data/questions/'
-domain_class = Blocksworld()
-instance_id = 1
-prompting_instance = generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/')
-result = prompting_instance.zero_shot_prompt()
-print(result[0].keys())
-print(len(result))
+if __name__ == '__main__':
+    #instantiate class
+    root_directory = '/data_5/data/shri/reasoning_about_actions/data/questions/'
+    domain_class = Blocksworld()
+    instance_id = 1
+    prompting_instance = generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/')
+    result = prompting_instance.zero_shot_prompt()
+    print(result[0].keys())
+    print(len(result))
 
 # directory = '/data_5/data/shri/reasoning_about_actions/data/questions/blocksworld/'
 
