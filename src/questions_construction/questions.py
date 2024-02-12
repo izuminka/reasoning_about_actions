@@ -42,7 +42,7 @@ def asp_to_nl(obj_ls, converter, fluent_subs=None):
     comma_str = ', '
     if not obj_ls:
         raise 'Empty list'
-    if len(obj_ls) <= 1:
+    if len(obj_ls) == 1:
         nl_obj = converter(obj_ls[0])
         if fluent_subs:
             nl_obj = nl_obj.replace(fluent_subs[0], fluent_subs[1])
@@ -64,6 +64,7 @@ class QuestionGenerationHelpers:
         self.objects_by_type = self.init_state[OBJECTS_KEY]
         self.object_type_by_object_name = self.object_type_by_object_name()
         self.all_objects = [v for ls in self.objects_by_type.values() for v in ls]
+        self.all_objects_set = set(self.all_objects)
         self.domain_class = domain_class
         self.states_actions = self.states_actions_all[1:]
         self.instance_id = instance_id
@@ -753,67 +754,150 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
 
 class HallucinationQuestions(QuestionGenerator):
+    NUMBER_REGEX = f'\d'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def question_category(self):
         return 'hallucination'
 
-    def question_1(self, plan_length, objects):
-        # TODO validate
-        # return None
-        random_key = random.choice(list(StatesActionsGenerator.parse_objects(objects).keys()))
-        random_object = random.choice(StatesActionsGenerator.parse_objects(objects)[random_key])
-        object_name = re.findall(self.word_regex, random_object)[0]
-        object_number = re.findall(self.digit_regex, random_object)[0]
-        hallucinated_object = object_name + str(random.randint(int(object_number), int(object_number) + 10))
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, is the object {hallucinated_object} part of the objects in the current state?"
-        answer = False
-        return self.qa_data_object( question, answer, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
+    def question_setup(self, stuff):
+        return f'some {stuff} may not be part of the problem'
 
-    def question_2(self, plan_length, objects):
-        # TODO validate
-        # return None
-        out_of_domain_action_seq, index = self.domain_class.out_of_domain_action_sequence(plan_length, objects)
-        question = f"I plan to perform the following sequence of actions: {out_of_domain_action_seq} to reach the current state, is the action {out_of_domain_action_seq[index]} a defined action in the domain?"
-        answer = False
-        return self.qa_data_object( question, answer, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
 
-    def question_3(self, plan_length, objects):
-        # TODO validate
-        out_of_domain_fluent_seq, index = self.domain_class.out_of_domain_fluent_sequence(plan_length, objects)
-        question = f"I plan to perform the following sequence of actions: {out_of_domain_fluent_seq} to reach the current state, is the fluent {out_of_domain_fluent_seq[index]} a defined fluent in the domain?"
-        answer = False
-        return self.qa_data_object( question, answer, TRUE_FALSE_ANSWER, self.question_3.__name__, plan_length)
+    def hallucinated_object(self, object, other_objects_set=set()):
+        all_objects = self.all_objects_set.union(other_objects_set)
 
-    def question_4(self, plan_length, objects):
-        # TODO validate
-        # return None
-        random_key = random.choice(list(StatesActionsGenerator.parse_objects(objects).keys()))
-        random_objects = StatesActionsGenerator.parse_objects(objects)[random_key]
-        object_name = re.findall(self.word_regex, random_objects)[0]
-        object_number = re.findall(self.digit_regex, random_objects)[0]
-        hallucinated_object = object_name + str(random.randint(int(object_number), int(object_number) + 10))
-        random_index = random.randint(0, len(random_objects) - 1)
-        random_objects.pop(random_index)
-        random_objects.insert(random_index, hallucinated_object)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state, which object is not defined in the problem?"
-        answer = hallucinated_object
-        return self.qa_data_object( question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
+        r = re.compile(self.NUMBER_REGEX)
+        object_prefix = r.sub('', object)
+        if object == object_prefix:
+            raise 'Error: object name does not contain a number'
+        i = 1
+        hallucinated_object = object_prefix + f'{i}'
+        while hallucinated_object in all_objects and i < 100:
+            hallucinated_object = object_prefix + f'{i}'
+            i += 1
+            if i == 100:
+                raise 'timeout'
+        return hallucinated_object
 
-    def question_5(self, plan_length, objects):
-        # TODO validate
-        corrupted_fluent_sequence, index = self.domain_class.out_of_domain_fluent_sequence(plan_length, objects)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. Given the fluents for a current_state: {corrupted_fluent_sequence} which fluent is not defined in the problem?"
-        answer = corrupted_fluent_sequence[index]
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_5.__name__, plan_length)
+    def question_1(self, plan_length):
+        is_answer_true = random.choice([True, False])
+        object = random.choice(self.all_objects)
+        object_type = self.object_type_by_object_name[object]
+        if not is_answer_true:
+            object = self.hallucinated_object(object)
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Is it {TRUE_OR_FALSE} that {object_type}: {object}, is part of the problem?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
 
-    def question_6(self, plan_length, objects):
-        # TODO validate
-        corrupted_action_sequence, index = self.domain_class.out_of_domain_action_sequence(plan_length, objects)
-        question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]} to reach the current state. Given the actions for a current_state: {corrupted_action_sequence} which action is not defined in the problem?"
-        answer = corrupted_action_sequence[index]
-        return self.qa_data_object( question, answer, FREE_ANSWER, self.question_6.__name__, plan_length)
+
+    def qa_2_3_helper(self, plan_length, is_pos_fluent_question, question_name):
+        if is_pos_fluent_question:
+            fluent = random.choice(self.pos_fluents_given_plan[plan_length])
+        else:
+            fluent = random.choice(self.neg_fluents_given_plan[plan_length])
+
+        is_answer_true = random.choice([True, False])
+        if is_answer_true:
+            nl_fluent = self.domain_class.fluent_to_natural_language(fluent)
+        else:
+            nl_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluent)
+
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('fluents')}. Is it {TRUE_OR_FALSE} that fluent: {nl_fluent}, is part of the problem?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+
+    def qa_4_5_helper(self, plan_length, is_executable_action, question_name):
+        is_answer_true = random.choice([True, False])
+        if is_executable_action:
+            action_type = 'executable'
+            action = random.choice(self.executable_actions[plan_length])
+        else:
+            action_type = 'inexecutable'
+            action = random.choice(self.inexecutable_actions[plan_length])
+
+        if is_answer_true:
+            nl_action = self.domain_class.action_to_natural_language(action)
+        else:
+            nl_action = self.domain_class.action_to_hallucinated_natural_language(action)
+
+        question_setup = self.question_setup(f'{action_type} actions')
+        question = f"{self.nl_question_prefix(plan_length)} {question_setup}. Is it {TRUE_OR_FALSE} that action: {nl_action}, is part of the problem?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+
+
+    def question_2(self, plan_length):
+        is_pos_fluent_question = True
+        return self.qa_2_3_helper(plan_length, is_pos_fluent_question, self.question_2.__name__)
+
+    def question_3(self, plan_length):
+        is_pos_fluent_question = False
+        return self.qa_2_3_helper(plan_length, is_pos_fluent_question, self.question_3.__name__)
+
+    def question_4(self, plan_length):
+        is_executable_action = True
+        return self.qa_4_5_helper(plan_length, is_executable_action, self.question_4.__name__)
+
+    def question_5(self, plan_length):
+        is_executable_action = False
+        return self.qa_4_5_helper(plan_length, is_executable_action, self.question_5.__name__)
+
+
+    def question_6(self, plan_length):
+        objects = random.sample(self.all_objects, random.randint(1, len(self.all_objects)-1))
+        objects_types = [self.object_type_by_object_name[o] for o in objects]
+        objects[0] = self.hallucinated_object(objects[0])
+
+        types_objects = [f'{ot} {o}' for ot, o in zip(objects_types, objects)]
+        random.shuffle(types_objects)
+        nl_objects = asp_to_nl(types_objects, lambda x: x)
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. What object out of: {nl_objects}, is not part of the problem?"
+        return self.qa_data_object(question, objects[0], FREE_ANSWER, self.question_6.__name__, plan_length)
+
+
+    def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
+        if is_pos_fluent_question:
+            fluent_type = 'positive'
+            fluents = random.sample(self.pos_fluents_given_plan, random.randint(2, len(self.pos_fluents_given_plan)-1))
+        else:
+            fluent_type = 'negative'
+            fluents = random.sample(self.neg_fluents_given_plan, random.randint(2, len(self.neg_fluents_given_plan)-1))
+
+        if is_answer_true:
+            nl_hallucinated_fluent = "None"
+        else:
+            nl_hallucinated_fluent = self.domain_class.fluent_to_natural_language(fluents[0])
+            nl_fluents = self.nl_fluents(fluents[1:]) + [nl_hallucinated_fluent]
+            random.shuffle(nl_fluents)
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type} fluents')}. What positive fluent out of: {nl_fluents}, is not part of the problem? {NONE_STATEMENT}"
+        return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, self.question_7.__name__, plan_length)
+
+    def question_7(self, plan_length):
+        is_pos_fluent_question = True
+        is_answer_true = random.choice([True, False])
+        return self.qa_7_8_helper(plan_length, is_pos_fluent_question, is_answer_true, self.question_7.__name__)
+
+    def question_8(self, plan_length):
+        is_pos_fluent_question = False
+        is_answer_true = random.choice([True, False])
+        return self.qa_7_8_helper(plan_length, is_pos_fluent_question, is_answer_true, self.question_8.__name__)
+
+    def question_9(self, plan_length):
+        is_answer_true = random.choice([True, False])
+
+        if is_answer_true:
+            question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('actions')}. What given action not part of the problem? {NONE_STATEMENT}"
+            answer = "None"
+        if not is_answer_true:
+            actions = self.given_plan_sequence[:plan_length]
+            nl_actions = self.nl_actions(actions)
+            random_int = random.randint(0, len(actions)-1)
+            nl_hallucinated_action = self.domain_class.action_to_hallucinated_natural_language(actions[random_int])
+            nl_actions[random_int] = nl_hallucinated_action
+            question = f"{QUESTION_PREFIX} {nl_actions} to reach the current state. In this state," + f" {self.question_setup('actions')}. What given action not part of the problem? {NONE_STATEMENT}"
+            answer = nl_hallucinated_action
+        return self.qa_data_object(question,answer, FREE_ANSWER, self.question_8.__name__, plan_length)
+
 
 
 class LoopingQuestions(QuestionGenerator):
