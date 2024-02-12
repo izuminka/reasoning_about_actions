@@ -402,13 +402,14 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object( question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
 
-    def question_3(self, plan_length):
-        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
-
-    def question_4(self, plan_length):
-        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
+    # TODO
+    # def question_3(self, plan_length):
+    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
+    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
+    #
+    # def question_4(self, plan_length):
+    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
+    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
 
 
 class FluentTrackingQuestions(QuestionGenerator):

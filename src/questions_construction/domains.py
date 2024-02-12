@@ -1330,10 +1330,10 @@ class Satellite(BaseDomain):
 
         elif fluent.startswith('have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'the {instrument} is inspecting {direction}' # inspecting
+            return f'the instrument is inspecting {direction}' # inspecting
         elif fluent.startswith('-have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'the {instrument} is not inspecting {direction}'
+            return f'the instrument is not inspecting {direction}'
 
         elif fluent.startswith('calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
