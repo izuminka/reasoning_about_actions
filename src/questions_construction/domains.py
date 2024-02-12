@@ -17,27 +17,6 @@ class BaseDomain:
         match = re.search(self.OBJ_IN_PAREN_REGEX, obj)
         return match.group(1).split(',')
 
-    def out_of_domain_object_name(self):
-        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
-        # ex: crane_lift(car1, structure2)
-        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
-        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        raise ('Implement it in the child class')
-
-    def out_of_domain_fluent_name(self):
-        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
-        # ex: crane_lift(car1, structure2)
-        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
-        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        raise ('Implement it in the child class')
-
-    def out_of_domain_action_name(self):
-        # TODO create an out of domain action name. Has to be random, has to take random number of arguments,
-        # ex: crane_lift(car1, structure2)
-        # can be tricky since we are trying to tune the model later, need to make sure it's not gonna guess it easily
-        # also need to return a NLP version of the action and params for self.action_to_natural_language child class
-        raise ('Implement it in the child class')
-
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
@@ -914,8 +893,7 @@ class Miconic(BaseDomain):
             floor = self.extract_single_variable(fluent)
             return f'lift is not at floor {floor}'
         else:
-            # TODO for hallucination
-            raise ('fluent is not defined')
+            raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
