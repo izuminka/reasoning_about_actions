@@ -12,7 +12,7 @@ from src.questions_construction.domains import *
 from src.questions_construction.questions import *
 
 
-class generate_prompting_template:
+class Generate_prompting_template:
     def __init__(self,root_directory,domain_class,instance_id,domain_folder_name,unique_instance_dict):
         self.root_directory = root_directory
         self.domain_class = domain_class
