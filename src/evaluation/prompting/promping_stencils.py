@@ -60,8 +60,8 @@ class generate_prompting_template:
                 else:
                     continue            
         examples_list = results
+        prompts = []
         if examples_list:
-            prompts = []
             for i in range(n_shot):
                 if i==0:
                     initial_state_nl = asp_to_nl(examples_list[i]['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
@@ -73,24 +73,26 @@ class generate_prompting_template:
                     prompts.append(prompt)
             initial_state_nl_actual_question = asp_to_nl(self.unique_instance_dict['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)        
             prompts.append(f'\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl_actual_question}\n\n[QUESTION]\n{self.unique_instance_dict["question"]}\n\n[ANSWER]:\n')
+        else:
+            print('No examples found for the given instance')    
         return ''.join(prompts),jsonl_instance_list
                 
                 
-if __name__ == '__main__':
-    root_directory = '/data_5/data/shri/reasoning_about_actions/data/questions/'
-    domain_class = Blocksworld()
-    instance_id = 2
-    with open('/data_5/data/shri/reasoning_about_actions/data/questions/blocksworld/Instance_1.jsonl', 'r') as f:
-        data = f.readlines()
-    unique_instance_dict = [json.loads(x) for x in data][0] 
-    prompting_instance = generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
-    result = prompting_instance.few_shot_prompt(1)
-    zero_shot = prompting_instance.zero_shot_prompt()
-    # print(unique_instance_dict)
-    print('==================================================================================================================')
-    print(result)
-    print('==================================================================================================================')
-    print(zero_shot[0]['zero_shot_model_input'])     
+# if __name__ == '__main__':
+#     root_directory = '/data_5/data/shri/reasoning_about_actions/data/questions/'
+#     domain_class = Blocksworld()
+#     instance_id = 2
+#     with open('/data_5/data/shri/reasoning_about_actions/data/questions/blocksworld/Instance_1.jsonl', 'r') as f:
+#         data = f.readlines()
+#     unique_instance_dict = [json.loads(x) for x in data][0] 
+#     prompting_instance = generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
+#     result = prompting_instance.few_shot_prompt(1)
+#     zero_shot = prompting_instance.zero_shot_prompt()
+#     # print(unique_instance_dict)
+#     print('==================================================================================================================')
+#     print(result)
+#     print('==================================================================================================================')
+#     print(zero_shot[0]['zero_shot_model_input'])     
                             
                         
 
@@ -104,23 +106,32 @@ if __name__ == '__main__':
     
         
 # #instantiate class
-# root_directory = '/data_5/data/shri/reasoning_about_actions/data/questions/'
-# domain_class = Blocksworld()
-# instance_id = 1
-# with open('/data_5/data/shri/reasoning_about_actions/data/questions/blocksworld/Instance_1.jsonl', 'r') as f:
-#     data = f.readlines()
-# unique_instance_dict = [json.loads(x) for x in data][424]
+root_directory = '/data_5/data/shri/reasoning_about_actions/data/questions/'
+domain_class = Blocksworld()
+instance_id = 1
+with open('/data_5/data/shri/reasoning_about_actions/data/questions/blocksworld/Instance_1.jsonl', 'r') as f:
+    data = f.readlines()
+unique_instance_dict = [json.loads(x) for x in data]
+for item in unique_instance_dict:
+    if item['plan_length'] == 1 and item['question_category'] == 'effects':
+        print('==================================================================================================================')
+        print(asp_to_nl(item['initial_state']['fluents'], domain_class.fluent_to_natural_language,None))
+        print('\n\n')
+        print(item['question'])
+        print('==================================================================================================================')
+        print(item['answer'])
+        
 
 # # print(len(unique_instance_dict))
 # # print(unique_instance_dict[0])
 # prompting_instance = generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
 # result,json_list = prompting_instance.few_shot_prompt(5)
-# # zero_shot = prompting_instance.zero_shot_prompt()
+# zero_shot = prompting_instance.zero_shot_prompt()
 # # print(unique_instance_dict)
 # print('==================================================================================================================')
 # print(result)
-# # for item in zero_shot:
-#     # print(item['zero_shot_model_input'])
+# for item in zero_shot:
+    # print(item['zero_shot_model_input'])
 # print('==================================================================================================================')
 # # print(json_list)
 # # print(zero_shot[0]['zero_shot_model_input'])
