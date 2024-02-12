@@ -182,83 +182,83 @@ class Depots(BaseDomain):
         if fluent.startswith('at('):
             obj, place = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
-                return f'truck {obj} is at place {place}'
+                return f'{obj} is at {place}'
             elif obj.startswith('crate'):
-                return f'crate {obj} is at place {place}'
+                return f'{obj} is at {place}'
             elif obj.startswith('hoist'):
-                return f'hoist {obj} is at place {place}'
+                return f'{obj} is at {place}'
             elif obj.startswith('pallet'):
-                return f'pallet {obj} is at place {place}'
+                return f'{obj} is at {place}'
             else:
                 raise ('fluent is not defined')
 
         elif fluent.startswith('-at('):
             obj, place = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
-                return f'truck {obj} is not at place {place}'
+                return f'{obj} is not at {place}'
             elif obj.startswith('crate'):
-                return f'crate {obj} is not at place {place}'
+                return f'{obj} is not at {place}'
             elif obj.startswith('hoist'):
-                return f'hoist {obj} is not at place {place}'
+                return f'{obj} is not at {place}'
             elif obj.startswith('pallet'):
-                return f'pallet {obj} is not at place {place}'
+                return f'{obj} is not at {place}'
             else:
                 raise ('fluent is not defined')
 
         elif fluent.startswith('on('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'crate {obj1} is on surface {obj2}'
+            return f'{obj1} is on {obj2}'
         elif fluent.startswith('-on('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'crate {obj1} is not on surface {obj2}'
+            return f'{obj1} is not on {obj2}'
 
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'crate {obj1} is in truck {obj2}'
+            return f'{obj1} is in {obj2}'
         elif fluent.startswith('-in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'crate {obj1} is not in truck {obj2}'
+            return f'{obj1} is not in {obj2}'
 
         elif fluent.startswith('lifting('):
             hoist, crate = self.extract_multi_variable(fluent)
-            return f'hoist {hoist} is lifting crate {crate}'
+            return f'{hoist} is lifting {crate}'
         elif fluent.startswith('-lifting('):
             hoist, crate = self.extract_multi_variable(fluent)
-            return f'hoist {hoist} is not lifting crate {crate}'
+            return f'{hoist} is not lifting {crate}'
 
         elif fluent.startswith('available('):
             hoist = self.extract_single_variable(fluent)
-            return f'hoist {hoist} is available'
+            return f'{hoist} is available'
         elif fluent.startswith('-available('):
             hoist = self.extract_single_variable(fluent)
-            return f'hoist {hoist} is not available'
+            return f'{hoist} is not available'
 
         elif fluent.startswith('clear('):
             surface = self.extract_single_variable(fluent)
-            return f'surface {surface} is clear'
+            return f'{surface} is clear'
         elif fluent.startswith('-clear('):
             surface = self.extract_single_variable(fluent)
-            return f'surface {surface} is not clear'
+            return f'{surface} is not clear'
         else:
             raise 'fluent is not defined'
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('drive('):
-            truck, city1, city2 = self.extract_multi_variable(action)
-            return f'truck {truck} is driven from city {city1} to city {city2}'
+            truck, distributor1, distributor2 = self.extract_multi_variable(action)
+            return f'the {truck} is driven from the {distributor1} to the {distributor2}'
         elif action.startswith('lift('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return f'the crate {crate} is lifted from the surface {surface} with the hoist {hoist} from place {place}'
+            return f'the {crate} is lifted from the {surface} with the {hoist} from {place}'
         elif action.startswith('drop('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return f'the crate {crate} drops on the surface {surface} with the hoist {hoist} on the place {place}'
+            return f'the {crate} drops on the {surface} with the {hoist} on the {place}'
         elif action.startswith('load('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return f'the crate {crate} is loaded by dropping it with the hoist {hoist} in the truck {truck} from the place {place}'
+            return f'the {crate} is loaded by dropping it with the {hoist} in the {truck} from the {place}'
         elif action.startswith('unload('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return f'the crate {crate} is unloaded by lifting it with the hoist {hoist} from truck {truck} from the place {place}'
+            return f'the {crate} is unloaded by lifting it with the {hoist} from the {truck} from the {place}'
         else:
             raise ('action is not defined')
 
@@ -268,50 +268,50 @@ class Depots(BaseDomain):
             if fluent.startswith(f'{prefix_asp}at('):
                 obj, place = self.extract_multi_variable(fluent)
                 if obj.startswith('truck'):
-                    return f'truck {obj} is {prefix_nl} maintained at place {place}'  # maintained
+                    return f'the {obj} is {prefix_nl} maintained at the {place}'  # maintained
                 elif obj.startswith('crate'):
-                    return f'crate {obj} is {prefix_nl} stranded at place {place}'  # stranded
+                    return f'the {obj} is {prefix_nl} stranded at the {place}'  # stranded
                 elif obj.startswith('hoist'):
-                    return f'hoist {obj} is {prefix_nl} near {place}'  # near
+                    return f'the {obj} is {prefix_nl} near the {place}'  # near
                 elif obj.startswith('pallet'):
-                    return f'pallet {obj} is {prefix_nl} on top of place {place}'  #  on top of
+                    return f'the {obj} is {prefix_nl} on top of the {place}'  #  on top of
                 else:
                     raise ('fluent is not defined')
             elif fluent.startswith(f'{prefix_asp}on('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
-                return f'crate {obj1} is {prefix_nl} within surface {obj2}'  # within
+                return f'the {obj1} is {prefix_nl} within the {obj2}'  # within
             elif fluent.startswith(f'{prefix_asp}in('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
-                return f'crate {obj1} is {prefix_nl} next to the truck {obj2}'  # next to
+                return f'the {obj1} is {prefix_nl} next to the {obj2}'  # next to
             elif fluent.startswith(f'{prefix_asp}lifting('):
                 hoist, crate = self.extract_multi_variable(fluent)
-                return f'hoist {hoist} is {prefix_nl} transporting crate {crate}'  # transporting
+                return f'the {hoist} is {prefix_nl} transporting the {crate}'  # transporting
             elif fluent.startswith(f'{prefix_asp}available('):
                 hoist = self.extract_single_variable(fluent)
-                return f'hoist {hoist} is {prefix_nl} free'  # free
+                return f'the {hoist} is {prefix_nl} free'  # free
             elif fluent.startswith(f'{prefix_asp}clear('):
                 surface = self.extract_single_variable(fluent)
-                return f'surface {surface} is {prefix_nl} free'  # free
+                return f'the {surface} is {prefix_nl} free'  # free
         if flag:
             raise ('fluent is not defined')
 
     def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('drive('):
-            truck, city1, city2 = self.extract_multi_variable(action)
-            return f'truck {truck} is inspected at city {city1} and at city {city2}'  # inspected
+            truck, distributor1, distributor2 = self.extract_multi_variable(action)
+            return f'the {truck} is inspected at the {distributor1} and at the {distributor2}'  # inspected
         elif action.startswith('lift('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return f'the crate {crate} is lowered from the surface {surface} with the hoist {hoist} from place {place}'  # lowered
+            return f'the {crate} is lowered from the {surface} with the {hoist} from the {place}'  # lowered
         elif action.startswith('drop('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return f'the crate {crate} released to the surface {surface} with the hoist {hoist} on the place {place}' #released
+            return f'the {crate} is released to the {surface} with the {hoist} on the the {place}' #released
         elif action.startswith('load('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return f'the crate {crate} is transported with the hoist {hoist} in the truck {truck} from the place {place}' # transports
+            return f'the {crate} is transported with the {hoist} in the {truck} from the {place}' # transports
         elif action.startswith('unload('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return f'the crate {crate} is maneuvered with the hoist {hoist} from truck {truck} from the place {place}' # stacked
+            return f'the {crate} is maneuvered with the {hoist} from the {truck} from the {place}' # stacked
         else:
             raise ('action is not defined')
 

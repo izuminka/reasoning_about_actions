@@ -689,19 +689,17 @@ class NumericalReasoningQuestions(QuestionGenerator):
         total_objects = len(self.all_objects)
         return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects, self.question_1.__name__)
 
-    def question_2(self, plan_length):
-        is_answer_true = random.choice([True, False])
-        chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
-        fluents_count = len(
-            [f for f in self.pos_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'positive fluents', fluents_count, self.question_2.__name__)
-
-    def question_3(self, plan_length):
-        is_answer_true = random.choice([True, False])
-        chosen_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
-        fluents_count = len(
-            [f for f in self.neg_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'negative fluents', fluents_count, self.question_3.__name__)
+    # def question_2(self, plan_length):
+    #     is_answer_true = random.choice([True, False])
+    #     chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
+    #     fluents_count = len([f for f in self.pos_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
+    #     return self.true_false_qa_helper(plan_length, is_answer_true, 'positive fluents', fluents_count, self.question_2.__name__)
+    #
+    # def question_3(self, plan_length):
+    #     is_answer_true = random.choice([True, False])
+    #     chosen_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
+    #     fluents_count = len([f for f in self.neg_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
+    #     return self.true_false_qa_helper(plan_length, is_answer_true, 'negative fluents', fluents_count, self.question_3.__name__)
 
     def question_4(self, plan_length):
         is_answer_true = random.choice([True, False])

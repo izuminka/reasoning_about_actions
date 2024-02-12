@@ -11,12 +11,12 @@ class AllQuestions:
         self.plan_lengths = PLAN_LENGTHS
         self.all_questions = []
         self.q_types = [
-                        # ObjectTrackingQuestions(jsonl_instance, domain_class, instance_id),
-                        # FluentTrackingQuestions(jsonl_instance, domain_class, instance_id),
-                        # StateTrackingQuestions(jsonl_instance, domain_class, instance_id),
-                        # ActionExecutabilityQuestions(jsonl_instance, domain_class, instance_id),
+                        ObjectTrackingQuestions(jsonl_instance, domain_class, instance_id),
+                        FluentTrackingQuestions(jsonl_instance, domain_class, instance_id),
+                        StateTrackingQuestions(jsonl_instance, domain_class, instance_id),
+                        ActionExecutabilityQuestions(jsonl_instance, domain_class, instance_id),
                         EffectsQuestions(jsonl_instance, domain_class, instance_id),
-                        # NumericalReasoningQuestions(jsonl_instance, domain_class, instance_id),
+                        NumericalReasoningQuestions(jsonl_instance, domain_class, instance_id),
                         HallucinationQuestions(jsonl_instance, domain_class, instance_id)
                         ]
 
