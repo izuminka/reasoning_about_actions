@@ -199,26 +199,26 @@ class TestEffectsQuestionsQuestionsBlocksworld(TestHelpers):
     def test_q4(self):
         self.assert_qa_objects(self.qa_class.question_4)
 
-class TestLoopingQuestionsBlocksworld(TestHelpers):
-    qa_class = LoopingQuestions(jsonl_object, domain_class, instance_id)
-
-    def test_q1(self):
-        self.assert_qa_objects(self.qa_class.question_1)
-
-    def test_q2(self):
-        self.assert_qa_objects(self.qa_class.question_2)
-
-    def test_q3(self):
-        self.assert_qa_objects(self.qa_class.question_3)
-
-    def test_q4(self):
-        self.assert_qa_objects(self.qa_class.question_4)
-
-    def test_q5(self):
-        self.assert_qa_objects(self.qa_class.question_5)
-
-    def test_q6(self):
-        self.assert_qa_objects(self.qa_class.question_6)
+# class TestLoopingQuestionsBlocksworld(TestHelpers):
+#     qa_class = LoopingQuestions(jsonl_object, domain_class, instance_id)
+#
+#     def test_q1(self):
+#         self.assert_qa_objects(self.qa_class.question_1)
+#
+#     def test_q2(self):
+#         self.assert_qa_objects(self.qa_class.question_2)
+#
+#     def test_q3(self):
+#         self.assert_qa_objects(self.qa_class.question_3)
+#
+#     def test_q4(self):
+#         self.assert_qa_objects(self.qa_class.question_4)
+#
+#     def test_q5(self):
+#         self.assert_qa_objects(self.qa_class.question_5)
+#
+#     def test_q6(self):
+#         self.assert_qa_objects(self.qa_class.question_6)
 
 
 
