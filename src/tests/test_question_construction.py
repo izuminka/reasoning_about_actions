@@ -285,6 +285,15 @@ class TestHallucinationQuestionsBlocksworld(TestHelpers):
     def test_q6(self):
         self.assert_qa_objects(self.qa_class.question_6)
 
+    def test_q7(self):
+        self.assert_qa_objects(self.qa_class.question_7)
+
+    def test_q8(self):
+        self.assert_qa_objects(self.qa_class.question_8)
+
+    def test_q9(self):
+        self.assert_qa_objects(self.qa_class.question_9)
+
 class TestQuestionGenerationAll(unittest.TestCase):
 
     def test_all_questions_one_domain_one_instance(self):

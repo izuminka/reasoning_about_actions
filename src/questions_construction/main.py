@@ -10,13 +10,14 @@ class AllQuestions:
         self.question_multiplicity = QUESTION_MULTIPLICITY
         self.plan_lengths = PLAN_LENGTHS
         self.all_questions = []
-        self.q_types = [ObjectTrackingQuestions(jsonl_instance, domain_class, instance_id),
-                        FluentTrackingQuestions(jsonl_instance, domain_class, instance_id),
-                        StateTrackingQuestions(jsonl_instance, domain_class, instance_id),
-                        ActionExecutabilityQuestions(jsonl_instance, domain_class, instance_id),
+        self.q_types = [
+                        # ObjectTrackingQuestions(jsonl_instance, domain_class, instance_id),
+                        # FluentTrackingQuestions(jsonl_instance, domain_class, instance_id),
+                        # StateTrackingQuestions(jsonl_instance, domain_class, instance_id),
+                        # ActionExecutabilityQuestions(jsonl_instance, domain_class, instance_id),
                         EffectsQuestions(jsonl_instance, domain_class, instance_id),
-                        NumericalReasoningQuestions(jsonl_instance, domain_class, instance_id),
-                        # HallucinationQuestions(jsonl_instance, domain_class, instance_id)
+                        # NumericalReasoningQuestions(jsonl_instance, domain_class, instance_id),
+                        HallucinationQuestions(jsonl_instance, domain_class, instance_id)
                         ]
 
     def generate_all_questions(self):
@@ -35,28 +36,23 @@ class AllQuestions:
 
 if __name__ == '__main__':
 
-    domain = Zenotravel()
-    i = 1
-    instance_name = f'Instance_{i}'
-    jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-    all_questions = AllQuestions(jsonl_instance, domain, instance_name)
-    all_questions.generate_all_questions()
-    all_questions.save_questions()
+    # domain = Miconic()
+    # i = 1
+    # instance_name = f'Instance_{i}'
+    # jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
+    # all_questions = AllQuestions(jsonl_instance, domain, instance_name)
+    # all_questions.generate_all_questions()
+    # all_questions.save_questions()
 
-    # domain = Depots() #ALL_DOMAIN_CLASSES[2]() #Blocksworld()#
-    # # for domain_class in ALL_DOMAIN_CLASSES:
-    #     domain = Spanner()
-    # i =1
-    #     # for i in range(1, 2):
-    # # i = 1
-    # #         try:
-    #     instance_name = f'Instance_{i}'
-    #     jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-    #     all_questions = AllQuestions(jsonl_instance, domain, instance_name)
-    #     all_questions.generate_all_questions()
-    #     all_questions.save_questions()
-            # except Exception as e:
-            #     print(e)
-            #     print(f'Failed for {domain.DOMAIN_NAME} {instance_name}')
+    for domain_class in ALL_DOMAIN_CLASSES:
+        domain = domain_class()
+        print(domain.DOMAIN_NAME)
+        i = 1
+        instance_name = f'Instance_{i}'
+        jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
+        all_questions = AllQuestions(jsonl_instance, domain, instance_name)
+        all_questions.generate_all_questions()
+        all_questions.save_questions()
+
 
 

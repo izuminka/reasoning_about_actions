@@ -576,7 +576,7 @@ class Goldminer(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucination_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('robot_at('):
             place = self.extract_single_variable(fluent)
             return f'robot communicates at location {place}' # communicates
@@ -655,7 +655,7 @@ class Goldminer(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucination_natural_language(self, action):
+    def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             location1, location2 = self.extract_multi_variable(action)
@@ -728,7 +728,7 @@ class Grippers(BaseDomain):
             raise 'action is not defined'
 
 
-    def fluent_to_hallucination_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
             return f'robot {robot} is engaged in room {room}' # is engaged
@@ -759,7 +759,7 @@ class Grippers(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucination_natural_language(self, action):
+    def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('pick('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
@@ -1173,7 +1173,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucination_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('at('):
             tile, position = self.extract_multi_variable(fluent)
             return f'tile {tile} is stuck at position {position}' # stuck
@@ -1197,7 +1197,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucination_natural_language(self, action):
+    def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
