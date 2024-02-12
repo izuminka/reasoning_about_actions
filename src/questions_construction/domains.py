@@ -112,7 +112,7 @@ class Blocksworld(BaseDomain):
             return f'unstack block {b1} from block {b2}'
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'stack block {b1} from block {b2}'
+            return f'stack block {b1} on block {b2}'
         else:
             raise ('action is not defined')
 

@@ -113,12 +113,12 @@ with open('/data_5/data/shri/reasoning_about_actions/data/questions/blocksworld/
     data = f.readlines()
 unique_instance_dict = [json.loads(x) for x in data]
 for item in unique_instance_dict:
-    if item['plan_length'] == 1 and item['question_category'] == 'effects':
-        print('==================================================================================================================')
+    if item['plan_length'] == 1 and item['question_category'] == 'action_executability':
+        print('==============================================IINITIAL_CONDITION====================================================================')
         print(asp_to_nl(item['initial_state']['fluents'], domain_class.fluent_to_natural_language,None))
         print('\n\n')
         print(item['question'])
-        print('==================================================================================================================')
+        print('==============================================ANSWER====================================================================')
         print(item['answer'])
         
 
