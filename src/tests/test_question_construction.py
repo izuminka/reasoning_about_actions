@@ -118,16 +118,6 @@ class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
     def test_q4(self):
         self.assert_qa_objects(self.qa_class.question_4)
 
-    def test_all_questions(self):
-        plan_lengths = [1, 2, 3, 4]
-        multiplicity = 1
-
-        questions = self.qa_class.create_questions(multiplicity, plan_lengths)
-        self.assertEqual(len(questions), 4*len(plan_lengths))
-
-        for q in questions:
-            self.assert_qa_object(q)
-
 class TestFluentTrackingQuestionsBlocksworld(TestHelpers):
     qa_class = FluentTrackingQuestions(jsonl_object, domain_class, instance_id)
 

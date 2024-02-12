@@ -13,7 +13,10 @@ INITIAL_CONDITION_PREFIX = 'Given the initial condition'
 QUESTION_PREFIX = f'{INITIAL_CONDITION_PREFIX}, the following actions are performed:'
 TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
+NONE_ANSWER = 'None'
+
 MAX_TIMEOUT = 100
+
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
@@ -582,7 +585,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         is_answer_true = random.choice([True, False])
         if not is_answer_true:
             question = f"{QUESTION_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
-            return self.qa_data_object(question, 'None', FREE_ANSWER, self.question_5.__name__, plan_length)
+            return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER, self.question_5.__name__, plan_length)
         else:
             sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
             inexecutable_action = sequence_of_actions[random_break_ind]
@@ -756,7 +759,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_14(self, plan_length):
         name_count = 'actions are there in the sequence before the first inexecutable action'
-        return self.free_answer_qa_helper(plan_length, name_count, 'None', self.question_14.__name__)
+        return self.free_answer_qa_helper(plan_length, name_count, NONE_ANSWER, self.question_14.__name__)
 
 
 class HallucinationQuestions(QuestionGenerator):
@@ -851,15 +854,10 @@ class HallucinationQuestions(QuestionGenerator):
 
     def question_6(self, plan_length):
         objects = random.sample(self.all_objects, random.randint(1, len(self.all_objects)-1))
-        objects_types = [self.object_type_by_object_name[o] for o in objects]
         objects[0] = self.hallucinated_object(objects[0])
-
-        types_objects = [f'{ot} {o}' for ot, o in zip(objects_types, objects)]
-        random.shuffle(types_objects)
-        nl_objects = asp_to_nl(types_objects, lambda x: x)
+        nl_objects = asp_to_nl(objects, lambda x: x)
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. What object out of: {nl_objects}, is not part of the problem?"
         return self.qa_data_object(question, objects[0], FREE_ANSWER, self.question_6.__name__, plan_length)
-
 
     def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
         if is_pos_fluent_question:
@@ -870,13 +868,14 @@ class HallucinationQuestions(QuestionGenerator):
             fluents = random.sample(self.neg_fluents_given_plan[plan_length], random.randint(2, len(self.neg_fluents_given_plan[plan_length])-1))
 
         if is_answer_true:
-            nl_hallucinated_fluent = "None"
+            nl_hallucinated_fluent = NONE_ANSWER
             nl_fluents = self.nl_fluents(fluents)
         else:
             nl_fluent = self.domain_class.fluent_to_natural_language(fluents[0])
-            nl_hallucinated_fluent = self.domain_class.fluent_to_natural_language(fluents[0])
+            nl_hallucinated_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluents[0])
             random.shuffle(fluents)
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
+
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type} fluents')}. What positive fluent out of: {nl_fluents}, is not part of the problem? {NONE_STATEMENT}"
         return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length)
 
@@ -1072,32 +1071,6 @@ class HallucinationQuestions(QuestionGenerator):
 #                 question_without_result = f"will the block {block} be on table?"
 #                 return question, answer, random_action, question_without_result
 #
-#     def question_1(self, plan_length):
-#         # TODO validate
-#         sequence, string_repeat_number, b1, b2 = self.domain_class.get_looping_action_sequence(self, plan_length)
-#         question = f"I plan to perform the following sequence of actions: {self.given_plan_sequence[:plan_length]}, to reach the current state. In the currents state if I perform :{sequence}  Will the block {b1} be on top of block{b2}?"
-#         answer = True
-#         return self.qa_data_object(question, answer, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
-#
-#     def question_2(self, plan_length):
-#         # TODO implement
-#         return None
-#
-#     def question_3(self, plan_length):
-#         # TODO implement
-#         return None
-#
-#     def question_4(self, plan_length):
-#         # TODO implement
-#         return None
-#
-#     def question_5(self, plan_length):
-#         # TODO implement
-#         return None
-#
-#     def question_6(self, plan_length):
-#         # TODO implement
-#         return None
 
 # class CompositeQuestions(DomainQuestionGen):
 #         def __init__(self, states_actions_jsonl_path, instance_id):
@@ -1115,20 +1088,8 @@ class HallucinationQuestions(QuestionGenerator):
 #             questions = [
 #                 f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
 #                 f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
-#             ]  # TODO add more question variations (if needed)
+#             ]
 #             question = self.question_phrasing_choice(questions)
 #             answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
 
 #             return self.qa_data_object(self.composite_question_1.__name__, FREE_ANSWER, question, answer)
-
-#         def question_2(self, plan_length):
-#             # TODO implement
-#             pass
-
-#         def question_3(self, plan_length):
-#             # TODO implement
-#             pass
-
-#         def question_4(self, plan_length):
-#             # TODO implement
-#             pass
