@@ -228,16 +228,16 @@ class Depots(BaseDomain):
             return f'{truck} is driven from {distributor1} to {distributor2}'
         elif action.startswith('lift('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return f'{crate} is lifted from {surface} with {hoist} from {place}'
+            return f'{hoist} lifts {crate} from {surface} at {place}'
         elif action.startswith('drop('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return f'{crate} drops on {surface} with {hoist} on {place}'
+            return f'{hoist} drops {crate} on {surface} at {place}'
         elif action.startswith('load('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return f'{crate} is loaded by dropping it with {hoist} in {truck} from {place}'
+            return f'{crate} is loaded by {hoist} into {truck} at {place}'
         elif action.startswith('unload('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return f'{crate} is unloaded by lifting it with {hoist} from {truck} from {place}'
+            return f'{crate} is unloaded by {hoist} from {truck} at {place}'
         else:
             raise ('action is not defined')
 
@@ -301,10 +301,10 @@ class Driverlog(BaseDomain):
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
-            return f'{obj} is at {location}'
+            return f'{obj} is at loaction {location}'
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
-            return f'{obj} is not at {location}'
+            return f'{obj} is not at location {location}'
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return f'{obj1} is in {obj2}'
@@ -525,20 +525,20 @@ class Goldminer(BaseDomain):
             location1, location2 = self.extract_multi_variable(action)
             return f'robot moves from location {location1} to location {location2}'
         elif action.startswith('pickup_laser('):
-            laser = self.extract_single_variable(action)
-            return f'laser {laser} is picked up'
+            location = self.extract_single_variable(action)
+            return f'laser is picked up at location {location}'
         elif action.startswith('pickup_bomb('):
-            bomb = self.extract_single_variable(action)
-            return f'bomb {bomb} is picked up'
+            location = self.extract_single_variable(action)
+            return f'bomb is picked up at location {location}'
         elif action.startswith('putdown_laser('):
-            laser = self.extract_single_variable(action)
-            return f'laser {laser} is put down'
+            location = self.extract_single_variable(action)
+            return f'robot puts down laser at location {location}'
         elif action.startswith('detonate_bomb('):
-            bomb = self.extract_single_variable(action)
-            return f'bomb {bomb} is detonated'
+            location1, location2 = self.extract_multi_variable(action)
+            return f'bomb is detontaed at location {location2} from location {location1}'
         elif action.startswith('fire_laser('):
-            laser = self.extract_single_variable(action)
-            return f'laser {laser} is fired'
+            location1, location2 = self.extract_multi_variable(action)
+            return f'laser is fired at location {location2} from location {location1}'
         elif action.startswith('pick_gold('):
             location = self.extract_single_variable(action)
             return f'gold is picked up at location {location}'
@@ -750,17 +750,17 @@ class Logistics(BaseDomain):
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('in_city('):
-            place, city = self.extract_multi_variable(fluent)
-            return f'place {place} is in city {city}'
+            airport, city = self.extract_multi_variable(fluent)
+            return f'airport {airport} is in city {city}'
         elif fluent.startswith('-in_city('):
-            place, city = self.extract_multi_variable(fluent)
-            return f'place {place} is not in city {city}'
+            airport, city = self.extract_multi_variable(fluent)
+            return f'airport {airport} is not in city {city}'
         elif fluent.startswith('at('):
-            physical_object, place = self.extract_multi_variable(fluent)
-            return f'object {physical_object} is at place {place}'
+            physical_object, airport = self.extract_multi_variable(fluent)
+            return f'object {physical_object} is at airport {airport}'
         elif fluent.startswith('-at('):
-            physical_object, place = self.extract_multi_variable(fluent)
-            return f'object {physical_object} is not at place {place}'
+            physical_object, airport = self.extract_multi_variable(fluent)
+            return f'object {physical_object} is not at airport {airport}'
         elif fluent.startswith('in('):
             package, vehicle = self.extract_multi_variable(fluent)
             return f'package {package} is in vehicle {vehicle}'
@@ -773,20 +773,20 @@ class Logistics(BaseDomain):
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
-            package, truck, location = self.extract_multi_variable(action)
-            return f'package {package} is loaded in truck {truck} at location {location}'
+            package, truck, airport = self.extract_multi_variable(action)
+            return f'package {package} is loaded in truck {truck} at airport {airport}'
         elif action.startswith('unload_truck('):
-            package, truck, location = self.extract_multi_variable(action)
-            return f'package {package} is unloaded from truck {truck} at location {location}'
+            package, truck, airport = self.extract_multi_variable(action)
+            return f'package {package} is unloaded from truck {truck} at airport {airport}'
         elif action.startswith('load_airplane('):
-            package, airplane, location = self.extract_multi_variable(action)
-            return f'package {package} is loaded into airplane {airplane} at location {location}'
+            package, airplane, airport = self.extract_multi_variable(action)
+            return f'package {package} is loaded into airplane {airplane} at airport {airport}'
         elif action.startswith('unload_airplane('):
-            package, airplane, location = self.extract_multi_variable(action)
-            return f'package {package} is unloaded from airplane {airplane} at location {location}'
+            package, airplane, airport = self.extract_multi_variable(action)
+            return f'package {package} is unloaded from airplane {airplane} at airport {airport}'
         elif action.startswith('drive_truck('):
             truck, loc_from, loc_to, city = self.extract_multi_variable(action)
-            return f'truck {truck} is driven from location {loc_from} to location {loc_to} in city {city}'
+            return f'truck {truck} is driven from airport {loc_from} to airport {loc_to} in city {city}'
         elif action.startswith('fly_airplane('):
             airplane, airport_from, airport_to = self.extract_multi_variable(action)
             return f'airplane {airplane} is flown from airport {airport_from} to airport {airport_to}'
@@ -997,10 +997,10 @@ class Mystery(BaseDomain):
 
         elif fluent.startswith('fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return f'location {f1} is a neighbor of location {f2}'
+            return f'fuel level {f1} neighbours fuel level {f2}'
         elif fluent.startswith('-fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return f'location {f1} is not a neighbor of location {f2}'
+            return f'fuel level {f1} does not neighbour fuel level {f2}'
 
         elif fluent.startswith('in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
@@ -1018,10 +1018,10 @@ class Mystery(BaseDomain):
 
         elif fluent.startswith('space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return f'space {s1} is a neighbor of space {s2}'
+            return f'space {s1} neighbours space {s2}'
         elif fluent.startswith('-space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return f'space {s1} is not a neighbor of space {s2}'
+            return f'space {s1} does not neighbour space {s2}'
         else:
             raise 'fluent is not defined'
 
@@ -1029,7 +1029,7 @@ class Mystery(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
-            return f'vehicle {vehicle} moves from location {location1} to location {location2} with fuel level {fuel_level1} and {fuel_level2}'
+            return f'vehicle {vehicle} moves to location {location2} from location {location1} that has fuel level {fuel_level1} and {fuel_level2}'
         elif action.startswith('load('):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
             return f'cargo {cargo} is loaded in vehicle {vehicle} with space {space1} and space {space2} at location {location}'
@@ -1189,10 +1189,10 @@ class Satellite(BaseDomain):
             return f'{instrument} is not on board {satellite}'
         elif fluent.startswith('supports('):
             instrument, mode = self.extract_multi_variable(fluent)
-            return f'{instrument} supports mode {mode}'
+            return f'{instrument} supports {mode}'
         elif fluent.startswith('-supports('):
             instrument, mode = self.extract_multi_variable(fluent)
-            return f'{instrument} does not support mode {mode}'
+            return f'{instrument} does not support {mode}'
         elif fluent.startswith('pointing('):
             satellite, direction = self.extract_multi_variable(fluent)
             return f'{satellite} is pointing to {direction}'
@@ -1219,10 +1219,10 @@ class Satellite(BaseDomain):
             return f'{instrument} is not calibrated'
         elif fluent.startswith('have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'there is an image of {direction} with mode {mode}'
+            return f'there is an image of {direction} in {mode}'
         elif fluent.startswith('-have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'there is no image of direction {direction} with mode {mode}'
+            return f'there is no image of direction {direction} in {mode}'
         elif fluent.startswith('calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
             return f'{instrument} is calibrated for {direction}'
@@ -1239,16 +1239,16 @@ class Satellite(BaseDomain):
             return f'{satellite} turns to {new_dir} from {old_dir}'
         elif action.startswith('switch_on('):
             instrument, satellite = self.extract_multi_variable(action)
-            return f'{instrument} is switched on {satellite}'
+            return f'{instrument} on {satellite} is switched on'
         elif action.startswith('switch_off('):
             instrument, satellite = self.extract_multi_variable(action)
-            return f'{instrument} is switched off on {satellite}'
+            return f'{instrument} on {satellite} is switched off'
         elif action.startswith('calibrate('):
             satellite, instrument, direction = self.extract_multi_variable(action)
             return f'{instrument} is calibrated on {satellite} to {direction}'
         elif action.startswith('take_image('):
             satellite, direction, instrument, mode = self.extract_multi_variable(action)
-            return f'image of {direction} is taken with {instrument} on {satellite} with mode {mode}'
+            return f'image of {direction} is taken with {instrument} on {satellite} in {mode}'
         else:
             raise 'action is not defined'
 
@@ -1603,7 +1603,7 @@ class Visitall(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
-            return f"move from {place1} to {place2}"
+            return f"moves from {place1} to {place2}"
         else:
             raise 'action is not defined'
 
