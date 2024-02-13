@@ -143,12 +143,12 @@ class Generate_prompting_template:
 
 # # print(len(unique_instance_dict))
 # # print(unique_instance_dict[0])
-prompting_instance = Generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
-result,json_list = prompting_instance.few_shot_prompt(5,cot_key=True)
+# prompting_instance = Generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
+# result,json_list = prompting_instance.few_shot_prompt(5,cot_key=True)
 # zero_shot = prompting_instance.zero_shot_prompt()
 # # print(unique_instance_dict)
 # print('==================================================================================================================')
-print(result)
+# print(result)
 # for item in zero_shot:
     # print(item['zero_shot_model_input'])
 # print('==================================================================================================================')
