@@ -35,7 +35,7 @@ class AllQuestions:
 
 
 if __name__ == '__main__':
-    # domain = Visitall()
+    # domain = Zenotravel()
     # i = 1
     # instance_name = f'Instance_{i}'
     # jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')

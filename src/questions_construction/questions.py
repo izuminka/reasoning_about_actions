@@ -776,7 +776,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_7(self, plan_length):
         name_count = 'objects'
-        count = len(self.pos_fluents_given_plan[plan_length])
+        count = len(self.all_objects)
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_7.__name__)
 
     def question_8(self, plan_length):
