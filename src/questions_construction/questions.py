@@ -360,6 +360,28 @@ class ObjectTrackingQuestions(QuestionGenerator):
         # get all fluents such that fluent(X, var2, ...)
         # return all Xs
 
+        def nl_fluent_about_objects(chosen_fluent, object_for_fluent):
+            nl_fluent_tokens = self.nl_fluents([chosen_fluent]).split()
+            obj_ind = nl_fluent_tokens.index(object_for_fluent)
+            object_type = self.object_type_by_object_name[object_for_fluent]
+
+            nl_fluents_about_object = deepcopy(nl_fluent_tokens[:obj_ind])
+            # make the object type plural
+            if object_type in nl_fluents_about_object:
+                nl_fluents_about_object[nl_fluents_about_object.index(object_type)] = object_type + 's'
+            else:
+                nl_fluents_about_object.append(object_type + 's')
+
+            # lemmatize the verb if it exists
+            verb_after_object_index = obj_ind + 1
+            if verb_after_object_index < len(nl_fluent_tokens):
+                verb_after_object = nl_fluent_tokens[verb_after_object_index]
+                nl_fluents_about_object.append(lemmatizer.lemmatize(verb_after_object, wordnet.VERB).replace('be', 'are'))
+                # add anything that's after the verb
+                if verb_after_object_index + 1 < len(nl_fluent_tokens):
+                    nl_fluents_about_object += nl_fluent_tokens[verb_after_object_index + 1:]
+            return ' '.join(nl_fluents_about_object)  # remove extra spaces
+
         if is_pos_fluents:
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
@@ -372,24 +394,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
             match = re.search(pattern, f)
             if match:
                 objects_for_fluent.append(match.group(1))
-
-        nl_fluent_tokens = self.nl_fluents([chosen_fluent]).split()
-        nl_fluents_about_object = []
-        for i, t in enumerate(nl_fluent_tokens):
-            if t == object_for_fluent:
-                nl_fluents_about_object += nl_fluent_tokens[:i]
-                # last token is object type, make it plural
-                nl_fluents_about_object[-1] = nl_fluents_about_object[-1]+'s'
-                verb_that_follows_ind = i + 1 # i + 1 skip the object itself, after there is a verb
-                if verb_that_follows_ind < len(nl_fluent_tokens):
-                    verb_that_follows = lemmatizer.lemmatize(nl_fluent_tokens[verb_that_follows_ind], wordnet.VERB).replace('be', 'are')
-                    nl_fluents_about_object.append(verb_that_follows)
-                    if verb_that_follows_ind + 1 < len(nl_fluent_tokens):
-                        nl_fluents_about_object += nl_fluent_tokens[verb_that_follows_ind + 1:]
-                        break
-        nl_fluents_about_object = ' '.join(nl_fluents_about_object)  # remove extra spaces
-
-        question = f"{self.nl_question_prefix(plan_length)} what {nl_fluents_about_object}? {NONE_STATEMENT}."
+        question = f"{self.nl_question_prefix(plan_length)} what {nl_fluent_about_objects(chosen_fluent, object_for_fluent)}? {NONE_STATEMENT}."
         answer = asp_to_nl(sorted(objects_for_fluent), lambda x: x)
         return question, answer
 
@@ -405,14 +410,13 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object( question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
 
-    # TODO
-    # def question_3(self, plan_length):
-    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
-    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
-    #
-    # def question_4(self, plan_length):
-    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
-    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
+    def question_3(self, plan_length):
+        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
+
+    def question_4(self, plan_length):
+        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
 
 
 class FluentTrackingQuestions(QuestionGenerator):

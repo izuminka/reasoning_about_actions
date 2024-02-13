@@ -35,7 +35,6 @@ class AllQuestions:
 
 
 if __name__ == '__main__':
-
     # domain = Miconic()
     # i = 1
     # instance_name = f'Instance_{i}'
