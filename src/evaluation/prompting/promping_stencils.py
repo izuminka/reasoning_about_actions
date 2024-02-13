@@ -117,8 +117,8 @@ class Generate_prompting_template:
 # domain_name = 'blocksworld'
 # instance_id = 1
 # with open(f'/data_4/data/shri/reasoning_about_actions/data/questions/blocksworld/Instance_1.jsonl', 'r') as f:
-#     data = f.readlines()
-# unique_instance_dict = [json.loads(x) for x in data][0]
+    # data = f.readlines()
+# unique_instance_dict = [json.loads(x) for x in data][488]
 # for item in unique_instance_dict:
 #     # question_category - object_tracking, fluent_tracking, state_tracking, action_executability, effects, numerical_reasoning
 #     if item['plan_length'] == 1 and item['question_category'] == 'effects':
@@ -143,12 +143,12 @@ class Generate_prompting_template:
 
 # # print(len(unique_instance_dict))
 # # print(unique_instance_dict[0])
-# prompting_instance = Generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
-# result,json_list = prompting_instance.few_shot_prompt(5,cot_key=True)
+prompting_instance = Generate_prompting_template(root_directory,domain_class,instance_id,'blocksworld/',unique_instance_dict)   
+result,json_list = prompting_instance.few_shot_prompt(5,cot_key=True)
 # zero_shot = prompting_instance.zero_shot_prompt()
 # # print(unique_instance_dict)
 # print('==================================================================================================================')
-# print(result)
+print(result)
 # for item in zero_shot:
     # print(item['zero_shot_model_input'])
 # print('==================================================================================================================')
