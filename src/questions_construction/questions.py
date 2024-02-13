@@ -362,6 +362,8 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
         def nl_fluent_about_objects(chosen_fluent, object_for_fluent):
             nl_fluent_tokens = self.nl_fluents([chosen_fluent]).split()
+            if object_for_fluent not in nl_fluent_tokens:
+                raise
             obj_ind = nl_fluent_tokens.index(object_for_fluent)
             object_type = self.object_type_by_object_name[object_for_fluent]
 

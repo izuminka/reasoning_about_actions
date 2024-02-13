@@ -1599,10 +1599,10 @@ class Visitall(BaseDomain):
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at_robot('):
-            place = self.extract_multi_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return f"robot is at the {place}"
         elif fluent.startswith('-at_robot('):
-            place = self.extract_multi_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return f"robot is not at the {place}"
         elif fluent.startswith('connected('):
             place1, place2 = self.extract_multi_variable(fluent)
@@ -1627,7 +1627,7 @@ class Visitall(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucination_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('at_robot('):
             place = self.extract_multi_variable(fluent)
             return f"robot is stuck at the {place}" # stuck
@@ -1652,7 +1652,7 @@ class Visitall(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucination_natural_language(self, action):
+    def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
@@ -1661,4 +1661,4 @@ class Visitall(BaseDomain):
             raise 'action is not defined'
 
 
-ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle, Satellite, Spanner, Zenotravel, Visitall]
+ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle, Satellite, Spanner, Visitall, Zenotravel]
