@@ -33,7 +33,7 @@ NONE_ANSWER = 'None'
 
 # fluent names for QA
 POSITIVE_FLUENT = 'true property of the state'
-NEGATIVE_FLUENT = 'true property of the state that involve a negation'
+NEGATIVE_FLUENT = 'true property of the state that involves a negation'
 FLUENTS = 'properties of the state that can be true or false'
 POSITIVE_FLUENTS = 'true properties of the state'
 NEGATIVE_FLUENTS = 'true properties of the state that involve a negation'
@@ -384,7 +384,6 @@ class ObjectTrackingQuestions(QuestionGenerator):
         # get a random fluent(var1, var2, ...)
         # get all fluents such that fluent(X, var2, ...)
         # return all Xs
-
         def nl_fluent_about_objects(chosen_fluent, object_for_fluent):
             nl_fluent_tokens = self.nl_fluents([chosen_fluent]).split()
             if object_for_fluent not in nl_fluent_tokens:
@@ -409,6 +408,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
                     nl_fluents_about_object += nl_fluent_tokens[verb_after_object_index + 1:]
             return ' '.join(nl_fluents_about_object)  # remove extra spaces
 
+
         if is_pos_fluents:
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
@@ -420,7 +420,8 @@ class ObjectTrackingQuestions(QuestionGenerator):
         for f in fluents:
             match = re.search(pattern, f)
             if match:
-                objects_for_fluent.append(match.group(1))
+                obj = match.group(1)
+                objects_for_fluent.append(obj)
         question = f"{self.nl_question_prefix(plan_length)} what {nl_fluent_about_objects(chosen_fluent, object_for_fluent)}? {NONE_STATEMENT}."
         answer = asp_to_nl(sorted(objects_for_fluent), lambda x: x)
         return question, answer
@@ -437,9 +438,9 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object( question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
 
-    # def question_3(self, plan_length):
-    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
-    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
+    def question_3(self, plan_length):
+        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
     #
     # def question_4(self, plan_length):
     #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
