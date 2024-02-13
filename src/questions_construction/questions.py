@@ -679,8 +679,8 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     @staticmethod
     def random_count(original_count):
-        bound = int(0.3 * original_count) + 1
-        return original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)])
+        bound = int(0.2 * original_count) + 1
+        return  original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)])
 
     def true_false_qa_helper(self, plan_length, is_answer_true, name_count, count, question_name):
         if is_answer_true:
@@ -819,7 +819,7 @@ class HallucinationQuestions(QuestionGenerator):
         else:
             nl_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluent)
 
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('fluents')}. Is it {TRUE_OR_FALSE} that fluent: {nl_fluent}, is part of the problem?"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('fluents')}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
     def qa_4_5_helper(self, plan_length, is_executable_action, question_name):
@@ -859,10 +859,14 @@ class HallucinationQuestions(QuestionGenerator):
 
 
     def question_6(self, plan_length):
-        objects = random.sample(self.all_objects, random.randint(1, len(self.all_objects)-1))
+        if len(self.all_objects) < 2:
+            print('less than 2 objects', self.question_6.__name__,  plan_length)
+            return None
+        objects = random.sample(self.all_objects, random.randint(2, len(self.all_objects)-1))
         objects[0] = self.hallucinated_object(objects[0])
+        random.shuffle(objects)
         nl_objects = asp_to_nl(objects, lambda x: x)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. What object out of: {nl_objects}, is not part of the problem?"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Which of the following objects, {nl_objects}, is not part of the problem?"
         return self.qa_data_object(question, objects[0], FREE_ANSWER, self.question_6.__name__, plan_length)
 
     def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
@@ -881,7 +885,6 @@ class HallucinationQuestions(QuestionGenerator):
             nl_hallucinated_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluents[0])
             random.shuffle(fluents)
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
-
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type} fluents')}. What positive fluent out of: {nl_fluents}, is not part of the problem? {NONE_STATEMENT}"
         return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length)
 
@@ -899,7 +902,7 @@ class HallucinationQuestions(QuestionGenerator):
         is_answer_true = random.choice([True, False])
 
         if is_answer_true:
-            question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('actions')}. What given action not part of the problem? {NONE_STATEMENT}"
+            question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('actions')}. What given action is not part of the problem? {NONE_STATEMENT}"
             answer = "None"
         if not is_answer_true:
             actions = self.given_plan_sequence[:plan_length]
@@ -907,7 +910,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_selected_action = self.domain_class.action_to_natural_language(actions[random_int])
             nl_hallucinated_action = self.domain_class.action_to_hallucinated_natural_language(actions[random_int])
             nl_actions = self.nl_actions(actions).replace(nl_selected_action, nl_hallucinated_action)
-            question = f"{QUESTION_PREFIX} {nl_actions} to reach the current state. In this state," + f" {self.question_setup('actions')}. What given action not part of the problem? {NONE_STATEMENT}"
+            question = f"{QUESTION_PREFIX} {nl_actions} to reach the current state. In this state," + f" {self.question_setup('actions')}. What given action is not part of the problem? {NONE_STATEMENT}"
             answer = nl_hallucinated_action
         return self.qa_data_object(question,answer, FREE_ANSWER, self.question_8.__name__, plan_length)
 
