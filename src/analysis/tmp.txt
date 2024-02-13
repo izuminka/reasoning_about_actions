@@ -1,0 +1,301 @@
+-------------------------- ('object_tracking', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is it True or False that block b7 is on block b3 and block b3 is on block b2?
+
+
+True
+
+
+-------------------------- ('object_tracking', 'question_2') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is it True or False that block b3 is not on block b4, block b6 is not on block b4, block b5 is not on block b4, block b4 is not being held, block b4 is not on block b7, block b4 is not on block b3, block b7 is not on block b4 and block b4 is not on block b5?
+
+
+False
+
+
+-------------------------- ('object_tracking', 'question_3') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what blocks are on block b3? Write None if there are none.
+
+
+b7
+
+
+-------------------------- ('object_tracking', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what blocks are not clear? Write None if there are none.
+
+
+b1, b2, b3, b4, b5 and b6
+
+
+-------------------------- ('fluent_tracking', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is it True or False that block b5 is on block b2?
+
+
+False
+
+
+-------------------------- ('fluent_tracking', 'question_2') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is it True or False that block b7 is not on block b6?
+
+
+True
+
+
+-------------------------- ('fluent_tracking', 'question_3') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, are all of the following fluents True or False: block b6 is on block b2, block b2 is on block b3, block b5 is on block b2, block b1 is being held, block b4 is on the table, block b6 is on block b7, block b1 is clear and block b3 is on block b2?
+
+
+False
+
+
+-------------------------- ('fluent_tracking', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, are all of the following fluents True or False: block b3 is not on block b2, block b3 is not on block b5, block b6 is not on the table, block b4 is not on block b6, block b4 is not on block b2, block b7 is not on block b4, block b2 is not on block b1, block b1 is not on block b7, block b3 is not on block b6, block b6 is not on block b1, block b4 is not on block b3, block b2 is not on block b3, block b6 is not on block b7, block b7 is not on block b6, block b5 is not on block b7, block b5 is not clear, block b5 is not on block b2, block b7 is not on block b5, block b1 is not clear, block b5 is not on block b3, block b4 is not on block b7, block b6 is not on block b4, block b5 is not on block b6, block b3 is not on block b4, block b4 is not on the table, block b7 is not being held, block b2 is not on block b4, block b5 is not on block b4, block b2 is not on block b7, block b5 is not on the table, block b7 is not on block b1, block b4 is not clear, block b7 is not on block b2, block b3 is not on block b7, block b1 is not on block b6, block b6 is not being held, block b2 is not on block b5, block b5 is not being held, block b2 is not clear, block b6 is not clear, block b1 is not on block b5, block b1 is not on block b2, block b4 is not on block b5, block b7 is not on the table, block b6 is not on block b2, block b1 is not on block b3, block b3 is not clear, block b3 is not on the table, hand is not empty, block b2 is not on the table, block b4 is not on block b1, block b3 is not on block b1, block b1 is not on block b4, block b3 is not being held, block b2 is not being held and block b1 is not being held?
+
+
+False
+
+
+-------------------------- ('fluent_tracking', 'question_5') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, list all positive fluents for block b2. Write None if there are none.
+
+
+block b3 is on block b2 and block b2 is on block b6
+
+
+-------------------------- ('fluent_tracking', 'question_6') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, list all negative fluents for block b2. Write None if there are none.
+
+
+block b4 is not on block b2, block b2 is not on block b1, block b2 is not on block b3, block b5 is not on block b2, block b2 is not on block b4, block b2 is not on block b7, block b7 is not on block b2, block b2 is not on block b5, block b2 is not clear, block b1 is not on block b2, block b6 is not on block b2, block b2 is not on the table and block b2 is not being held
+
+
+-------------------------- ('state_tracking', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is it True or False that the following positive fluents represent the state completely: block b1 is clear, block b3 is on block b2, block b6 is on block b5, block b2 is on block b6, block b7 is clear, block b1 is on the table, block b4 is being held and block b7 is on block b3?
+
+
+False
+
+
+-------------------------- ('state_tracking', 'question_2') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is it True or False that the following negative fluents represent the state completely: block b7 is not clear, block b1 is not on the table, block b3 is not on block b2, block b4 is not being held, block b6 is not on block b5, block b3 is not on block b5, block b6 is not on the table, block b4 is not on block b6, block b4 is not on block b2, block b7 is not on block b4, block b2 is not on block b1, block b1 is not on block b7, block b3 is not on block b6, block b6 is not on block b1, block b4 is not on block b3, block b2 is not on block b3, block b6 is not on block b7, block b7 is not on block b6, block b5 is not on block b7, block b5 is not clear, block b5 is not on block b2, block b7 is not on block b5, block b1 is not clear, block b5 is not on block b3, block b4 is not on block b7, block b6 is not on block b4, block b5 is not on block b6, block b3 is not on block b4, block b4 is not on the table, block b7 is not being held, block b2 is not on block b4, block b5 is not on block b4, block b2 is not on block b7, block b5 is not on the table, block b7 is not on block b1, block b4 is not clear, block b7 is not on block b2, block b3 is not on block b7, block b1 is not on block b6, block b6 is not being held, block b2 is not on block b5, block b5 is not being held, block b2 is not clear, block b6 is not clear, block b1 is not on block b5, block b1 is not on block b2, block b4 is not on block b5, block b7 is not on the table, block b6 is not on block b2, block b1 is not on block b3, block b3 is not clear, block b3 is not on the table, hand is not empty, block b2 is not on the table, block b4 is not on block b1 and block b3 is not on block b1?
+
+
+False
+
+
+-------------------------- ('state_tracking', 'question_3') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, list all positive fluents for this state. Write None if there are none.
+
+
+block b3 is on block b2, block b6 is on block b5, block b2 is on block b6, block b7 is clear, block b1 is on the table, block b4 is being held, block b7 is on block b3 and block b5 is on block b1
+
+
+-------------------------- ('state_tracking', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, list all negative fluents for this state. Write None if there are none.
+
+
+block b3 is not on block b5, block b6 is not on the table, block b4 is not on block b6, block b4 is not on block b2, block b7 is not on block b4, block b2 is not on block b1, block b1 is not on block b7, block b3 is not on block b6, block b6 is not on block b1, block b4 is not on block b3, block b2 is not on block b3, block b6 is not on block b7, block b7 is not on block b6, block b5 is not on block b7, block b5 is not clear, block b5 is not on block b2, block b7 is not on block b5, block b1 is not clear, block b5 is not on block b3, block b4 is not on block b7, block b6 is not on block b4, block b5 is not on block b6, block b3 is not on block b4, block b4 is not on the table, block b7 is not being held, block b2 is not on block b4, block b5 is not on block b4, block b2 is not on block b7, block b5 is not on the table, block b7 is not on block b1, block b4 is not clear, block b7 is not on block b2, block b3 is not on block b7, block b1 is not on block b6, block b6 is not being held, block b2 is not on block b5, block b5 is not being held, block b2 is not clear, block b6 is not clear, block b1 is not on block b5, block b1 is not on block b2, block b4 is not on block b5, block b7 is not on the table, block b6 is not on block b2, block b1 is not on block b3, block b3 is not clear, block b3 is not on the table, hand is not empty, block b2 is not on the table, block b4 is not on block b1, block b3 is not on block b1, block b1 is not on block b4, block b3 is not being held, block b2 is not being held, block b1 is not being held and block b6 is not on block b3
+
+
+-------------------------- ('action_executability', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4. Is it possible to execute it, True or False?
+
+
+True
+
+
+-------------------------- ('action_executability', 'question_2') --------------------------
+Given the initial condition, for steps 1 through 19 the following actions will be executed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4. Is it possible to execute unstack block b7 from block b4 at step 17, True or False?
+
+
+True
+
+
+-------------------------- ('action_executability', 'question_3') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, list all executable actions. Write None if there are none.
+
+
+stack block b4 on block b7 and put down block b4
+
+
+-------------------------- ('action_executability', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, list all inexecutable actions. Write None if there are none.
+
+
+unstack block b4 from block b3, pickup block b4, stack block b4 on block b6, stack block b1 on block b3, unstack block b3 from block b4, unstack block b1 from block b4, unstack block b1 from block b5, pickup block b6, unstack block b3 from block b1, unstack block b3 from block b5, stack block b3 on block b1, put down block b6, stack block b2 on block b4, unstack block b4 from block b5, unstack block b7 from block b2, unstack block b5 from block b6, unstack block b3 from block b2, stack block b3 on block b4, unstack block b6 from block b7, unstack block b4 from block b2, stack block b5 on block b4, unstack block b7 from block b1, stack block b6 on block b5, unstack block b7 from block b3, stack block b3 on block b5, stack block b5 on block b3, stack block b4 on block b3, stack block b6 on block b2, stack block b5 on block b1, put down block b5, unstack block b4 from block b1, unstack block b5 from block b3, stack block b3 on block b2, stack block b1 on block b7, stack block b5 on block b7, unstack block b7 from block b4, unstack block b2 from block b5, stack block b7 on block b3, unstack block b2 from block b6, unstack block b5 from block b1, stack block b7 on block b1, unstack block b7 from block b6, unstack block b6 from block b3, unstack block b4 from block b6, unstack block b3 from block b7, stack block b2 on block b6, unstack block b5 from block b2, stack block b2 on block b5, stack block b5 on block b2, unstack block b6 from block b2, unstack block b7 from block b5, stack block b4 on block b5, stack block b1 on block b6, put down block b3, pickup block b3, put down block b1, unstack block b1 from block b2, unstack block b3 from block b6, pickup block b2, pickup block b1, stack block b1 on block b2, unstack block b1 from block b3, stack block b4 on block b1, stack block b4 on block b2, unstack block b2 from block b4, unstack block b2 from block b7, unstack block b2 from block b1, pickup block b5, stack block b2 on block b3, stack block b7 on block b6, stack block b7 on block b4, unstack block b5 from block b4, put down block b7, stack block b5 on block b6, stack block b1 on block b5, stack block b7 on block b2, stack block b2 on block b1, unstack block b6 from block b5, put down block b2, unstack block b6 from block b1, stack block b6 on block b1, pickup block b7, unstack block b5 from block b7, unstack block b1 from block b6, stack block b1 on block b4, stack block b3 on block b6, unstack block b6 from block b4, unstack block b2 from block b3, stack block b6 on block b4, stack block b6 on block b3, stack block b6 on block b7, unstack block b1 from block b7, stack block b3 on block b7, stack block b2 on block b7, stack block b7 on block b5 and unstack block b4 from block b7
+
+
+-------------------------- ('action_executability', 'question_5') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, unstack block b5 from block b7, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. What is the first inexecutable action in the sequence? Write None if there are none.
+
+
+unstack block b5 from block b7
+
+
+-------------------------- ('effects', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, if I perform stack block b4 on block b7, is it True or False that the effect of the action would be that block b4 is on block b7, block b3 is clear and block b5 is being held?
+
+
+False
+
+
+-------------------------- ('effects', 'question_2') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, if I perform stack block b4 on block b7, is it True or False that the effect of the action would be that block b4 is not being held and block b7 is not clear?
+
+
+True
+
+
+-------------------------- ('effects', 'question_3') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, I perform stack block b4 on block b7, list all fluents that would be True
+
+
+block b3 is on block b2, block b6 is on block b5, block b2 is on block b6, block b4 is clear, hand is empty, block b1 is on the table, block b4 is on block b7, block b7 is on block b3 and block b5 is on block b1
+
+
+-------------------------- ('effects', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, I perform stack block b4 on block b7, list all fluents that would be False
+
+
+block b3 is not on block b5, block b6 is not on the table, block b4 is not on block b6, block b4 is not on block b2, block b7 is not on block b4, block b2 is not on block b1, block b1 is not on block b7, block b3 is not on block b6, block b6 is not on block b1, block b4 is not on block b3, block b2 is not on block b3, block b4 is not being held, block b6 is not on block b7, block b7 is not on block b6, block b5 is not on block b7, block b5 is not clear, block b5 is not on block b2, block b7 is not on block b5, block b1 is not clear, block b5 is not on block b3, block b6 is not on block b4, block b5 is not on block b6, block b3 is not on block b4, block b4 is not on the table, block b7 is not being held, block b7 is not clear, block b2 is not on block b4, block b5 is not on block b4, block b2 is not on block b7, block b5 is not on the table, block b7 is not on block b1, block b7 is not on block b2, block b3 is not on block b7, block b1 is not on block b6, block b6 is not being held, block b2 is not on block b5, block b5 is not being held, block b2 is not clear, block b6 is not clear, block b1 is not on block b5, block b1 is not on block b2, block b4 is not on block b5, block b7 is not on the table, block b6 is not on block b2, block b1 is not on block b3, block b3 is not clear, block b3 is not on the table, block b2 is not on the table, block b4 is not on block b1, block b3 is not on block b1, block b1 is not on block b4, block b3 is not being held, block b2 is not being held, block b1 is not being held and block b6 is not on block b3
+
+
+-------------------------- ('numerical_reasoning', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is the number of objects equal to 7? True or False
+
+
+True
+
+
+-------------------------- ('numerical_reasoning', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is the number of executable actions equal to 3? True or False
+
+
+False
+
+
+-------------------------- ('numerical_reasoning', 'question_5') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is the number of inexecutable actions equal to 120? True or False
+
+
+False
+
+
+-------------------------- ('numerical_reasoning', 'question_6') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, is the number of actions that lead to the current state equal to 22? True or False
+
+
+False
+
+
+-------------------------- ('numerical_reasoning', 'question_7') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of objects? Write as a decimal. Write None if there are none
+
+
+8
+
+
+-------------------------- ('numerical_reasoning', 'question_8') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of positive fluents? Write as a decimal. Write None if there are none
+
+
+8
+
+
+-------------------------- ('numerical_reasoning', 'question_9') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of negative fluents? Write as a decimal. Write None if there are none
+
+
+56
+
+
+-------------------------- ('numerical_reasoning', 'question_10') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of executable actions? Write as a decimal. Write None if there are none
+
+
+2
+
+
+-------------------------- ('numerical_reasoning', 'question_11') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of inexecutable actions? Write as a decimal. Write None if there are none
+
+
+96
+
+
+-------------------------- ('numerical_reasoning', 'question_12') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of actions that lead to the current state? Write as a decimal. Write None if there are none
+
+
+19
+
+
+-------------------------- ('numerical_reasoning', 'question_13') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, unstack block b2 from block b6, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of actions are there in the sequence before the first inexecutable action? Write as a decimal. Write None if there are none
+
+
+7
+
+
+-------------------------- ('numerical_reasoning', 'question_14') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, what is the total number of actions are there in the sequence before the first inexecutable action? Write as a decimal. Write None if there are none
+
+
+None
+
+
+-------------------------- ('hallucination', 'question_1') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some objects may not be part of the problem. Is it True or False that block: b4, is part of the problem?
+
+
+True
+
+
+-------------------------- ('hallucination', 'question_2') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some fluents may not be part of the problem. Is it True or False that fluent: block b7 is clear, is part of the problem?
+
+
+True
+
+
+-------------------------- ('hallucination', 'question_3') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some fluents may not be part of the problem. Is it True or False that fluent: block b6 is not on block b4, is part of the problem?
+
+
+True
+
+
+-------------------------- ('hallucination', 'question_4') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some executable actions may not be part of the problem. Is it True or False that action: lower block b4, is part of the problem?
+
+
+False
+
+
+-------------------------- ('hallucination', 'question_5') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some inexecutable actions may not be part of the problem. Is it True or False that action: unstack block b2 from block b5, is part of the problem?
+
+
+True
+
+
+-------------------------- ('hallucination', 'question_6') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some objects may not be part of the problem. What object out of: b8, is not part of the problem?
+
+
+b8
+
+
+-------------------------- ('hallucination', 'question_7') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, pickup block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some positive fluents may not be part of the problem. What positive fluent out of: block b5 is on block b1, block b3 is on block b2, block b4 is being held and block b1 is under the table, is not part of the problem? Write None if there are none
+
+
+block b1 is under the table
+
+
+-------------------------- ('hallucination', 'question_8') --------------------------
+Given the initial condition, the following actions are performed: unstack block b3 from block b7, put down block b3, unstack block b5 from block b4, stack block b5 on block b2, unstack block b4 from block b1, put down block b4, unstack block b5 from block b2, stack block b5 on block b1, unstack block b7 from block b6, stack block b7 on block b4, lift block b6, stack block b6 on block b5, pickup block b2, stack block b2 on block b6, pickup block b3, stack block b3 on block b2, unstack block b7 from block b4, stack block b7 on block b3 and pickup block b4 to reach the current state. In this state, some actions may not be part of the problem. What given action not part of the problem? Write None if there are none
+
+
+lift block b6
+
+
