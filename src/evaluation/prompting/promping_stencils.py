@@ -117,8 +117,8 @@ class Generate_prompting_template:
 # domain_name = 'blocksworld'
 # instance_id = 1
 # with open(f'/data_4/data/shri/reasoning_about_actions/data/questions/blocksworld/Instance_1.jsonl', 'r') as f:
-    # data = f.readlines()
-# unique_instance_dict = [json.loads(x) for x in data]
+#     data = f.readlines()
+# unique_instance_dict = [json.loads(x) for x in data][0]
 # for item in unique_instance_dict:
 #     # question_category - object_tracking, fluent_tracking, state_tracking, action_executability, effects, numerical_reasoning
 #     if item['plan_length'] == 1 and item['question_category'] == 'effects':
