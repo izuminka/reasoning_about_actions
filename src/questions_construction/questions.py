@@ -15,6 +15,31 @@ TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
 NONE_ANSWER = 'None'
 
+
+
+# fluent names for QA
+# POSITIVE_FLUENT = 'positive fluent'
+# NEGATIVE_FLUENT = 'negative fluent'
+# FLUENTS = 'fluents'
+# POSITIVE_FLUENTS = 'positive fluents'
+# NEGATIVE_FLUENTS = 'negative fluents'
+
+# # fluent names for QA
+# POSITIVE_FLUENT = 'true property of the world'
+# NEGATIVE_FLUENT = 'true property of the world that involve a negation'
+# FLUENTS = 'properties of the world that can be true or false'
+# POSITIVE_FLUENTS = 'true properties of the world'
+# NEGATIVE_FLUENTS = 'true properties of the world that involve a negation'
+
+# fluent names for QA
+POSITIVE_FLUENT = 'true property of the state'
+NEGATIVE_FLUENT = 'true property of the state that involve a negation'
+FLUENTS = 'properties of the state that can be true or false'
+POSITIVE_FLUENTS = 'true properties of the state'
+NEGATIVE_FLUENTS = 'true properties of the state that involve a negation'
+
+
+PART_OF_THE_STATE = 'part of the state'
 MAX_TIMEOUT = 100
 
 
@@ -412,13 +437,13 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object( question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
 
-    def question_3(self, plan_length):
-        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
-
-    def question_4(self, plan_length):
-        question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
+    # def question_3(self, plan_length):
+    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
+    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
+    #
+    # def question_4(self, plan_length):
+    #     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
+    #     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
 
 
 class FluentTrackingQuestions(QuestionGenerator):
@@ -442,7 +467,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
                                                       self.pos_fluents_given_plan[plan_length],
                                                       self.neg_fluents_given_plan[plan_length])
-        question = f"{self.nl_question_prefix(plan_length)} are all of the following fluents {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
+        question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
     def qa_5_6_helper(self, plan_length, is_pos_fluent_question, question_name, timeout=MAX_TIMEOUT):
@@ -451,16 +476,16 @@ class FluentTrackingQuestions(QuestionGenerator):
             obj = random.choice(self.all_objects)
             obj_type = self.object_type_by_object_name[obj]
             if is_pos_fluent_question:
-                fluent_type = 'positive'
+                fluent_type = POSITIVE_FLUENTS
                 fluents = self.pos_fluents_for_object(obj, plan_length)
             else:
-                fluent_type = 'negative'
+                fluent_type = NEGATIVE_FLUENTS
                 fluents = self.neg_fluents_for_object(obj, plan_length)
             timeout -= 1
         if timeout == 0:
             raise 'Timeout error'
         nl_fluents = self.nl_fluents(fluents)
-        question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for {obj_type} {obj}. {NONE_STATEMENT}."
+        question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} for {obj_type} {obj}. {NONE_STATEMENT}."
         return self.qa_data_object(question, nl_fluents, FREE_ANSWER, question_name, plan_length)
 
     def question_1(self, plan_length):
@@ -502,21 +527,21 @@ class StateTrackingQuestions(QuestionGenerator):
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
         nl_fluents = self.nl_fluents(fluents)
         if is_pos_fluent_question:
-            fluent_type = 'positive'
+            fluent_type = POSITIVE_FLUENTS
         else:
-            fluent_type = 'negative'
-        question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {fluent_type} fluents represent the state completely: {nl_fluents}?"
+            fluent_type = NEGATIVE_FLUENTS
+        question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {fluent_type} represent the state completely: {nl_fluents}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
     def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name):
         if is_pos_fluent_question:
-            fluent_type = 'positive'
+            fluent_type = POSITIVE_FLUENTS
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
-            fluent_type = 'negative'
+            fluent_type = NEGATIVE_FLUENTS
             fluents = self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
-        question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} fluents for this state. {NONE_STATEMENT}."
+        question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type} for this state. {NONE_STATEMENT}."
         return self.qa_data_object(question, nl_fluents, FREE_ANSWER, question_name, plan_length)
 
     def question_1(self, plan_length):
@@ -626,7 +651,7 @@ class EffectsQuestions(QuestionGenerator):
 
         fluents_new_minus_old = fluents_next_state - fluents_current_state
         if not fluents_new_minus_old and not is_positive_fluents: # sometimes in the negative fluents case there are no new negative fluents example: Miconic action: board
-            print(f"no new negative fluents for action {action} at plan length {plan_length}")
+            print(f"there are no new negative fluents for action {action} at plan length {plan_length}")
             return None
 
         if is_answer_true:
@@ -648,7 +673,7 @@ class EffectsQuestions(QuestionGenerator):
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
             fluents = self.neg_fluents_given_plan[plan_length + 1]
-        question = f"{self.prefix(plan_length)} I perform {self.nl_actions([action])}, list all fluents that would be {is_positive_fluents_question}"
+        question = f"{self.prefix(plan_length)} I perform {self.nl_actions([action])}, list all {FLUENTS} that would be {is_positive_fluents_question}"
         return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER, question_name, plan_length)
 
     def question_1(self, plan_length):
@@ -731,12 +756,12 @@ class NumericalReasoningQuestions(QuestionGenerator):
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_7.__name__)
 
     def question_8(self, plan_length):
-        name_count = 'positive fluents'
+        name_count = POSITIVE_FLUENTS
         count = len(self.pos_fluents_given_plan[plan_length])
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_8.__name__)
 
     def question_9(self, plan_length):
-        name_count = 'negative fluents'
+        name_count = NEGATIVE_FLUENTS
         count = len(self.neg_fluents_given_plan[plan_length])
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_9.__name__)
 
@@ -778,7 +803,7 @@ class HallucinationQuestions(QuestionGenerator):
         return 'hallucination'
 
     def question_setup(self, stuff):
-        return f'some {stuff} may not be part of the problem'
+        return f'some {stuff} may not be {PART_OF_THE_STATE}'
 
 
     def hallucinated_object(self, object, other_objects_set=set()):
@@ -800,10 +825,9 @@ class HallucinationQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         object = random.choice(self.all_objects)
-        object_type = self.object_type_by_object_name[object]
         if not is_answer_true:
             object = self.hallucinated_object(object)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Is it {TRUE_OR_FALSE} that {object_type}: {object}, is part of the problem?"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Is it {TRUE_OR_FALSE} that {object} is {PART_OF_THE_STATE}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
 
 
@@ -819,7 +843,7 @@ class HallucinationQuestions(QuestionGenerator):
         else:
             nl_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluent)
 
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('fluents')}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS)}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
     def qa_4_5_helper(self, plan_length, is_executable_action, question_name):
@@ -837,7 +861,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_action = self.domain_class.action_to_hallucinated_natural_language(action)
 
         question_setup = self.question_setup(f'{action_type} actions')
-        question = f"{self.nl_question_prefix(plan_length)} {question_setup}. Is it {TRUE_OR_FALSE} that action: {nl_action}, is part of the problem?"
+        question = f"{self.nl_question_prefix(plan_length)} {question_setup}. Is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
 
@@ -866,15 +890,15 @@ class HallucinationQuestions(QuestionGenerator):
         objects[0] = self.hallucinated_object(objects[0])
         random.shuffle(objects)
         nl_objects = asp_to_nl(objects, lambda x: x)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Which of the following objects, {nl_objects}, is not part of the problem?"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Which of the following objects, {nl_objects}, is not {PART_OF_THE_STATE}?"
         return self.qa_data_object(question, objects[0], FREE_ANSWER, self.question_6.__name__, plan_length)
 
     def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
         if is_pos_fluent_question:
-            fluent_type = 'positive'
+            fluent_type = POSITIVE_FLUENT
             fluents = random.sample(self.pos_fluents_given_plan[plan_length], random.randint(2, len(self.pos_fluents_given_plan[plan_length])-1))
         else:
-            fluent_type = 'negative'
+            fluent_type = NEGATIVE_FLUENT
             fluents = random.sample(self.neg_fluents_given_plan[plan_length], random.randint(2, len(self.neg_fluents_given_plan[plan_length])-1))
 
         if is_answer_true:
@@ -885,7 +909,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_hallucinated_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluents[0])
             random.shuffle(fluents)
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type} fluents')}. What positive fluent out of: {nl_fluents}, is not part of the problem? {NONE_STATEMENT}"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type}')}. What {fluent_type} out of, {nl_fluents}, is not {PART_OF_THE_STATE}? {NONE_STATEMENT}"
         return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length)
 
     def question_7(self, plan_length):
@@ -900,9 +924,10 @@ class HallucinationQuestions(QuestionGenerator):
 
     def question_9(self, plan_length):
         is_answer_true = random.choice([True, False])
+        nl_postfix = f"{self.question_setup('actions')}. What action is not defined? {NONE_STATEMENT}"
 
         if is_answer_true:
-            question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('actions')}. What given action is not part of the problem? {NONE_STATEMENT}"
+            question = f"{self.nl_question_prefix(plan_length)} "+nl_postfix
             answer = "None"
         if not is_answer_true:
             actions = self.given_plan_sequence[:plan_length]
@@ -910,7 +935,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_selected_action = self.domain_class.action_to_natural_language(actions[random_int])
             nl_hallucinated_action = self.domain_class.action_to_hallucinated_natural_language(actions[random_int])
             nl_actions = self.nl_actions(actions).replace(nl_selected_action, nl_hallucinated_action)
-            question = f"{QUESTION_PREFIX} {nl_actions} to reach the current state. In this state," + f" {self.question_setup('actions')}. What given action is not part of the problem? {NONE_STATEMENT}"
+            question = f"{QUESTION_PREFIX} {nl_actions} to reach the current state. In this state, " + nl_postfix
             answer = nl_hallucinated_action
         return self.qa_data_object(question,answer, FREE_ANSWER, self.question_8.__name__, plan_length)
 

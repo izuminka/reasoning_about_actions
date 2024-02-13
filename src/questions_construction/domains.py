@@ -997,10 +997,10 @@ class Mystery(BaseDomain):
 
         elif fluent.startswith('fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return f'location {f1} is neighbor of location {f2}'
+            return f'location {f1} is a neighbor of location {f2}'
         elif fluent.startswith('-fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return f'location {f1} is not neighbor of location {f2}'
+            return f'location {f1} is not a neighbor of location {f2}'
 
         elif fluent.startswith('in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
@@ -1018,10 +1018,10 @@ class Mystery(BaseDomain):
 
         elif fluent.startswith('space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return f'space {s1} is neighbor of space {s2}'
+            return f'space {s1} is a neighbor of space {s2}'
         elif fluent.startswith('-space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return f'space {s1} is not neighbor of space {s2}'
+            return f'space {s1} is not a neighbor of space {s2}'
         else:
             raise 'fluent is not defined'
 
