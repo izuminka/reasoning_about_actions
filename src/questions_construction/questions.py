@@ -602,8 +602,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         if not is_answer_true:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
-                                                                            self.inexecutable_actions, plan_length)
+            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
         else:
             sequence_of_actions = self.given_plan_sequence[:plan_length]
             random_break_ind = random.randint(0, plan_length - 1)
@@ -732,7 +731,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
     def free_answer_qa_helper(self, plan_length, name_count, count, question_name, is_planned=False):
-        question = f"{self.nl_question_prefix(plan_length, is_planned=is_planned)} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}"
+        question = f"{self.nl_question_prefix(plan_length, is_planned=is_planned)} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}."
         return self.qa_data_object(question, count, FREE_ANSWER, question_name, plan_length)
 
     def question_1(self, plan_length):
@@ -762,8 +761,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_5(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions_count = len(self.inexecutable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count,
-                                         self.question_5.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count, self.question_5.__name__)
 
     def question_6(self, plan_length):
         is_answer_true = random.choice([True, False])
@@ -803,7 +801,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
                                                                         self.inexecutable_actions, plan_length)
         prefix = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
-        question = f"{prefix} what is the number of actions that led to the current state in the sequence before the first inexecutable action? Write as a decimal. {NONE_STATEMENT}"
+        question = f"{prefix} what is the number of actions that led to the current state in the sequence before the first inexecutable action? Write as a decimal. {NONE_STATEMENT}."
 
         return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_13.__name__, plan_length)
 
@@ -940,7 +938,7 @@ class HallucinationQuestions(QuestionGenerator):
 
     def question_9(self, plan_length):
         is_answer_true = random.choice([True, False])
-        postfix = 'to reach the current state. Given this sequence, what action is not defined? Write None if all are defined.'
+        postfix = 'to reach the current state. Given this sequence, what action is not defined? Write None if all are defined'
         if is_answer_true:
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} {postfix}."
             answer = "None"
