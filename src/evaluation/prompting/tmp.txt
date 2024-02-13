@@ -1,0 +1,64 @@
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, if I perform put down block b3, is it True or False that block b3 is on the table and block b3 is clear?
+==================================================================================================================
+True
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, if I perform put down block b3, is it True or False that block b3 is on the table?
+==================================================================================================================
+True
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, if I perform put down block b3, is it True or False that block b3 is on the table?
+==================================================================================================================
+False
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, if I perform put down block b3, is it True or False that block b7 is on block b6, block b6 is on the table, block b2 is on the table, block b4 is on block b1, block b5 is clear, block b1 is on the table, block b5 is on block b4 and block b2 is clear?
+==================================================================================================================
+True
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, if I perform put down block b3, is it True or False that block b2 is on the table and hand is empty?
+==================================================================================================================
+False
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, if I perform put down block b3, is it True or False that block b4 is on block b1, block b5 is clear, block b7 is on block b6 and block b3 is on the table?
+==================================================================================================================
+False
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, I perform put down block b3, list all fluents that would be True
+==================================================================================================================
+block b3 is clear, hand is empty, block b3 is on the table, block b2 is clear, block b5 is on block b4, block b7 is clear, block b1 is on the table, block b5 is clear, block b6 is on the table, block b7 is on block b6, block b2 is on the table and block b4 is on block b1
+==================================================================================================================
+block b7 is on block b6, block b3 is clear, hand is empty, block b2 is clear, block b1 is on the table, block b6 is on the table, block b5 is clear, block b5 is on block b4, block b2 is on the table, block b4 is on block b1 and block b3 is on block b7
+
+
+
+Given the initial condition, the following actions are performed: unstack block b3 from block b7 to reach the current state. In this state, I perform put down block b3, list all fluents that would be False
+==================================================================================================================
+block b3 is not on block b5, block b4 is not on block b6, block b4 is not on block b2, block b7 is not on block b4, block b2 is not on block b1, block b1 is not on block b7, block b3 is not on block b6, block b6 is not on block b1, block b4 is not on block b3, block b2 is not on block b3, block b4 is not being held, block b6 is not on block b5, block b6 is not on block b7, block b5 is not on block b7, block b5 is not on block b2, block b7 is not on block b5, block b7 is not on block b3, block b1 is not clear, block b5 is not on block b3, block b4 is not on block b7, block b6 is not on block b4, block b5 is not on block b6, block b3 is not on block b4, block b4 is not on the table, block b7 is not being held, block b2 is not on block b4, block b2 is not on block b7, block b5 is not on the table, block b7 is not on block b1, block b4 is not clear, block b7 is not on block b2, block b3 is not on block b7, block b1 is not on block b6, block b6 is not being held, block b2 is not on block b5, block b5 is not being held, block b2 is not on block b6, block b3 is not on block b2, block b6 is not clear, block b1 is not on block b5, block b1 is not on block b2, block b4 is not on block b5, block b7 is not on the table, block b6 is not on block b2, block b1 is not on block b3, block b3 is not being held, block b3 is not on block b1, block b1 is not on block b4, block b5 is not on block b1, block b2 is not being held, block b1 is not being held and block b6 is not on block b3

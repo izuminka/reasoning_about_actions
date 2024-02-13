@@ -1,5 +1,5 @@
-DOMAINS=('blocksworld' 'depots' 'driverlog' 'goldminer' 'grippers' 'logistics' 'miconic' 'mystery' 'npuzzle' 'satellite' 'spanner' 'visitall' 'zenotravel')
-INSTANCES=('Instance_1' 'Instance_2' 'Instance_3' 'Instance_4' 'Instance_5' 'Instance_6' 'Instance_7' 'Instance_8' 'Instance_9' 'Instance_10')
+DOMAINS=('zenotravel')
+INSTANCES=('Instance_1' 'Instance_4' 'Instance_5' 'Instance_8')
 
 PYTHON_CMD='python states_actions_generation.py'
 
