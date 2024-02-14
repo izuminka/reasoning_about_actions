@@ -36,7 +36,7 @@ class AllQuestions:
 
     def save_questions(self, save_dir=None):
         if save_dir is None:
-            save_dir = QUESTIONS_PATH + f'_tmp/{self.domain_class.DOMAIN_NAME}' #TODO rm _new
+            save_dir = QUESTIONS_PATH + f'/{self.domain_class.DOMAIN_NAME}'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         save_path = f'{save_dir}/{self.instance_id}.jsonl'
@@ -72,4 +72,3 @@ if __name__ == '__main__':
             all_questions = AllQuestions(jsonl_instance, domain, instance_name)#, question_multiplicity=multiplicity, plan_lengths=plan_lengths)
             all_questions.generate_all_questions()
             all_questions.save_questions()
-
