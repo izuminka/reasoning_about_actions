@@ -759,8 +759,8 @@ class HallucinationQuestions(QuestionGenerator):
 
         r = re.compile(self.NUMBER_REGEX)
         object_prefix = r.sub('', object)
-        if object == object_prefix:
-            print('Error: object name does not contain a number')
+        # if object == object_prefix:
+        #     print('Error: object name does not contain a number')
         i = 1
         hallucinated_object = object_prefix + f'{i}'
         while hallucinated_object in all_objects and i < 100:

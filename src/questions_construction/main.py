@@ -61,13 +61,15 @@ if __name__ == '__main__':
     #     all_questions = AllQuestions(jsonl_instance, domain, instance_name)
     #     all_questions.generate_all_questions()
     #     all_questions.save_questions()
+
     for domain_class in ALL_DOMAIN_CLASSES:
         domain = domain_class()
         print(domain.DOMAIN_NAME)
-        for i in range(1, 11): #[1]:#
+        for i in range(1, 11):
             print(i)
             instance_name = f'Instance_{i}'
             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
             all_questions = AllQuestions(jsonl_instance, domain, instance_name)#, question_multiplicity=multiplicity, plan_lengths=plan_lengths)
             all_questions.generate_all_questions()
             all_questions.save_questions()
+
