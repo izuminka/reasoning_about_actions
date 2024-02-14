@@ -74,9 +74,9 @@ class Generate_prompting_template:
                     prompts.append(prompt)
             initial_state_nl_actual_question = asp_to_nl(self.unique_instance_dict['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)     
             if cot_key==True:   
-                prompts.append(f'\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl_actual_question}\n\n[QUESTION]\n{self.unique_instance_dict["question"]}\n\n[ANSWER]: let\'s think step by step. \n')
+                prompts.append(f'\n\nBased on the above examples, answer the below question:\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl_actual_question}\n\n[QUESTION]\n{self.unique_instance_dict["question"]}\n\n[ANSWER]: let\'s think step by step. \n')
             else:
-                prompts.append(f'\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl_actual_question}\n\n[QUESTION]\n{self.unique_instance_dict["question"]}\n\n[ANSWER]:\n')
+                prompts.append(f'\n\nBased on the above examples, answer the below question:\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl_actual_question}\n\n[QUESTION]\n{self.unique_instance_dict["question"]}\n\n[ANSWER]:\n')
         else:
             print('No examples found for the given instance')    
         return ''.join(prompts),jsonl_instance_list
