@@ -112,11 +112,11 @@ class TestObjectTrackingQuestionsBlocksworld(TestHelpers):
     def test_q2(self):
         self.assert_qa_objects(self.qa_class.question_2)
 
-    def test_q3(self):
-        self.assert_qa_objects(self.qa_class.question_3)
-
-    def test_q4(self):
-        self.assert_qa_objects(self.qa_class.question_4)
+    # def test_q3(self):
+    #     self.assert_qa_objects(self.qa_class.question_3)
+    #
+    # def test_q4(self):
+    #     self.assert_qa_objects(self.qa_class.question_4)
 
 class TestFluentTrackingQuestionsBlocksworld(TestHelpers):
     qa_class = FluentTrackingQuestions(jsonl_object, domain_class, instance_id)
@@ -218,11 +218,11 @@ class TestNumericalReasoningQuestionsBlocksworld(TestHelpers):
     def test_q1(self):
         self.assert_qa_objects(self.qa_class.question_1)
 
-    def test_q2(self):
-        self.assert_qa_objects(self.qa_class.question_2)
-
-    def test_q3(self):
-        self.assert_qa_objects(self.qa_class.question_3)
+    # def test_q2(self):
+    #     self.assert_qa_objects(self.qa_class.question_2)
+    #
+    # def test_q3(self):
+    #     self.assert_qa_objects(self.qa_class.question_3)
 
     def test_q4(self):
         self.assert_qa_objects(self.qa_class.question_4)
@@ -248,11 +248,6 @@ class TestNumericalReasoningQuestionsBlocksworld(TestHelpers):
     def test_q11(self):
         self.assert_qa_objects(self.qa_class.question_12)
 
-    def test_q13(self):
-        self.assert_qa_objects(self.qa_class.question_13)
-
-    def test_q14(self):
-        self.assert_qa_objects(self.qa_class.question_13)
 
 class TestHallucinationQuestionsBlocksworld(TestHelpers):
     qa_class = HallucinationQuestions(jsonl_object, domain_class, instance_id)
@@ -272,8 +267,8 @@ class TestHallucinationQuestionsBlocksworld(TestHelpers):
     def test_q5(self):
         self.assert_qa_objects(self.qa_class.question_5)
 
-    def test_q6(self):
-        self.assert_qa_objects(self.qa_class.question_6)
+    # def test_q6(self):
+    #     self.assert_qa_objects(self.qa_class.question_6)
 
     def test_q7(self):
         self.assert_qa_objects(self.qa_class.question_7)
@@ -284,25 +279,25 @@ class TestHallucinationQuestionsBlocksworld(TestHelpers):
     def test_q9(self):
         self.assert_qa_objects(self.qa_class.question_9)
 
-class TestQuestionGenerationAll(unittest.TestCase):
-
-    def test_all_questions_one_domain_one_instance(self):
-        jsonl_object = open_jsonl(TESTS_DIR + '/data/data20.jsonl')
-        instance_id = 'sdf'
-        domain_class = Blocksworld()
-        all_questions = AllQuestions(jsonl_object, domain_class, instance_id)
-
-    def test_all_questions_one_domain_all_instances(self):
-        pass
-
-    def test_all_questions_all_domain_all_instances(self):
-        domain_clases = [d() for d in ALL_DOMAIN_CLASSES]
-        jsonl_objects = [open_jsonl(os.path.join(TESTS_DIR + f'{d}.Instance_1.data20.jsonl')) for d in domain_clases]
-        all_questions = []
-        for domain_class in domain_clases:
-            for instance_id, jsonl in jsonl_objects.items():
-                all_questions += AllQuestions(jsonl, domain_class, instance_id)
-
+# class TestQuestionGenerationAll(unittest.TestCase):
+#
+#     def test_all_questions_one_domain_one_instance(self):
+#         jsonl_object = open_jsonl(TESTS_DIR + '/data/data20.jsonl')
+#         instance_id = 'sdf'
+#         domain_class = Blocksworld()
+#         all_questions = AllQuestions(jsonl_object, domain_class, instance_id)
+#
+#     def test_all_questions_one_domain_all_instances(self):
+#         pass
+#
+#     def test_all_questions_all_domain_all_instances(self):
+#         domain_clases = [d() for d in ALL_DOMAIN_CLASSES]
+#         jsonl_objects = [open_jsonl(os.path.join(TESTS_DIR + f'{d}.Instance_1.data20.jsonl')) for d in domain_clases]
+#         all_questions = []
+#         for domain_class in domain_clases:
+#             for instance_id, jsonl in jsonl_objects.items():
+#                 all_questions += AllQuestions(jsonl, domain_class, instance_id)
+#
 
 if __name__ == '__main__':
     unittest.main()

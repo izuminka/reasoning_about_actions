@@ -265,7 +265,8 @@ class QuestionGenerator(QuestionGenerationHelpers):
                 OUT_OBJ_INITIAL_STATE: self.init_state,
                 OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence}
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         raise 'Implement it in the child class'
 
     @staticmethod
@@ -359,7 +360,8 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'object_tracking'
 
     @staticmethod
@@ -463,7 +465,8 @@ class FluentTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'fluent_tracking'
 
     def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name):
@@ -530,7 +533,8 @@ class StateTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'state_tracking'
 
     def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name):
@@ -582,7 +586,8 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'action_executability'
 
     def qa_1_2_helper(self, nl_sequence_of_actions):
@@ -641,7 +646,8 @@ class EffectsQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'effects'
 
     def prefix(self, plan_length):
@@ -714,7 +720,8 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'numerical_reasoning'
 
     @staticmethod
@@ -812,7 +819,8 @@ class HallucinationQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_category(self):
+    @staticmethod
+    def question_category():
         return 'hallucination'
 
     def question_setup(self, stuff):
@@ -956,7 +964,8 @@ class HallucinationQuestions(QuestionGenerator):
 #     def __init__(self, states_actions_all, domain_class, instance_id):
 #         super().__init__(states_actions_all, domain_class, instance_id)
 #
-#     def question_category(self):
+#     @staticmethod
+#     def question_category():
 #         return 'looping'
 #
 #     def get_looping_action_sequence(self, plan, seq, key):
@@ -1121,7 +1130,8 @@ class HallucinationQuestions(QuestionGenerator):
 #         def __init__(self, states_actions_jsonl_path, instance_id):
 #             super().__init__(states_actions_jsonl_path, instance_id)
 
-#         def question_category(self):
+#         @staticmethod
+#     def question_category():
 #             return 'ObjectTracking'
 
 #         def question_1(self, plan_length):
