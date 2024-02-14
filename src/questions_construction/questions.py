@@ -51,7 +51,7 @@ OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
 
 PLAN_LENGTHS = [1, 5, 10, 15, 19]
-QUESTION_MULTIPLICITY = 6
+QUESTION_MULTIPLICITY = 4
 
 # from nltk.stem import WordNetLemmatizer
 # from nltk.corpus import wordnet
@@ -408,14 +408,14 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} list all objects associated with type {random_object_type}. {NONE_STATEMENT}."
         answer = self.objects_by_type[random_object_type]
         nl_answer = asp_to_nl(sorted(answer), lambda x: x)
-        self.qa_data_object(question, nl_answer, FREE_ANSWER, self.question_3.__name__, plan_length)
+        return self.qa_data_object(question, nl_answer, FREE_ANSWER, self.question_3.__name__, plan_length)
 
     def question_4(self, plan_length):
         random_object_type = random.choice(list(self.objects_by_type.keys()))
         random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])))
         nl_random_objects = asp_to_nl(random_objects, lambda x: x)
         question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
-        self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_4.__name__, plan_length)
+        return self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_4.__name__, plan_length)
 
 
 
