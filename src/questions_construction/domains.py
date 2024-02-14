@@ -1592,7 +1592,7 @@ class Zenotravel(BaseDomain):
             raise 'action is not defined'
 
 
-    def fluent_to_hallucination_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('at('):
             obj, city = self.extract_multi_variable(fluent)
             if obj.startswith('person'):
@@ -1628,7 +1628,7 @@ class Zenotravel(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucination_natural_language(self, action):
+    def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)

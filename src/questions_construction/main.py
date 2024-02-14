@@ -12,12 +12,12 @@ QUESTION_CATEGORIES = [q_class.question_category() for q_class in QUESTION_CLASS
 
 
 class AllQuestions:
-    def __init__(self, jsonl_instance, domain_class, instance_id):
+    def __init__(self, jsonl_instance, domain_class, instance_id, question_multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):
         self.jsonl_instance = jsonl_instance
         self.domain_class = domain_class
         self.instance_id = instance_id
-        self.question_multiplicity = QUESTION_MULTIPLICITY
-        self.plan_lengths = PLAN_LENGTHS
+        self.question_multiplicity = question_multiplicity
+        self.plan_lengths = plan_lengths
         self.all_questions = []
         self.q_types = [
             ObjectTrackingQuestions(jsonl_instance, domain_class, instance_id),
@@ -36,7 +36,7 @@ class AllQuestions:
 
     def save_questions(self, save_dir=None):
         if save_dir is None:
-            save_dir = QUESTIONS_PATH + f'/{self.domain_class.DOMAIN_NAME}'
+            save_dir = QUESTIONS_PATH + f'/{self.domain_class.DOMAIN_NAME}' #TODO rm _new
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         save_path = f'{save_dir}/{self.instance_id}.jsonl'
@@ -64,10 +64,10 @@ if __name__ == '__main__':
     for domain_class in ALL_DOMAIN_CLASSES:
         domain = domain_class()
         print(domain.DOMAIN_NAME)
-        for i in range(1, 11):
+        for i in range(1, 11): #[1]:#
             print(i)
             instance_name = f'Instance_{i}'
             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-            all_questions = AllQuestions(jsonl_instance, domain, instance_name)
+            all_questions = AllQuestions(jsonl_instance, domain, instance_name)#, question_multiplicity=multiplicity, plan_lengths=plan_lengths)
             all_questions.generate_all_questions()
             all_questions.save_questions()

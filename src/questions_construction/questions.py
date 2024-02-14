@@ -51,11 +51,11 @@ OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
 
 PLAN_LENGTHS = [1, 5, 10, 15, 19]
-QUESTION_MULTIPLICITY = 3
+QUESTION_MULTIPLICITY = 6
 
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
-lemmatizer = WordNetLemmatizer()
+# from nltk.stem import WordNetLemmatizer
+# from nltk.corpus import wordnet
+# lemmatizer = WordNetLemmatizer()
 
 
 def get_fluent_prefix(fluent):
@@ -412,7 +412,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
     def question_4(self, plan_length):
         random_object_type = random.choice(list(self.objects_by_type.keys()))
-        random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])-1))
+        random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])))
         nl_random_objects = asp_to_nl(random_objects, lambda x: x)
         question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
         self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_4.__name__, plan_length)
@@ -686,73 +686,59 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         total_objects = len(self.all_objects)
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects,
-                                         self.question_1.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects, self.question_1.__name__)
 
-    # def question_2(self, plan_length):
-    #     is_answer_true = random.choice([True, False])
-    #     chosen_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
-    #     fluents_count = len([f for f in self.pos_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
-    #     return self.true_false_qa_helper(plan_length, is_answer_true, 'positive fluents', fluents_count, self.question_2.__name__)
-    #
-    # def question_3(self, plan_length):
-    #     is_answer_true = random.choice([True, False])
-    #     chosen_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
-    #     fluents_count = len([f for f in self.neg_fluents_given_plan[plan_length] if f.startswith(get_fluent_prefix(chosen_fluent))])
-    #     return self.true_false_qa_helper(plan_length, is_answer_true, 'negative fluents', fluents_count, self.question_3.__name__)
-
-    def question_4(self, plan_length):
+    def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions_count = len(self.executable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'executable actions', actions_count,
-                                         self.question_4.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'executable actions', actions_count, self.question_2.__name__)
 
-    def question_5(self, plan_length):
+    def question_3(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions_count = len(self.inexecutable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count, self.question_5.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count, self.question_3.__name__)
 
-    def question_6(self, plan_length):
+    def question_4(self, plan_length):
         is_answer_true = random.choice([True, False])
         if is_answer_true:
             total_count = plan_length
         else:
             total_count = self.random_count(plan_length)
         question = f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. Is it {TRUE_OR_FALSE} that the number of actions that led to current state in the sequence is equal to {total_count}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_6.__name__, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_4.__name__, plan_length)
 
-    def question_7(self, plan_length):
+    def question_5(self, plan_length):
         name_count = 'objects'
         count = len(self.all_objects)
+        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_5.__name__)
+
+    def question_6(self, plan_length):
+        name_count = POSITIVE_FLUENTS
+        count = len(self.pos_fluents_given_plan[plan_length])
+        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_6.__name__)
+
+    def question_7(self, plan_length):
+        name_count = NEGATIVE_FLUENTS
+        count = len(self.neg_fluents_given_plan[plan_length])
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_7.__name__)
 
     def question_8(self, plan_length):
-        name_count = POSITIVE_FLUENTS
-        count = len(self.pos_fluents_given_plan[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_8.__name__)
-
-    def question_9(self, plan_length):
-        name_count = NEGATIVE_FLUENTS
-        count = len(self.neg_fluents_given_plan[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_9.__name__)
-
-    def question_10(self, plan_length):
         name_count = 'executable actions'
         count = len(self.executable_actions[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_10.__name__, is_planned=True)
+        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_8.__name__, is_planned=True)
 
-    def question_11(self, plan_length):
+    def question_9(self, plan_length):
         name_count = 'inexecutable actions'
         count = len(self.inexecutable_actions[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_11.__name__, is_planned=True)
+        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_9.__name__, is_planned=True)
 
-    def question_12(self, plan_length):
+    def question_10(self, plan_length):
         sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
                                                                         self.inexecutable_actions, plan_length)
         prefix = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
         question = f"{prefix} what is the number of actions that led to the current state in the sequence before the first inexecutable action? Write as a decimal. {NONE_STATEMENT}."
 
-        return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_13.__name__, plan_length)
+        return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_10.__name__, plan_length)
 
 
 class HallucinationQuestions(QuestionGenerator):
@@ -846,7 +832,7 @@ class HallucinationQuestions(QuestionGenerator):
         if len(self.all_objects) < 2:
             print('less than 2 objects', self.question_6.__name__, plan_length)
             return None
-        objects = random.sample(self.all_objects, random.randint(2, len(self.all_objects) - 1))
+        objects = random.sample(self.all_objects, random.randint(2, len(self.all_objects)))
         answer = objects[0]
         if not is_answer_true:
             objects[0] = self.hallucinated_object(objects[0])
@@ -860,11 +846,11 @@ class HallucinationQuestions(QuestionGenerator):
         if is_pos_fluent_question:
             fluent_type = POSITIVE_FLUENT
             fluents = random.sample(self.pos_fluents_given_plan[plan_length],
-                                    random.randint(2, len(self.pos_fluents_given_plan[plan_length]) - 1))
+                                    random.randint(2, len(self.pos_fluents_given_plan[plan_length])))
         else:
             fluent_type = NEGATIVE_FLUENT
             fluents = random.sample(self.neg_fluents_given_plan[plan_length],
-                                    random.randint(2, len(self.neg_fluents_given_plan[plan_length]) - 1))
+                                    random.randint(2, len(self.neg_fluents_given_plan[plan_length])))
         if is_answer_true:
             nl_hallucinated_fluent = NONE_ANSWER
             nl_fluents = self.nl_fluents(fluents)
