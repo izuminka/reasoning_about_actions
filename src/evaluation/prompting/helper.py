@@ -7,7 +7,19 @@ from questions_construction.domains import *
 
 # pip install -q -U google-generativeai
 import google.generativeai as genai
-GEMINI_API_KEY = ''
+# GEMINI_API_KEY = 'AIzaSyCGKrdLLppJg3aXB-uAsWaSSGXqfhLUpV8'    # My Key (blocksworld)
+# GEMINI_API_KEY = 'AIzaSyD_FekLlCwlqo5SDy0xB1DbzxI5Iz8YHyw'    # Mihir's Key (depots)
+# GEMINI_API_KEY = 'AIzaSyBAVf02zVYCgKxd-DTd9_PKEZMEbV4hons'    # Pavel's Key (driverlog)
+# GEMINI_API_KEY = 'AIzaSyByew5dQG7MP2NYZgD_K4gc2qroI9s4y_8'    # Rajeev's Key (goldminer) -- Issues
+# GEMINI_API_KEY = 'AIzaSyByew5dQG7MP2NYZgD_K4gc2qroI9s4y_8'    # Shri's Key (grippers)
+# GEMINI_API_KEY = 'AIzaSyA5ev80w-RFdIeD61Bq23SXomTUDni-S44'    # Aswin's Key (logistics)
+# GEMINI_API_KEY = 'AIzaSyBx62LMT9y7mT2UJ_h2htLZQLEseUTtiRE'    # Nayem's Key (miconic)
+# GEMINI_API_KEY = ''    # 's Key (mystery)
+# GEMINI_API_KEY = 'AIzaSyDUhq_5iRBgB9ohEFw20R3mBqweTzt28zA'    # Nemika's Key (npuzzle)
+GEMINI_API_KEY = 'AIzaSyAEIrcO3WI-0CheJy8_ns_TISBmgMQqhy4'    # Amir's Key (satellite)
+# GEMINI_API_KEY = ''    # 's Key (spanner)
+# GEMINI_API_KEY = ''    # 's Key (visitall)
+# GEMINI_API_KEY = ''    # 's Key (zenotravel)
 genai.configure(api_key=GEMINI_API_KEY)
 
 # pip install openai
@@ -56,9 +68,14 @@ def get_prompt(domain_name, instance, json_ele, prompt_tech, examples=1):
         domain_class = Visitall()
     else:
         raise Exception(f'{domain_name} is an invalid domain')
-    
+    prompt_obj = Generate_prompting_template('../../../data/questions/', domain_class, int(instance.split('_')[1].split('.')[0]), domain_name+'/', json_ele)
+
     if prompt_tech == 'zero_shot':
-        return Generate_prompting_template('../../../data/questions/', domain_class, int(instance.split('_')[1].split('.')[0]), domain_name+'/').zero_shot_prompt()
+        return prompt_obj.zero_shot_prompt()
+    elif prompt_tech == 'few_shot':
+        return prompt_obj.few_shot_prompt(examples, cot_key=False)
+    elif prompt_tech == 'few_shot_cot':
+        return prompt_obj.few_shot_prompt(examples, cot_key=True)
     else:
         raise Exception(f'{prompt_tech} is an invalid prompting technique')
 
@@ -72,11 +89,7 @@ def write_data(data, file_path):
     file_dir = '/'.join(file_path.split('/')[:-1])
     Path(file_dir).mkdir(parents=True, exist_ok=True)
     with open(file_path, 'a+') as f:
-        f.write(json.dumps({'response':data})+'\n')
-    file_dir = '/'.join(file_path.split('/')[:-1])
-    Path(file_dir).mkdir(parents=True, exist_ok=True)
-    with open(file_path, 'a+') as f:
-        f.write(json.dumps({'response':data})+'\n')
+        f.write(json.dumps(data)+'\n')
 
 def get_response(model_name, prompt, pipeline_obj=None):
     '''

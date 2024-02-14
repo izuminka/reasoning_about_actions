@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 import sys
 import sys
-sys.path.append('/data_4/data/shri/reasoning_about_actions/')
+# sys.path.append('/data_4/data/shri/reasoning_about_actions/')
+sys.path.append('/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions')
 from src.common import *
 from src.questions_construction.domains import *
 from src.questions_construction.questions import *
@@ -29,15 +30,12 @@ class Generate_prompting_template:
             data = f.readlines()
         question_jsonl = [json.loads(x) for x in data]
         for dictionary_item in question_jsonl:
-            initial_state_nl = asp_to_nl(dictionary_item['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
-            if len(dictionary_item.keys()) == 0:
-                continue
-            if dictionary_item['answer_type'] == 'true_false_answer':
+            if dictionary_item['id'] == self.unique_instance_dict['id']:
+                initial_state_nl = asp_to_nl(dictionary_item['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
+                if len(dictionary_item.keys()) == 0:
+                    continue
                 dictionary_item['zero_shot_model_input'] = f'{self.domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
                 results.append(dictionary_item)
-            else:
-                dictionary_item['zero_shot_model_input'] = f'{self.domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
-                results.append(dictionary_item)             
         return results
     
     def few_shot_prompt(self,n_shot,cot_key):

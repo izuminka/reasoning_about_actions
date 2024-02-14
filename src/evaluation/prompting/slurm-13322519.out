@@ -1,0 +1,99 @@
+
+=====================================================================
+This module is intended solely for building or source activating user
+python environments, i.e.,
+
+    mamba create -n myenv -c conda-forge
+
+or
+
+    source activate myenv
+
+To list available environments, run:
+
+    mamba info --envs
+
+See our docs: https://links.asu.edu/solpy
+
+Any other use is NOT TESTED.
+=====================================================================
+
+  
+Starting goldminer/Instance_3.jsonl with zero_shot
+  0%|          | 0/489 [00:00<?, ?it/s]  0%|          | 1/489 [00:01<14:45,  1.81s/it]  0%|          | 2/489 [00:03<12:04,  1.49s/it]  1%|          | 3/489 [00:05<15:09,  1.87s/it]  1%|          | 4/489 [00:07<14:26,  1.79s/it]  1%|          | 5/489 [00:08<12:43,  1.58s/it]  1%|          | 6/489 [00:09<12:28,  1.55s/it]  1%|▏         | 7/489 [00:11<12:11,  1.52s/it]  2%|▏         | 8/489 [00:12<11:29,  1.43s/it]  2%|▏         | 9/489 [00:16<17:05,  2.14s/it]  2%|▏         | 10/489 [00:17<14:34,  1.83s/it]  2%|▏         | 11/489 [00:19<16:02,  2.01s/it]  2%|▏         | 12/489 [00:21<14:58,  1.88s/it]  3%|▎         | 13/489 [00:22<13:49,  1.74s/it]  3%|▎         | 14/489 [00:26<19:30,  2.46s/it]  3%|▎         | 15/489 [00:27<16:15,  2.06s/it]  3%|▎         | 16/489 [00:29<16:04,  2.04s/it]  3%|▎         | 17/489 [00:31<14:05,  1.79s/it]  4%|▎         | 18/489 [00:32<12:49,  1.63s/it]  4%|▍         | 19/489 [00:34<13:15,  1.69s/it]  4%|▍         | 20/489 [00:36<14:08,  1.81s/it]  4%|▍         | 21/489 [00:37<12:53,  1.65s/it]  4%|▍         | 22/489 [00:39<12:52,  1.65s/it]  5%|▍         | 23/489 [00:41<13:34,  1.75s/it]  5%|▍         | 24/489 [00:42<12:33,  1.62s/it]  5%|▌         | 25/489 [00:44<13:03,  1.69s/it]  5%|▌         | 26/489 [00:46<12:55,  1.68s/it]  6%|▌         | 27/489 [00:47<11:58,  1.56s/it]  6%|▌         | 28/489 [00:48<12:02,  1.57s/it]  6%|▌         | 28/489 [00:49<13:27,  1.75s/it]
+Traceback (most recent call last):
+  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/gemini.py", line 40, in <module>
+    response = get_response('gemini-pro', prompt)
+  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/helper.py", line 97, in get_response
+    response = model.generate_content(prompt)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/generativeai/generative_models.py", line 248, in generate_content
+    response = self._client.generate_content(request)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/client.py", line 566, in generate_content
+    response = rpc(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/gapic_v1/method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 293, in retry_wrapped_func
+    return retry_target(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 153, in retry_target
+    _retry_error_helper(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_base.py", line 212, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 144, in retry_target
+    result = target()
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/timeout.py", line 120, in func_with_timeout
+    return func(*args, **kwargs)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/grpc_helpers.py", line 78, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.ResourceExhausted: 429 Resource has been exhausted (e.g. check quota).
+Starting goldminer/Instance_3.jsonl with few_shot
+  0%|          | 0/489 [00:00<?, ?it/s]  0%|          | 1/489 [00:05<43:21,  5.33s/it]  0%|          | 2/489 [00:11<45:04,  5.55s/it]  1%|          | 3/489 [00:16<43:02,  5.31s/it]  1%|          | 4/489 [00:20<38:55,  4.82s/it]  1%|          | 5/489 [00:25<40:02,  4.96s/it]  1%|          | 6/489 [00:30<39:32,  4.91s/it]  1%|▏         | 7/489 [00:34<37:28,  4.67s/it]  2%|▏         | 8/489 [00:41<43:16,  5.40s/it]  2%|▏         | 9/489 [00:47<44:01,  5.50s/it]  2%|▏         | 10/489 [00:52<43:16,  5.42s/it]  2%|▏         | 11/489 [00:57<43:46,  5.49s/it]  2%|▏         | 11/489 [00:58<42:09,  5.29s/it]
+Traceback (most recent call last):
+  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/gemini.py", line 40, in <module>
+    response = get_response('gemini-pro', prompt)
+  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/helper.py", line 97, in get_response
+    response = model.generate_content(prompt)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/generativeai/generative_models.py", line 248, in generate_content
+    response = self._client.generate_content(request)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/client.py", line 566, in generate_content
+    response = rpc(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/gapic_v1/method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 293, in retry_wrapped_func
+    return retry_target(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 153, in retry_target
+    _retry_error_helper(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_base.py", line 212, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 144, in retry_target
+    result = target()
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/timeout.py", line 120, in func_with_timeout
+    return func(*args, **kwargs)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/grpc_helpers.py", line 78, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.ResourceExhausted: 429 Resource has been exhausted (e.g. check quota).
+Starting goldminer/Instance_3.jsonl with few_shot_cot
+  0%|          | 0/489 [00:00<?, ?it/s]  0%|          | 1/489 [00:05<47:03,  5.79s/it]  0%|          | 2/489 [00:10<39:47,  4.90s/it]  1%|          | 3/489 [00:14<39:39,  4.90s/it]  1%|          | 4/489 [00:20<40:22,  4.99s/it]  1%|          | 5/489 [00:24<38:24,  4.76s/it]  1%|          | 6/489 [00:28<36:52,  4.58s/it]  1%|▏         | 7/489 [00:32<36:03,  4.49s/it]  2%|▏         | 8/489 [00:37<35:22,  4.41s/it]  2%|▏         | 9/489 [00:41<36:08,  4.52s/it]  2%|▏         | 10/489 [00:47<39:04,  4.89s/it]  2%|▏         | 11/489 [00:53<40:10,  5.04s/it]  2%|▏         | 12/489 [00:59<43:29,  5.47s/it]  3%|▎         | 13/489 [01:04<40:58,  5.16s/it]  3%|▎         | 14/489 [01:08<39:25,  4.98s/it]  3%|▎         | 15/489 [01:13<39:30,  5.00s/it]  3%|▎         | 16/489 [01:18<40:11,  5.10s/it]  3%|▎         | 17/489 [01:26<46:36,  5.93s/it]  4%|▎         | 18/489 [01:31<43:38,  5.56s/it]  4%|▍         | 19/489 [01:36<42:01,  5.36s/it]  4%|▍         | 20/489 [01:41<41:16,  5.28s/it]  4%|▍         | 21/489 [01:51<51:57,  6.66s/it]  4%|▍         | 22/489 [02:01<59:02,  7.59s/it]  5%|▍         | 23/489 [02:09<59:41,  7.68s/it]  5%|▍         | 24/489 [02:16<59:36,  7.69s/it]  5%|▌         | 25/489 [02:21<52:17,  6.76s/it]  5%|▌         | 26/489 [02:25<47:00,  6.09s/it]  6%|▌         | 27/489 [02:32<48:31,  6.30s/it]  6%|▌         | 28/489 [02:37<43:57,  5.72s/it]  6%|▌         | 29/489 [02:43<45:27,  5.93s/it]  6%|▌         | 30/489 [02:54<57:24,  7.50s/it]  6%|▋         | 31/489 [02:59<50:28,  6.61s/it]  7%|▋         | 32/489 [03:06<50:57,  6.69s/it]  7%|▋         | 33/489 [03:10<45:45,  6.02s/it]  7%|▋         | 34/489 [03:17<46:52,  6.18s/it]  7%|▋         | 35/489 [03:22<45:03,  5.96s/it]  7%|▋         | 36/489 [03:27<41:52,  5.55s/it]  8%|▊         | 37/489 [03:35<47:53,  6.36s/it]  8%|▊         | 38/489 [03:44<53:15,  7.08s/it]  8%|▊         | 39/489 [03:55<1:02:58,  8.40s/it]  8%|▊         | 39/489 [03:57<45:38,  6.09s/it]  
+Traceback (most recent call last):
+  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/gemini.py", line 40, in <module>
+    response = get_response('gemini-pro', prompt)
+  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/helper.py", line 97, in get_response
+    model = genai.GenerativeModel(model_name)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/generativeai/generative_models.py", line 248, in generate_content
+    response = self._client.generate_content(request)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/client.py", line 566, in generate_content
+    response = rpc(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/gapic_v1/method.py", line 131, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 293, in retry_wrapped_func
+    return retry_target(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 153, in retry_target
+    _retry_error_helper(
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_base.py", line 212, in _retry_error_helper
+    raise final_exc from source_exc
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/retry/retry_unary.py", line 144, in retry_target
+    result = target()
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/timeout.py", line 120, in func_with_timeout
+    return func(*args, **kwargs)
+  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/google/api_core/grpc_helpers.py", line 78, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.InternalServerError: 500 An internal error has occurred. Please retry or report in https://developers.generativeai.google/guide/troubleshooting
