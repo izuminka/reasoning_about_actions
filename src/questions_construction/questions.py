@@ -391,52 +391,6 @@ class ObjectTrackingQuestions(QuestionGenerator):
         nl_fluents = self.nl_fluents(chosen_fluents)
         return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {nl_fluents}?"
 
-    def question_3_4_helper(self, plan_length, is_pos_fluents=True, timeout=MAX_TIMEOUT):
-        # get a random fluent(var1, var2, ...)
-        # get all fluents such that fluent(X, var2, ...)
-        # return all Xs
-        def nl_fluent_about_objects(chosen_fluent, object_for_fluent):
-            nl_fluent_tokens = self.nl_fluents([chosen_fluent]).split()
-            if object_for_fluent not in nl_fluent_tokens:
-                raise
-            obj_ind = nl_fluent_tokens.index(object_for_fluent)
-            object_type = self.object_type_by_object_name[object_for_fluent]
-
-            nl_fluents_about_object = deepcopy(nl_fluent_tokens[:obj_ind])
-            # make the object type plural
-            if object_type in nl_fluents_about_object:
-                nl_fluents_about_object[nl_fluents_about_object.index(object_type)] = object_type + 's'
-            else:
-                nl_fluents_about_object.append(object_type + 's')
-
-            # lemmatize the verb if it exists
-            verb_after_object_index = obj_ind + 1
-            if verb_after_object_index < len(nl_fluent_tokens):
-                verb_after_object = nl_fluent_tokens[verb_after_object_index]
-                nl_fluents_about_object.append(
-                    lemmatizer.lemmatize(verb_after_object, wordnet.VERB).replace('be', 'are'))
-                # add anything that's after the verb
-                if verb_after_object_index + 1 < len(nl_fluent_tokens):
-                    nl_fluents_about_object += nl_fluent_tokens[verb_after_object_index + 1:]
-            return ' '.join(nl_fluents_about_object)  # remove extra spaces
-
-        if is_pos_fluents:
-            fluents = self.pos_fluents_given_plan[plan_length]
-        else:
-            fluents = self.neg_fluents_given_plan[plan_length]
-        chosen_fluent = random.choice(self.select_fluents_with_vars(fluents))
-        object_for_fluent = extract_variables(chosen_fluent)[0]
-        pattern = chosen_fluent.replace('(', '\(').replace(')', '\)').replace(object_for_fluent, '([^)]*)')
-        objects_for_fluent = []
-        for f in fluents:
-            match = re.search(pattern, f)
-            if match:
-                obj = match.group(1)
-                objects_for_fluent.append(obj)
-        question = f"{self.nl_question_prefix(plan_length)} what {nl_fluent_about_objects(chosen_fluent, object_for_fluent)}? {NONE_STATEMENT}."
-        answer = asp_to_nl(sorted(objects_for_fluent), lambda x: x)
-        return question, answer
-
     def question_1(self, plan_length):
         is_pos_fluent_question = True
         is_answer_true = random.choice([True, False])
@@ -449,15 +403,20 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true)
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
 
+    def question_3(self, plan_length):
+        random_object_type = random.choice(list(self.objects_by_type.keys()))
+        question = f"{self.nl_question_prefix(plan_length)} list all objects associated with type {random_object_type}. {NONE_STATEMENT}."
+        answer = self.objects_by_type[random_object_type]
+        nl_answer = asp_to_nl(sorted(answer), lambda x: x)
+        self.qa_data_object(question, nl_answer, FREE_ANSWER, self.question_3.__name__, plan_length)
 
-# TODO FIX NL
-# def question_3(self, plan_length):
-#     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=True)
-#     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
-#
-# def question_4(self, plan_length):
-#     question, answer = self.question_3_4_helper(plan_length, is_pos_fluents=False)
-#     return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
+    def question_4(self, plan_length):
+        random_object_type = random.choice(list(self.objects_by_type.keys()))
+        random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])-1))
+        nl_random_objects = asp_to_nl(random_objects, lambda x: x)
+        question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
+        self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_4.__name__, plan_length)
+
 
 
 class FluentTrackingQuestions(QuestionGenerator):
