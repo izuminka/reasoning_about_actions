@@ -69,18 +69,18 @@ class Blocksworld(BaseDomain):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
-            return f'pickup block {block_name}'
+            return f'block {block_name} is picked up'
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
-            return f'put down block {block_name}'
+            return f'block {block_name} is put down'
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'unstack block {b1} from block {b2}'
+            return f'block {b1} is unstacked from block {b2}'
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'stack block {b1} on block {b2}'
+            return f'block {b1} is stacked on top block {b2}'
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
     def fluent_to_hallucinated_natural_language(self, fluent):
         # under
@@ -127,18 +127,18 @@ class Blocksworld(BaseDomain):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
-            return f'lift block {block_name}'  # lift
+            return f'block {block_name} is lifted'  # lift
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
-            return f'lower block {block_name}'  # lower
+            return f'block {block_name} is lowered'  # lower
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'remove block {b1} from block {b2}'  # remove
+            return f'block {b1} is removed from from block {b2}'  # remove
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'load block {b1} from block {b2}'  # load
+            return f'block {b1} is crashed from block {b2}'  # crashed
         else:
-            raise ('action is not defined')
+            raise 'action is not defined'
 
 
 class Depots(BaseDomain):
@@ -346,10 +346,10 @@ class Driverlog(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return f'load {package} in {truck} at location {location}'
+            return f'{package} is loaded in {truck} at location {location}'
         elif action.startswith('unload_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return f'unload {package} from {truck} at location {location}'
+            return f'{package} is unload from {truck} at location {location}'
         elif action.startswith('board_truck('):
             driver, truck, location = self.extract_multi_variable(action)
             return f'{driver} boards {truck} at location {location}'
@@ -420,10 +420,10 @@ class Driverlog(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return f'return {package} in {truck} at location {location}' # return
+            return f'{package} is returned at location {location}' # return
         elif action.startswith('unload_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return f'deliver {package} from {truck} at location {location}' # deliver
+            return f'{package} is delivered at location {location}' # deliver
         elif action.startswith('board_truck('):
             driver, truck, location = self.extract_multi_variable(action)
             return f'{driver} inspects {truck} at location {location}' # inspect
@@ -1191,7 +1191,7 @@ class Npuzzle(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
-            return f'tile {tile} moves from position {source} to position {destination}'
+            return f'tile {tile} is moved from position {source} to position {destination}'
         else:
             raise 'action is not defined'
 
@@ -1223,7 +1223,7 @@ class Npuzzle(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
-            return f'tile {tile} slides diagonally from position {source} to position {destination}' # slides diagonally
+            return f'tile {tile} is slid diagonally from position {source} to position {destination}' # slides diagonally
         else:
             raise 'action is not defined'
 
