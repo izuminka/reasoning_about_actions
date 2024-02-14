@@ -55,7 +55,6 @@ QUESTION_MULTIPLICITY = 3
 
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
-
 lemmatizer = WordNetLemmatizer()
 
 
@@ -656,20 +655,7 @@ class EffectsQuestions(QuestionGenerator):
         else:
             return f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
-    def qa_3_4_helper(self, plan_length, is_positive_fluents_question, question_name):
-        action = self.given_plan_sequence[plan_length]
-        if is_positive_fluents_question:
-            fluents_type = POSITIVE_FLUENTS
-            fluents = self.pos_fluents_given_plan[plan_length + 1]
-        else:
-            fluents_type = NEGATIVE_FLUENTS
-            fluents = self.neg_fluents_given_plan[plan_length + 1]
-        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, what would be all of the {fluents_type}? {NONE_STATEMENT}."
-        return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER, question_name, plan_length)
-
-    def question_1(self, plan_length):
-        is_answer_true = random.choice([True, False])
-
+    def qa_1_2_helper(self, plan_length, is_answer_true, question_name):
         action = self.given_plan_sequence[plan_length]
         fluents_current_state = set(self.pos_fluents_given_plan[plan_length]).union(set(self.neg_fluents_given_plan[plan_length]))
         fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1]).union(set(self.neg_fluents_given_plan[plan_length + 1]))
@@ -684,13 +670,25 @@ class EffectsQuestions(QuestionGenerator):
 
         fluents = list(fluents)
         random.shuffle(fluents)
-        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, then is it {TRUE_OR_FALSE} that {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
+        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {self.nl_fluents(fluents)}?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    # def question_2(self, plan_length):
-    #     is_positive_fluents = False
-    #     is_answer_true = random.choice([True, False])
-    #     return self.qa_1_2_helper(plan_length, is_positive_fluents, is_answer_true, self.question_2.__name__)
+    def qa_3_4_helper(self, plan_length, is_positive_fluents_question, question_name):
+        action = self.given_plan_sequence[plan_length]
+        if is_positive_fluents_question:
+            fluents_type = POSITIVE_FLUENTS
+            fluents = self.pos_fluents_given_plan[plan_length + 1]
+        else:
+            fluents_type = NEGATIVE_FLUENTS
+            fluents = self.neg_fluents_given_plan[plan_length + 1]
+        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, what would be all of the {fluents_type}? {NONE_STATEMENT}."
+        return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER, question_name, plan_length)
+
+    def question_1(self, plan_length):
+        return self.qa_1_2_helper(plan_length, True, self.question_1.__name__)
+
+    def question_2(self, plan_length):
+        return self.qa_1_2_helper(plan_length, False, self.question_2.__name__)
 
     def question_3(self, plan_length):
         is_positive_fluents_question = True
