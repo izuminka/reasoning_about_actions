@@ -1,26 +1,0 @@
-
-=====================================================================
-This module is intended solely for building or source activating user
-python environments, i.e.,
-
-    mamba create -n myenv -c conda-forge
-
-or
-
-    source activate myenv
-
-To list available environments, run:
-
-    mamba info --envs
-
-See our docs: https://links.asu.edu/solpy
-
-Any other use is NOT TESTED.
-=====================================================================
-
-  
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:05<00:05,  5.16s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:06<00:00,  3.20s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:06<00:00,  3.50s/it]
-Starting grippers/Instance_3.jsonl with zero_shot
-  0%|          | 0/489 [00:00<?, ?it/s]  0%|          | 1/489 [00:03<28:18,  3.48s/it]  0%|          | 2/489 [00:08<34:02,  4.19s/it]  1%|          | 3/489 [00:12<32:40,  4.03s/it]  1%|          | 4/489 [00:16<32:50,  4.06s/it]  1%|          | 5/489 [00:20<33:54,  4.20s/it]  1%|          | 6/489 [00:24<32:54,  4.09s/it]  1%|▏         | 7/489 [00:30<38:44,  4.82s/it]  2%|▏         | 8/489 [00:36<40:31,  5.06s/it]  2%|▏         | 9/489 [00:42<43:16,  5.41s/it]  2%|▏         | 10/489 [00:49<46:17,  5.80s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/base.py:1123: UserWarning: You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
-  warnings.warn(
-  2%|▏         | 11/489 [00:56<50:08,  6.29s/it]  2%|▏         | 12/489 [01:02<49:08,  6.18s/it]  3%|▎         | 13/489 [01:11<55:18,  6.97s/it]  3%|▎         | 14/489 [01:27<1:16:40,  9.69s/it]  3%|▎         | 15/489 [01:31<1:02:58,  7.97s/it]  3%|▎         | 16/489 [01:39<1:03:50,  8.10s/it]  3%|▎         | 17/489 [01:46<59:45,  7.60s/it]    4%|▎         | 18/489 [01:59<1:12:11,  9.20s/it]  4%|▍         | 19/489 [02:08<1:13:24,  9.37s/it]  4%|▍         | 20/489 [02:17<1:10:51,  9.07s/it]  4%|▍         | 21/489 [02:20<58:23,  7.49s/it]    4%|▍         | 22/489 [02:25<52:26,  6.74s/it]  5%|▍         | 23/489 [02:32<51:44,  6.66s/it]  5%|▍         | 24/489 [02:38<51:07,  6.60s/it]  5%|▌         | 25/489 [02:42<44:59,  5.82s/it]  5%|▌         | 26/489 [03:00<1:13:05,  9.47s/it]  6%|▌         | 27/489 [03:09<1:10:42,  9.18s/it]  6%|▌         | 28/489 [03:21<1:16:59, 10.02s/it]  6%|▌         | 29/489 [03:28<1:11:07,  9.28s/it]  6%|▌         | 30/489 [03:33<59:12,  7.74s/it]    6%|▋         | 31/489 [03:37<50:39,  6.64s/it]  7%|▋         | 32/489 [03:40<42:12,  5.54s/it]  7%|▋         | 33/489 [03:42<35:44,  4.70s/it]  7%|▋         | 34/489 [03:46<32:17,  4.26s/it]  7%|▋         | 35/489 [03:49<30:41,  4.06s/it]

@@ -1,125 +1,0 @@
-
-
-=====================================================================
-This module is intended solely for building or source activating user
-python environments, i.e.,
-
-    mamba create -n myenv -c conda-forge
-
-or
-
-    source activate myenv
-
-To list available environments, run:
-
-    mamba info --envs
-
-See our docs: https://links.asu.edu/solpy
-
-Any other use is NOT TESTED.
-=====================================================================
-
-  
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:05<00:05,  5.44s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:07<00:00,  3.34s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:07<00:00,  3.65s/it]
-Starting depots/Instance_3.jsonl with few_shot_cot
-  0%|          | 0/489 [00:00<?, ?it/s]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4362, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  0%|          | 1/489 [00:05<41:01,  5.04s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4359, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  0%|          | 2/489 [00:09<37:59,  4.68s/it]  1%|          | 3/489 [00:13<36:37,  4.52s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4991, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  1%|          | 4/489 [00:18<38:28,  4.76s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4881, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  1%|          | 5/489 [00:23<38:47,  4.81s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4858, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  1%|          | 6/489 [00:28<39:03,  4.85s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 5016, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  1%|▏         | 7/489 [00:33<39:31,  4.92s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 5007, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  2%|▏         | 8/489 [00:38<40:01,  4.99s/it]  2%|▏         | 9/489 [00:44<40:06,  5.01s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 5648, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  2%|▏         | 10/489 [00:49<42:19,  5.30s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/base.py:1123: UserWarning: You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
-  warnings.warn(
-/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 5660, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  2%|▏         | 11/489 [00:55<43:50,  5.50s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 5661, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  2%|▏         | 12/489 [01:01<44:37,  5.61s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 5857, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  3%|▎         | 13/489 [01:07<45:56,  5.79s/it]  3%|▎         | 14/489 [01:14<46:37,  5.89s/it]  3%|▎         | 15/489 [01:20<47:16,  5.98s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 6413, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  3%|▎         | 16/489 [01:27<50:08,  6.36s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 6440, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  3%|▎         | 17/489 [01:34<51:18,  6.52s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 6471, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  4%|▎         | 18/489 [01:41<52:20,  6.67s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 6696, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  4%|▍         | 19/489 [01:48<53:53,  6.88s/it]  4%|▍         | 20/489 [01:56<54:37,  6.99s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 6702, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  4%|▍         | 21/489 [02:04<57:30,  7.37s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7426, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  4%|▍         | 22/489 [02:12<59:36,  7.66s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7223, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  5%|▍         | 23/489 [02:20<1:00:26,  7.78s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7271, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  5%|▍         | 24/489 [02:28<1:00:43,  7.83s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7383, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  5%|▌         | 25/489 [02:37<1:01:45,  7.99s/it]  5%|▌         | 26/489 [02:45<1:02:28,  8.10s/it]  6%|▌         | 27/489 [02:53<1:02:34,  8.13s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7837, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  6%|▌         | 28/489 [03:02<1:04:27,  8.39s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 8040, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  6%|▌         | 29/489 [03:12<1:07:03,  8.75s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7854, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  6%|▌         | 30/489 [03:21<1:07:27,  8.82s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4293, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  6%|▋         | 31/489 [03:25<57:09,  7.49s/it]    7%|▋         | 32/489 [03:30<50:13,  6.59s/it]  7%|▋         | 33/489 [03:34<45:05,  5.93s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4302, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  7%|▋         | 34/489 [03:38<41:44,  5.50s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 4299, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  7%|▋         | 35/489 [03:43<39:03,  5.16s/it]  7%|▋         | 36/489 [03:47<37:32,  4.97s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7154, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  8%|▊         | 37/489 [03:55<44:21,  5.89s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7187, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  8%|▊         | 38/489 [04:03<48:51,  6.50s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 7165, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  8%|▊         | 39/489 [04:11<52:11,  6.96s/it]/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py:1141: UserWarning: Input length of input_ids is 22624, but `max_length` is set to 4096. This can lead to unexpected behavior. You should consider increasing `max_new_tokens`.
-  warnings.warn(
-  8%|▊         | 39/489 [04:12<48:36,  6.48s/it]
-Traceback (most recent call last):
-  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/llama.py", line 43, in <module>
-    response = get_response('llama', prompt, generate_text)
-  File "/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions/src/evaluation/prompting/helper.py", line 126, in get_response
-    return pipeline_obj(f"<s>[INST] <<SYS>>\n{LLAMA_SYSTEM_PROMPT}\n<</SYS>>\n\n{prompt} [/INST]")[0]['generated_text'].split('[/INST]')[1].strip()
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 219, in __call__
-    return super().__call__(text_inputs, **kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1162, in __call__
-    return self.run_single(inputs, preprocess_params, forward_params, postprocess_params)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1169, in run_single
-    model_outputs = self.forward(model_inputs, **forward_params)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1068, in forward
-    model_outputs = self._forward(model_inputs, **forward_params)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 295, in _forward
-    generated_sequence = self.model.generate(input_ids=input_ids, attention_mask=attention_mask, **generate_kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
-    return func(*args, **kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py", line 1525, in generate
-    return self.sample(
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/generation/utils.py", line 2622, in sample
-    outputs = self(
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
-    return forward_call(*input, **kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 1183, in forward
-    outputs = self.model(
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
-    return forward_call(*input, **kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 1070, in forward
-    layer_outputs = decoder_layer(
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
-    return forward_call(*input, **kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 798, in forward
-    hidden_states, self_attn_weights, present_key_value = self.self_attn(
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
-    return forward_call(*input, **kwargs)
-  File "/home/dhanda/.conda/envs/reasoning_about_actions/lib/python3.10/site-packages/transformers/models/llama/modeling_llama.py", line 413, in forward
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 61.02 GiB (GPU 0; 79.20 GiB total capacity; 29.00 GiB already allocated; 42.69 GiB free; 35.27 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
