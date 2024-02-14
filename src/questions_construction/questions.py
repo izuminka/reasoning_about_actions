@@ -656,36 +656,6 @@ class EffectsQuestions(QuestionGenerator):
         else:
             return f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
-    def qa_1_2_helper(self, plan_length, is_positive_fluents, is_answer_true, question_name):
-        action = self.given_plan_sequence[plan_length]
-
-        if is_positive_fluents:
-            fluents_all = self.pos_fluents_given_plan
-            fluents_current_state = set(self.pos_fluents_given_plan[plan_length])
-            fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1])
-        else:
-            fluents_all = self.neg_fluents_given_plan
-            fluents_current_state = set(self.neg_fluents_given_plan[plan_length])
-            fluents_next_state = set(self.neg_fluents_given_plan[plan_length + 1])
-
-        fluents_new_minus_old = fluents_next_state - fluents_current_state
-        if not fluents_new_minus_old and not is_positive_fluents:  # sometimes in the negative fluents case there are no new negative fluents example: Miconic action: board
-            print(f"there are no new negative fluents for action {action} at plan length {plan_length}")
-            return None
-
-        if is_answer_true:
-            fluents = fluents_new_minus_old
-        else:
-            corrupted_fluents = set([l for ls in fluents_all for l in ls]) - fluents_new_minus_old
-            fluents = self.corrupted_not_corrupted_mix(list(fluents_new_minus_old), list(corrupted_fluents))
-            fluents = random.sample(fluents, len(fluents_new_minus_old))
-
-        fluents = list(fluents)
-        random.shuffle(fluents)
-        nl_fluents = self.nl_fluents(fluents)
-        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, would it be {TRUE_OR_FALSE} that {nl_fluents}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
-
     def qa_3_4_helper(self, plan_length, is_positive_fluents_question, question_name):
         action = self.given_plan_sequence[plan_length]
         if is_positive_fluents_question:
@@ -698,14 +668,29 @@ class EffectsQuestions(QuestionGenerator):
         return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER, question_name, plan_length)
 
     def question_1(self, plan_length):
-        is_positive_fluents = True
         is_answer_true = random.choice([True, False])
-        return self.qa_1_2_helper(plan_length, is_positive_fluents, is_answer_true, self.question_1.__name__)
 
-    def question_2(self, plan_length):
-        is_positive_fluents = False
-        is_answer_true = random.choice([True, False])
-        return self.qa_1_2_helper(plan_length, is_positive_fluents, is_answer_true, self.question_2.__name__)
+        action = self.given_plan_sequence[plan_length]
+        fluents_current_state = set(self.pos_fluents_given_plan[plan_length]).union(set(self.neg_fluents_given_plan[plan_length]))
+        fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1]).union(set(self.neg_fluents_given_plan[plan_length + 1]))
+        fluents_new_minus_old = fluents_next_state - fluents_current_state
+        if is_answer_true:
+            fluents = fluents_new_minus_old
+        else:
+            fluents_all = self.pos_fluents_given_plan + self.neg_fluents_given_plan
+            corrupted_fluents = set([l for ls in fluents_all for l in ls]) - fluents_new_minus_old
+            fluents = self.corrupted_not_corrupted_mix(list(fluents_new_minus_old), list(corrupted_fluents))
+            fluents = random.sample(fluents, len(fluents_new_minus_old))
+
+        fluents = list(fluents)
+        random.shuffle(fluents)
+        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, then is it {TRUE_OR_FALSE} that {self.nl_fluents(fluents)}?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
+
+    # def question_2(self, plan_length):
+    #     is_positive_fluents = False
+    #     is_answer_true = random.choice([True, False])
+    #     return self.qa_1_2_helper(plan_length, is_positive_fluents, is_answer_true, self.question_2.__name__)
 
     def question_3(self, plan_length):
         is_positive_fluents_question = True
