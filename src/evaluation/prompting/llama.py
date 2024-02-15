@@ -6,10 +6,10 @@ import argparse
 
 # START_IDX = 1    # Index from where to start getting the response (1-index)
 # PROMPT_TECHNIQUE = 'zero_shot'    # cot, few_shot, self_consistency, zero_shot, few_shot_cot
-MODEL_SIZE = '13b'
+MODEL_SIZE = '7b'
 MODEL_NAME = f'meta-llama/Llama-2-{MODEL_SIZE}-chat-hf'
-DATA_FILE_PATH = '../../../data/data_files'
-OUTPUT_DIR = f'../../../results/llama-2-{MODEL_SIZE}/'
+DATA_FILE_PATH = '../../../data/data_files_ramifications'
+OUTPUT_DIR = f'../../../results_ramifications/llama-2-{MODEL_SIZE}/'
 # FEW_SHOT_EXAMPLES = 9
 
 if __name__ == '__main__':
@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     OUTPUT_DIR = os.path.join(OUTPUT_DIR, args.prompt)
     file_path = os.path.join(DATA_FILE_PATH, args.prompt, args.domain+'.jsonl')
-    generate_text = pipeline('text-generation', model=MODEL_NAME, device_map='auto', max_length=4096)
+    generate_text = pipeline('text-generation', model=MODEL_NAME, device_map='auto', max_length=4096, truncation=True)
 
     # Reading the instance
     with open(file_path, 'r') as f:
