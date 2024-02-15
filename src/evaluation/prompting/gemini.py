@@ -7,7 +7,7 @@ import argparse
 # PROMPT_TECHNIQUE = 'zero_shot'    # cot, few_shot, self_consistency, zero_shot, few_shot_cot
 
 DATA_FILE_PATH = '../../../data/data_files_ramifications'
-OUTPUT_DIR = '../../../results_ramification/gemini/'
+OUTPUT_DIR = '../../../results_ramifications/gemini/'
 FEW_SHOT_EXAMPLES = 4
 
 if __name__ == '__main__':

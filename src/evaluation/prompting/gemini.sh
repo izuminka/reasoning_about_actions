@@ -21,7 +21,7 @@ for prompt in "${PROMPTS[@]}"; do
         echo "$PYTHON_CMD -d $domain -p $prompt" >> $sbatch_file_name
     done
     sbatch $sbatch_file_name
-    echo "Successfully submitted ${domain} ${prompt}"
+    echo "Successfully submitted ${prompt}"
     rm $sbatch_file_name
 done
 # done
