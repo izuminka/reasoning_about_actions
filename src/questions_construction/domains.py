@@ -761,9 +761,19 @@ class Grippers(BaseDomain):
     @staticmethod
     def domain_description_ram():
         return (
-            "A robot can only move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. "
-            "Moving from a current position to the next position causes the robot to be present at the next position. "
-            "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place.")
+            "A robot can move from a specified room if it is in that room. "
+            "Moving the robot causes  it to be in the destination room. "
+
+            "A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. "
+            "Picking up the object causes the robot to carry the object via its gripper. "
+
+            "Dropping the object in a specified room is executable if and only if the robot is carrying the object using its gripper, and the robot is in the room. "
+            "Dropping the object causes the robot to not carry the object. "
+
+            "A robot’s gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
+            "If the robot is carrying the object then the object is not in the room. "
+            "If the robot is not carrying the object then the object a in the room. "
+            "Robot can only be at one place. ")
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at_robby('):
@@ -1007,8 +1017,8 @@ class Miconic(BaseDomain):
             "Going up makes the lift on the destination floor. A lift can go down from one floor to another if and only if it is currently on a floor and the source floor is above the destination floor. "
             "Going down makes the lift on the destination floor. "
 
-            "A lift can only be on one floor at a time "
-            "If the passenger is served, then the passenger is not boarded ")
+            "A lift can only be on one floor at a time. "
+            "If the passenger is served, then the passenger is not boarded.")
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('origin('):
