@@ -15,13 +15,16 @@ from src.questions_construction.questions import *
 
 
 class Generate_prompting_template:
-    def __init__(self,root_directory,domain_class,instance_id,domain_folder_name,unique_instance_dict):
+    def __init__(self,root_directory,domain_class,instance_id,domain_folder_name,unique_instance_dict, is_ramifications):
         self.root_directory = root_directory
         self.domain_class = domain_class
         self.domain_folder_name = domain_folder_name
         self.instance_id = instance_id
         self.jsonl_instance_path = self.root_directory + self.domain_folder_name + 'Instance_' + str(self.instance_id) + '.jsonl'
-        self.domain_description = self.domain_class.domain_description_without_ram
+        if is_ramifications:
+            self.domain_description = self.domain_class.domain_description_without_ram
+        else:
+            self.domain_description = self.domain_class.domain_description_with_ram
         self.unique_instance_dict = unique_instance_dict
 
     def zero_shot_prompt(self):
