@@ -22,9 +22,9 @@ class Generate_prompting_template:
         self.instance_id = instance_id
         self.jsonl_instance_path = self.root_directory + self.domain_folder_name + 'Instance_' + str(self.instance_id) + '.jsonl'
         if is_ramifications:
-            self.domain_description = self.domain_class.domain_description_without_ram
+            self.domain_description = self.domain_class.domain_description_ram
         else:
-            self.domain_description = self.domain_class.domain_description_with_ram
+            self.domain_description = self.domain_class.domain_description_without_ram
         self.unique_instance_dict = unique_instance_dict
 
     def zero_shot_prompt(self):
@@ -33,11 +33,12 @@ class Generate_prompting_template:
             data = f.readlines()
         question_jsonl = [json.loads(x) for x in data]
         for dictionary_item in question_jsonl:
-            if dictionary_item['id'] == self.unique_instance_dict['id']:
+            # if dictionary_item['id'] == self.unique_instance_dict['id']:
+            if dictionary_item['id']:
                 initial_state_nl = asp_to_nl(dictionary_item['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
                 if len(dictionary_item.keys()) == 0:
                     continue
-                dictionary_item['zero_shot_model_input'] = f'{self.domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
+                dictionary_item['prompt'] = f'{self.domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
                 results.append(dictionary_item)
         return results
     
