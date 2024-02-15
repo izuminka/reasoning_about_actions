@@ -33,8 +33,8 @@ class Generate_prompting_template:
             data = f.readlines()
         question_jsonl = [json.loads(x) for x in data]
         for dictionary_item in question_jsonl:
-            # if dictionary_item['id'] == self.unique_instance_dict['id']:
-            if dictionary_item['id']:
+            if dictionary_item['id'] == self.unique_instance_dict['id']:
+            # if dictionary_item['id']:
                 initial_state_nl = asp_to_nl(dictionary_item['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
                 if len(dictionary_item.keys()) == 0:
                     continue
