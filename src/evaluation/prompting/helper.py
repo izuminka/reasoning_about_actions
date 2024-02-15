@@ -124,5 +124,9 @@ def get_response(model_name, prompt, pipeline_obj=None):
         return response.choices[0].message.content
     elif model_name == 'llama':
         return pipeline_obj(f"<s>[INST] <<SYS>>\n{LLAMA_SYSTEM_PROMPT}\n<</SYS>>\n\n{prompt} [/INST]")[0]['generated_text'].split('[/INST]')[1].strip()
+    elif model_name == 'mistral':
+        output = pipeline_obj(prompt, do_sample=False)
+        start_index = output[0]['generated_text'].find('[ANSWER]:\n')
+        return output[0]['generated_text'][start_index:]
     else:
         raise Exception(f'{model_name} is an invalid model')
