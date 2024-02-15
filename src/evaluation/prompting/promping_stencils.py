@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import sys
 import sys
-sys.path.append('/data_4/data/shri/reasoning_about_actions/')
-# sys.path.append('/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions')
+# sys.path.append('/data_4/data/shri/reasoning_about_actions/')
+sys.path.append('/home/dhanda/projects/reasoning_about_actions/reasoning_about_actions')
 from src.common import *
 from src.questions_construction.domains import *
 from src.questions_construction.questions import *

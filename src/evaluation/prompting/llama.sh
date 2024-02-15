@@ -1,5 +1,5 @@
 DOMAINS=('blocksworld' 'depots' 'driverlog' 'goldminer' 'grippers' 'logistics' 'miconic' 'mystery' 'npuzzle' 'satellite' 'spanner' 'visitall' 'zenotravel')
-PROMPTS=('zero_shot' 'few_shot' 'few_shot_cot')
+PROMPTS=('zero_shot_data' 'few_shot_4' 'few_shot_4_cot')
 
 PYTHON_CMD='python llama.py'
 
