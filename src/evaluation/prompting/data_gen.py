@@ -110,9 +110,9 @@ from src.questions_construction.domains import *
 #     print(k,v)
 
 
-jsonl_instance_path = '/data_4/data/shri/reasoning_about_actions/data/data_files/few_shot_4_cot/blocksworld.jsonl'
-domian_name = 'blocksworld'
-domain_class = Blocksworld()
+jsonl_instance_path = '/data_4/data/shri/reasoning_about_actions/data/data_files_ramifications/few_shot_4_cot/mystery.jsonl'
+domian_name = 'mystery'
+domain_class = Mystery()
 #get full path
 with open(jsonl_instance_path, 'r') as f:
     data = f.readlines()
@@ -120,6 +120,7 @@ question_jsonl = [json.loads(x) for x in data]
 data = []
 for dictionary_item in question_jsonl:
     dictionary_item['prompt'] = domain_class.domain_description_ram+'\n\n'+dictionary_item['prompt'][dictionary_item['prompt'].index('[EXAMPLE_1]:'):]
+    # dictionary_item['prompt'] = domain_class.domain_description_ram+dictionary_item['prompt'][dictionary_item['prompt'].index('\n\n[INITIAL CONDITIONS]'):]    
     data.append(dictionary_item)
 with open(f'/data_4/data/shri/reasoning_about_actions/data/data_files_ramifications/few_shot_4_cot/{domian_name}.jsonl', 'w') as f:
     for item in data:
