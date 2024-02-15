@@ -770,7 +770,7 @@ class Grippers(BaseDomain):
             "Dropping the object in a specified room is executable if and only if the robot is carrying the object using its gripper, and the robot is in the room. "
             "Dropping the object causes the robot to not carry the object. "
 
-            "A robot’s gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
+            "A robot's gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
             "If the robot is carrying the object then the object is not in the room. "
             "If the robot is not carrying the object then the object a in the room. "
             "Robot can only be at one place. ")
@@ -1155,19 +1155,19 @@ class Mystery(BaseDomain):
     @staticmethod
     def domain_description_ram():
         return (
-            'Moving a vehicle from source location to destination location is executable if the vehicle is at source location, there is a connection between the source location and destination location, and the location’s fuel level has some neighboring level. '
-            "Moving a vehicle from source location to destination location causes the vehicle to be present at the destination location and decreases the location’s fuel level to its next level. "
+            "Moving a vehicle from source location to destination location is executable if the vehicle is at source location, there is a connection between the source location and destination location, and the location's fuel level has some neighboring level. "
+            "Moving a vehicle from source location to destination location causes the vehicle to be present at the destination location and decreases the location's fuel level to its next level. "
 
             "A cargo can be loaded onto a vehicle if the cargo and the vehicle are at the same location and the vehicle has some space. "
-            "When a cargo is loaded into the vehicle, it is in the vehicle. It also decreases the vehicle’s space to its next level. "
+            "When a cargo is loaded into the vehicle, it is in the vehicle. It also decreases the vehicle's space to its next level. "
 
             "A cargo can be unloaded from a vehicle if the cargo is in the vehicle. "
-            "When a cargo is unloaded from the vehicle, it is at the same location as that of the vehicle. It also increases the vehicle’s space to its next higher level. "
+            "When a cargo is unloaded from the vehicle, it is at the same location as that of the vehicle. It also increases the vehicle's space to its next higher level. "
 
             "Vehicle can only be at one location at a time. "
             "Cargo can only be at one place at a time. "
-            "The location’s fuel level is unique. "
-            "The vehicle’s amount of space is unique. ")
+            "The location's fuel level is unique. "
+            "The vehicle's amount of space is unique. ")
 
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('at('):
@@ -1747,11 +1747,11 @@ class Zenotravel(BaseDomain):
             "Debarking a person in a city is executable if the person is in the aircraft and the aircraft is present in the city. "
             "Debarking a person in the city causes the person to be present in the city. "
 
-            "Flying an aircraft from a city to another city is executable if the aircraft is present in the city and has some initial fuel level that is more than the lowest possible fuel level."
-            "Flying the aircraft from a city to a destination city causes the aircraft to be present in the destination city..It also decreases the fuel level of the aircraft to the next level. "
+            "Flying an aircraft from a city to another city is executable if the aircraft is present in the city and has some initial fuel level that is more than the lowest possible fuel level. "
+            "Flying the aircraft from a city to a destination city causes the aircraft to be present in the destination city. It also decreases the fuel level of the aircraft to the next level. "
 
             "Zooming the aircraft from a city to a destination city is executable if the aircraft is present in the city and has some initial fuel level that is at least two levels up compared to the lowest possible fuel level. "
-            "It causes the aircraft to be present in the destination city.. It also decreases the fuel level of the aircraft two levels down. "
+            "It causes the aircraft to be present in the destination city. It also decreases the fuel level of the aircraft two levels down. "
 
             "Refueling the aircraft in a city is executable if the aircraft is in the city. It changes the current fuel level to its next level. "
 
