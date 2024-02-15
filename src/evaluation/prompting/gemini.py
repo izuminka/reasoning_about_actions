@@ -6,8 +6,8 @@ import argparse
 # START_IDX = 1    # Index from where to start getting the response (1-index)
 # PROMPT_TECHNIQUE = 'zero_shot'    # cot, few_shot, self_consistency, zero_shot, few_shot_cot
 
-DATA_FILE_PATH = '../../../data/data_files'
-OUTPUT_DIR = '../../../results/gemini/'
+DATA_FILE_PATH = '../../../data/data_files_ramifications'
+OUTPUT_DIR = '../../../results_ramification/gemini/'
 FEW_SHOT_EXAMPLES = 4
 
 if __name__ == '__main__':
@@ -25,8 +25,8 @@ if __name__ == '__main__':
         data = [json.loads(jline) for jline in f.readlines()]
     with tqdm(total=len(data)) as pbar:
         for idx, ele in enumerate(data):
-            response = get_response('gemini-pro', ele['prompt'])
             # Getting the response
+            response = get_response('gemini-pro', ele['prompt'])
             ele['response'] = response
             # Writing the data
             write_data(ele, OUTPUT_DIR + f'/{args.domain}.jsonl')

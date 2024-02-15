@@ -10,7 +10,7 @@ MODEL_SIZE = '13b'
 MODEL_NAME = f'meta-llama/Llama-2-{MODEL_SIZE}-chat-hf'
 DATA_FILE_PATH = '../../../data/data_files'
 OUTPUT_DIR = f'../../../results/llama-2-{MODEL_SIZE}/'
-FEW_SHOT_EXAMPLES = 9
+# FEW_SHOT_EXAMPLES = 9
 
 if __name__ == '__main__':
     # Getting arguments
