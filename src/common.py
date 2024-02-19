@@ -7,8 +7,9 @@ PROJECT_PATH = os.path.dirname(CODE_PATH)
 DATA_PATH = f'{PROJECT_PATH}/data'
 QUESTIONS_PATH = f'{DATA_PATH}/questions'
 STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
+STATISTICS_PATH = f'{PROJECT_PATH}/stats'
 
-RESULTS_PATH = f'{PROJECT_PATH}/results'
+RESULTS_PATH = f'{PROJECT_PATH}/results' # todo rn to results dir
 
 ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = f'{CODE_PATH}/ASP'
@@ -39,7 +40,15 @@ OUT_OBJ_ANSWER = 'answer'
 FREE_ANSWER = 'free_answer'
 TRUE_FALSE_ANSWER = 'true_false_answer'
 
+# ramifications
+WITH_RAMIFICATIONS = 'with_ramifications'
+WITHOUT_RAMIFICATIONS = 'without_ramifications'
+
 DOMAIN_NAMES = ['blocksworld','depots','driverlog','goldminer','grippers','logistics','miconic','mystery','npuzzle', 'satellite', 'spanner','visitall','zenotravel']
+PROMPT_MODEL_NAMES = ['gemini', 'gpt4', 'llama-7b', 'mistral_7b_instruct']
+PROMPT_EVAL_TYPES = ['few_shot_4', 'few_shot_4_cot', 'zero_shot_data'] #TODO clean up dirs
+
+MODEL_RESPONSE_KEY = 'response'
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
