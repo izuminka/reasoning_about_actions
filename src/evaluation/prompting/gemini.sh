@@ -1,5 +1,5 @@
 DOMAINS=('blocksworld' 'depots' 'driverlog' 'goldminer' 'grippers' 'logistics' 'miconic' 'mystery' 'npuzzle' 'satellite' 'spanner' 'visitall' 'zenotravel')
-PROMPTS=('zero_shot_data')
+PROMPTS=('few_shot_4')
 
 PYTHON_CMD='python gemini.py'
 
