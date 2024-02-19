@@ -7,12 +7,12 @@ from questions_construction.domains import *
 
 # pip install -q -U google-generativeai
 import google.generativeai as genai
-# GEMINI_API_KEY = 'AIzaSyCGKrdLLppJg3aXB-uAsWaSSGXqfhLUpV8'    # My Key (zero_shot)
+GEMINI_API_KEY = 'AIzaSyCGKrdLLppJg3aXB-uAsWaSSGXqfhLUpV8'    # My Key (zero_shot)
 # GEMINI_API_KEY = 'AIzaSyBAVf02zVYCgKxd-DTd9_PKEZMEbV4hons'    # Pavel's Key (few_shot_4)
 # GEMINI_API_KEY = 'AIzaSyByew5dQG7MP2NYZgD_K4gc2qroI9s4y_8'    # Rajeev's Key (goldminer) -- Issues
 # GEMINI_API_KEY = 'AIzaSyByew5dQG7MP2NYZgD_K4gc2qroI9s4y_8'    # Shri's Key (grippers)
 # GEMINI_API_KEY = 'AIzaSyA5ev80w-RFdIeD61Bq23SXomTUDni-S44'    # Aswin's Key (logistics)
-GEMINI_API_KEY = 'AIzaSyBx62LMT9y7mT2UJ_h2htLZQLEseUTtiRE'    # Nayem's Key (few_shot_4_cot)
+# GEMINI_API_KEY = 'AIzaSyBx62LMT9y7mT2UJ_h2htLZQLEseUTtiRE'    # Nayem's Key (few_shot_4_cot)
 # GEMINI_API_KEY = ''    # 's Key (mystery)
 # GEMINI_API_KEY = 'AIzaSyDUhq_5iRBgB9ohEFw20R3mBqweTzt28zA'    # Nemika's Key (npuzzle)
 # GEMINI_API_KEY = 'AIzaSyAEIrcO3WI-0CheJy8_ns_TISBmgMQqhy4'    # Amir's Key (satellite)
