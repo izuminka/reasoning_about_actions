@@ -45,10 +45,24 @@ WITH_RAMIFICATIONS = 'with_ramifications'
 WITHOUT_RAMIFICATIONS = 'without_ramifications'
 
 DOMAIN_NAMES = ['blocksworld','depots','driverlog','goldminer','grippers','logistics','miconic','mystery','npuzzle', 'satellite', 'spanner','visitall','zenotravel']
+ANSWER_RESPONSES = [FREE_ANSWER, TRUE_FALSE_ANSWER]
+RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 PROMPT_MODEL_NAMES = ['gemini', 'gpt4', 'llama-7b', 'mistral_7b_instruct']
-PROMPT_EVAL_TYPES = ['few_shot_4', 'few_shot_4_cot', 'zero_shot_data'] #TODO clean up dirs
+PROMPT_TYPES = ['few_shot_4', 'few_shot_4_cot', 'zero_shot_data'] #TODO clean up dirs
 
 MODEL_RESPONSE_KEY = 'response'
+
+
+# STATS dict keys
+SK_PLAN_LENGTH = OUT_OBJ_PLAN_LENGTH
+SK_CATEGORY = OUT_OBJ_QUESTION_CATEGORY
+SK_RAMIFICATION = 'ramification_type'
+SK_ANSWER_TYPE = OUT_OBJ_ANSWER_TYPE
+SK_MODEL = 'model'
+SK_PROMPT_TYPE = 'prompt_type'
+SK_RESULT = 'result'
+
+
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
