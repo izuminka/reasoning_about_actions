@@ -35,7 +35,6 @@ def gather_data():
             for prompt_type in PROMPT_TYPES:
                 for domain in DOMAIN_NAMES:
                     results_domain_path = f'{results_dir}/{model_name}/{prompt_type}/{domain}.jsonl'
-
                     if not os.path.exists(results_domain_path):
                         print("missing", results_domain_path)
                     else:
