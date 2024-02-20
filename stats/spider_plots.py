@@ -70,7 +70,7 @@ def plot(data, plan_length, data_path):
         legend_title_text=None,
     )
     fig.update_layout(height=600, width=2000) # You can change these values as needed
-    fig.write_image(f"{data_path.split('.')[0]}_{plan_length}.pdf")
+    fig.write_image(f"spider_plots/{data_path.split('.')[0]}_{plan_length}.pdf")
 
 if __name__ == '__main__':
     for plan_length in PLAN_LENGTHS:
