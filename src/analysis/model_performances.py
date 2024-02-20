@@ -141,6 +141,7 @@ class FreeAnswerStats(BaseStats):
     def get_rouge_score(self):
         stats = []
         for d in self.data:
+            # TODO, hande a case when model gives "OUTPUT is TOO LONG"
             scores = ROUGE_SCORER.score(d[OUT_OBJ_ANSWER], d[MODEL_RESPONSE_KEY])
             stats.append(scores[ROUGE_SCORE_TYPE].fmeasure)
         return np.mean(stats)

@@ -47,7 +47,7 @@ WITHOUT_RAMIFICATIONS = 'without_ramifications'
 DOMAIN_NAMES = ['blocksworld','depots','driverlog','goldminer','grippers','logistics','miconic','mystery','npuzzle', 'satellite', 'spanner','visitall','zenotravel']
 ANSWER_RESPONSES = [FREE_ANSWER, TRUE_FALSE_ANSWER]
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
-PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'llama-2-13b', 'mistral_7b_instruct'] # TODO add , 'gpt4', 'llama-2-13b', 'mistral_7b_instruct'
+PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'llama-2-13b', 'mistral_7b_instruct'] # TODO add , 'gpt4'
 PROMPT_TYPES = ['zero_shot_data', 'few_shot_4', 'few_shot_4_cot'] #TODO clean up dirs
 
 MODEL_RESPONSE_KEY = 'response'
