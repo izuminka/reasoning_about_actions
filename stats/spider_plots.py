@@ -8,19 +8,20 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 PLAN_LENGTHS = [1, 5, 10, 15, 19]
+RAMIFICATIONS = ['without_ramifications', 'with_ramifications']
 DATA_PATHS = ['free_answer.jsonl', 'true_false_answer.jsonl']
 
 LINE_WIDTH = 5
 FONT_SIZE = 30
 
-def extract_data(data, model, category):
+def extract_data(data, model, category, ramification):
     scores = []
     for ele in data:
-        if ele['model'] == model and ele['question_category'] == category and ele['result'] and not math.isnan(ele['result']):
+        if ele['result'] and not math.isnan(ele['result']) and ele['model'] == model and ele['question_category'] == category and ele['ramification_type'] == ramification:
             scores.append(ele['result'])
     return sum(scores)/len(scores)
 
-def plot(data, plan_length, data_path):
+def plot(data, plan_length, data_path, ramification):
     categories = set()
     models = set()
     for ele in data:
@@ -39,7 +40,7 @@ def plot(data, plan_length, data_path):
     score = []
     for model in models:
         for category in categories:
-            score.append(extract_data(data, model, category))
+            score.append(extract_data(data, model, category, ramification))
 
     df_score = pd.DataFrame({
         'model' : model_list,
@@ -70,13 +71,14 @@ def plot(data, plan_length, data_path):
         legend_title_text=None,
     )
     fig.update_layout(height=600, width=2000) # You can change these values as needed
-    fig.write_image(f"spider_plots/{data_path.split('.')[0]}_{plan_length}.pdf")
+    fig.write_image(f"spider_plots/{data_path.split('.')[0]}_{plan_length}_{ramification}.pdf")
 
 if __name__ == '__main__':
     for plan_length in PLAN_LENGTHS:
         for data_path in DATA_PATHS:
-            print(f'Plotting for {data_path} with plan length {plan_length}')
-            with open(data_path, 'r') as f:
-                data = [json.loads(ele) for ele in f.readlines()]
-            data = [ele for ele in data if ele['plan_length']==plan_length]
-            plot(data, plan_length, data_path)
+            for ramification in RAMIFICATIONS:
+                print(f'Plotting for {data_path} with plan length {plan_length} and {ramification}')
+                with open(data_path, 'r') as f:
+                    data = [json.loads(ele) for ele in f.readlines()]
+                data = [ele for ele in data if ele['plan_length']==plan_length]
+                plot(data, plan_length, data_path, ramification)
