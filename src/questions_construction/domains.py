@@ -1,5 +1,5 @@
 import re
-
+import random
 
 def strip_action_prefix(action):
     if action.startswith('action_'):
@@ -47,113 +47,234 @@ class Blocksworld(BaseDomain):
     def fluent_to_natural_language(self, fluent):
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return f'block {b1} is on block {b2}'
+            return random.choice([
+                f'block {b1} is on block {b2}',
+                f'block {b1} is on top of block {b2}',
+                f'block {b1} is placed on top of block {b2}'
+            ])
+            # return f'block {b1} is on block {b2}'
         elif fluent.startswith('-on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return f'block {b1} is not on block {b2}'
+            return random.choice([
+                f'block {b1} is not on block {b2}',
+                f'block {b1} is not on top of block {b2}',
+                f'block {b1} is not placed on top of block {b2}'
+            ])
+            # return f'block {b1} is not on block {b2}'
 
         elif fluent.startswith('clear('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is clear'
+            return random.choice([
+                f'block {b} is clear'
+            ])
+            # return f'block {b} is clear'
         elif fluent.startswith('-clear('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not clear'
+            return random.choice([
+                f'block {b} is not clear'
+            ])
+            # return f'block {b} is not clear'
 
         elif fluent.startswith('ontable('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is on the table'
+            return random.choice([
+                f'block {b} is on the table',
+                f'block {b} is located at the table'
+            ])
+            # return f'block {b} is on the table'
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not on the table'
+            return random.choice([
+                f'block {b} is not on the table',
+                f'block {b} is not located at the table'
+            ])
+            # return f'block {b} is not on the table'
 
         elif fluent.startswith('holding('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is being held'
+            return random.choice([
+                f'block {b} is being held',
+                f'the hand is holding the block {b}',
+                f'block {b} is being held by the hand'
+            ])
+            # return f'block {b} is being held'
         elif fluent.startswith('-holding('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not being held'
+            return random.choice([
+                f'block {b} is not being held',
+                f'the hand is not holding the block {b}',
+                f'block {b} is not being held by the hand'
+            ])
+            # return f'block {b} is not being held'
 
         elif fluent.startswith('handempty'):
-            return f'hand is empty'
+            return random.choice([
+                'hand is empty',
+                'hand is not holding anything'
+            ])
+            # return f'hand is empty'
         elif fluent.startswith('-handempty'):
-            return f'hand is not empty'
+            return random.choice([
+                f'hand is not empty',
+                f'hand is holding some block'
+            ])
+            # return f'hand is not empty'
         else:
-            raise ('fluent is not defined')
+            raise Exception('fluent is not defined')
 
     def action_to_natural_language(self, action):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
-            return f'block {block_name} is picked up'
+            return random.choice([
+                f'block {block_name} is picked up',
+                f'block {block_name} is picked up by the hand',
+                f'block {block_name} is picked up from the table'
+            ])
+            # return f'block {block_name} is picked up'
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
-            return f'block {block_name} is put down'
+            return random.choice([
+                f'block {block_name} is put down',
+                f'block {block_name} is put down on the table',
+                f'the hand puts down the block {block_name}'
+            ])
+            # return f'block {block_name} is put down'
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'block {b1} is unstacked from block {b2}'
+            return random.choice([
+                f'block {b1} is unstacked from block {b2}',
+                f'block {b1} is unstacked from top of block {b2}',
+                f'from top of block {b2}, block {b1} is unstacked'
+            ])
+            # return f'block {b1} is unstacked from block {b2}'
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'block {b1} is stacked on top block {b2}'
+            return random.choice([
+                f'block {b1} is stacked on top of block {b2}',
+                f'on top of block {b2}, block {b1} is stacked'
+            ])
+            # return f'block {b1} is stacked on top block {b2}'
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language(self, fluent):
         # under
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return f'block {b1} is under block {b2}'
+            return random.choice([
+                f'block {b1} is under block {b2}',
+                f'block {b1} is positioned under block {b2}'
+            ])
+            # return f'block {b1} is under block {b2}'
         elif fluent.startswith('-on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return f'block {b1} is not under block {b2}'
+            return random.choice([
+                f'block {b1} is not under block {b2}',
+                f'block {b1} is not positioned under block {b2}'
+            ])
+            # return f'block {b1} is not under block {b2}'
 
         # lost
         elif fluent.startswith('clear('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is lost'
+            return random.choice([
+                f'block {b} is lost',
+                f'block {b} has become lost'
+            ])
+            # return f'block {b} is lost'
         elif fluent.startswith('-clear('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not lost'
+            return random.choice([
+                f'block {b} is not lost',
+                f'block {b} has not been lost'
+            ])
+            # return f'block {b} is not lost'
 
         # thrown
         elif fluent.startswith('holding('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is being thrown'
+            return random.choice([
+                f'block {b} is being thrown',
+                f'block {b} has been thrown'
+            ])
+            # return f'block {b} is being thrown'
         elif fluent.startswith('-holding('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not being thrown'
+            return random.choice([
+                f'block {b} is not being thrown',
+                f'block {b} has not been thrown'
+            ])
+            # return f'block {b} is not being thrown'
 
         # under table
         elif fluent.startswith('ontable('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is under the table'
+            return random.choice([
+                f'block {b} is under the table',
+                f'block {b} is positioned under the table'
+            ])
+            # return f'block {b} is under the table'
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
-            return f'block {b} is not under the table'
+            return random.choice([
+                f'block {b} is not under the table',
+                f'block {b} is not positioned under the table'
+            ])
+            # return f'block {b} is not under the table'
 
         # hand broken
         elif fluent.startswith('handempty'):
-            return f'hand is broken'
+            return random.choice([
+                f'hand is broken',
+                f'hand is now broken'
+            ])
+            # return f'hand is broken'
         elif fluent.startswith('-handempty'):
-            return f'hand is not broken'
+            return random.choice([
+                f'hand is not broken',
+                f'hand is not broken anymore'
+            ])
+            # return f'hand is not broken'
         else:
-            raise ('fluent is not defined')
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
-            return f'block {block_name} is lifted'  # lift
+            return random.choice([
+                f'block {block_name} is lifted',
+                f'block {block_name} is lifted by the hand',
+                f'the hand lifts the block {block_name}'
+            ])
+            # return f'block {block_name} is lifted'  # lift
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
-            return f'block {block_name} is lowered'  # lower
+            return random.choice([
+                f'block {block_name} is lowered',
+                f'block {block_name} is lowered by the hand',
+                f'block {block_name} is lowered to the table'
+            ])
+            # return f'block {block_name} is lowered'  # lower
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'block {b1} is removed from from block {b2}'  # remove
+            return random.choice([
+                f'block {b1} is removed from block {b2}',
+                f'block {b1} is removed from top of block {b2}'
+                f'from top of block {b2}, block {b1} is removed'
+            ])
+            # return f'block {b1} is removed from from block {b2}'  # remove
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return f'block {b1} is crashed from block {b2}'  # crashed
+            return random.choice([
+                f'block {b1} is crashed from block {b2}'
+                f'block {b1} is crashed from top of block {b2}',
+                f'from top of block {b2}, block {b1} is crashed'
+            ])
+            # return f'block {b1} is crashed from block {b2}'  # crashed
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 class Depots(BaseDomain):
@@ -1957,3 +2078,10 @@ class Visitall(BaseDomain):
 
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
                       Satellite, Spanner, Visitall, Zenotravel]
+
+
+# For testing
+if __name__ == '__main__':
+    obj = ALL_DOMAIN_CLASSES[0]()
+    print(obj.DOMAIN_NAME)
+    print(obj.action_to_hallucinated_natural_language('pick_up(b4)'))
