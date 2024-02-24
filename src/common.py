@@ -9,7 +9,7 @@ QUESTIONS_PATH = f'{DATA_PATH}/questions'
 STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
 STATISTICS_PATH = f'{PROJECT_PATH}/stats'
 
-RESULTS_PATH = f'{PROJECT_PATH}/results' # todo rn to results dir
+RESULTS_PATH = f'{PROJECT_PATH}/results'  # todo rn to results dir
 
 ASP_EXECUTION_TIME_LIMIT = 10
 ASP_CODE_PATH = f'{CODE_PATH}/ASP'
@@ -34,7 +34,7 @@ OUT_OBJ_QUESTION_CATEGORY = 'question_category'
 OUT_OBJ_QUESTION_NAME = 'question_name'
 OUT_OBJ_QUESTION = 'question'
 OUT_OBJ_ANSWER_TYPE = 'answer_type'
-OUT_OBJ_ANSWER = 'answer'
+OUT_OBJ_ANSWER = 'answer' # ground truth answer
 
 # OUTPUT ANSWER TYPES
 FREE_ANSWER = 'free_answer'
@@ -43,15 +43,12 @@ TRUE_FALSE_ANSWER = 'true_false_answer'
 # ramifications
 WITH_RAMIFICATIONS = 'with_ramifications'
 WITHOUT_RAMIFICATIONS = 'without_ramifications'
-
-DOMAIN_NAMES = ['blocksworld','depots','driverlog','goldminer','grippers','logistics','miconic','mystery','npuzzle', 'satellite', 'spanner','visitall','zenotravel']
-ANSWER_RESPONSES = [FREE_ANSWER, TRUE_FALSE_ANSWER]
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
-PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'mistral_7b_instruct'] # TODO add , 'gpt4'
-PROMPT_TYPES = ['zero_shot_data', 'few_shot_4', 'few_shot_4_cot'] #TODO clean up dirs
 
-MODEL_RESPONSE_KEY = 'response'
-
+# model and prompts
+PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'mistral_7b_instruct']  # TODO add , 'gpt4'
+PROMPT_TYPES = ['zero_shot_data', 'few_shot_4', 'few_shot_4_cot']  # TODO clean up dirs
+MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
 
 # STATS dict keys
 SK_PLAN_LENGTH = OUT_OBJ_PLAN_LENGTH
@@ -63,6 +60,8 @@ SK_PROMPT_TYPE = 'prompt_type'
 SK_RESULT = 'result'
 SK_DOMAIN = 'domain'
 
+DOMAIN_NAMES = ['blocksworld', 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics', 'miconic', 'mystery',
+                'npuzzle', 'satellite', 'spanner', 'visitall', 'zenotravel']
 
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):

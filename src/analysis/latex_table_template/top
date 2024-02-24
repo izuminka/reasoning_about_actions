@@ -1,0 +1,14 @@
+\begin{table*}[h!]
+\begin{adjustbox}{width=2\columnwidth,center}
+\begin{tabular}{lrrr|rrr|rrr}
+\toprule
+{} &
+\makecell{gemini \\ ZS} &
+\makecell{gemini \\ FS(4)} &
+\makecell{gemini \\ FS(4)+CoT} &
+\makecell{llama-2-7b \\ ZS} &
+\makecell{llama-2-7b \\ FS(4)} &
+\makecell{llama-2-7b \\ FS(4)+CoT} &
+\makecell{mistral-7b-inst \\ ZS} &
+\makecell{mistral-7b-inst \\ FS(4)} &
+\makecell{mistral-7b-inst \\ FS(4)+CoT} \\
