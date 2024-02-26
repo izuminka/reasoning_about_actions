@@ -123,11 +123,13 @@ class TrueFalseStats(BaseStats):
     @staticmethod
     def prediction_selection_criteria(d):
         model_response = d[MODEL_RESPONSE_KEY]
-        default_to = FALSE_ANSWER
+        # if the model response is unknown, set the response to the opposite of the ground truth
+        response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
+
         if TRUE_ANSWER in model_response and FALSE_ANSWER in model_response:  # both T and F are present
-            return default_to
+            return response_to_unknown
         elif TRUE_ANSWER not in model_response and FALSE_ANSWER not in model_response:  # neither T or F are present
-            return default_to
+            return response_to_unknown
         elif TRUE_ANSWER in model_response:
             return TRUE_ANSWER
         elif FALSE_ANSWER in model_response:
