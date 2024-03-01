@@ -10,7 +10,7 @@ STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
 STATISTICS_PATH = f'{PROJECT_PATH}/stats'
 RESULTS_PATH = f'{PROJECT_PATH}/results'  # todo rn to results dir
 
-# JSONL KEYS
+# JSONL KEYS for states_actions_generation
 INIT_ACTION_KEY = 'action_init'
 PART_OF_PLAN_KEY = "part_of_plan?"
 FLUENTS_KEY = "fluents"
@@ -18,7 +18,7 @@ NEG_FLUENTS_KEY = "neg_fluents"
 EXECUTABLE_ACTION_BOOL_KEY = 'executable?'
 OBJECTS_KEY = 'objects'
 
-# QUESION GENERATION OUTPUT OBJECT KEYS
+# QUESTION GENERATION OUTPUT OBJECT KEYS
 OUT_OBJ_ID = 'id'
 OUT_OBJ_DOMAIN_NAME = 'domain_name'
 OUT_OBJ_INSTANCE_ID = 'instance_id'
@@ -41,22 +41,7 @@ WITHOUT_RAMIFICATIONS = 'without_ramifications'
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 
 # model and prompts
-PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'mistral_7b_instruct']  # TODO add , 'gpt4'
-PROMPT_TYPES = ['zero_shot_data', 'few_shot_4', 'few_shot_4_cot']  # TODO clean up dirs
 MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
-
-# STATS dict keys
-SK_PLAN_LENGTH = OUT_OBJ_PLAN_LENGTH
-SK_CATEGORY = OUT_OBJ_QUESTION_CATEGORY
-SK_RAMIFICATION = 'ramification_type'
-SK_ANSWER_TYPE = OUT_OBJ_ANSWER_TYPE
-SK_MODEL = 'model'
-SK_PROMPT_TYPE = 'prompt_type'
-SK_RESULT = 'result'
-SK_DOMAIN = 'domain'
-
-DOMAIN_NAMES = ['blocksworld', 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics', 'miconic', 'mystery',
-                'npuzzle', 'satellite', 'spanner', 'visitall', 'zenotravel']
 
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
