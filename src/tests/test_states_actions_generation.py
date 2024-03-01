@@ -1,4 +1,4 @@
-from ..states_actions_generation import *
+from src.states_actions_generation.states_actions_generation import *
 import unittest
 import shutil
 

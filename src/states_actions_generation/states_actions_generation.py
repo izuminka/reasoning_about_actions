@@ -1,11 +1,10 @@
-from common import *
 import re
-
 import sys
 import os
-sys.path.append(os.path.realpath(__file__))
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
+sys.path.append('..')
+sys.path.append('../../')
+from src.common import *
 
 
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
@@ -158,8 +157,8 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Generate data for a given domain, instance (init, objects, plan)')
-    parser.add_argument('--domain_name', '-d', type=str, help='Specify the domain name')
-    parser.add_argument('--instance_name', '-i', type=str, help='Specify the instance name')
+    parser.add_argument('--domain_name', '-d', type=str, help='Specify the domain name', required=True)
+    parser.add_argument('--instance_name', '-i', type=str, help='Specify the instance name', required=True)
     args = parser.parse_args()
 
     main(args.domain_name, args.instance_name)
