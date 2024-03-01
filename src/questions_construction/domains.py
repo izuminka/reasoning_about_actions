@@ -20,6 +20,7 @@ class BaseDomain:
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
+    derived_fluents = ['clear(','handempty']
 
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
@@ -279,6 +280,7 @@ class Blocksworld(BaseDomain):
 
 class Depots(BaseDomain):
     DOMAIN_NAME = 'depots'
+    derived_fluents = ['clear(','available(']
 
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
@@ -573,6 +575,7 @@ class Depots(BaseDomain):
 
 class Driverlog(BaseDomain):
     DOMAIN_NAME = 'driverlog'
+    derived_fluents = ['empty']
 
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
@@ -742,7 +745,7 @@ class Driverlog(BaseDomain):
 
 class Goldminer(BaseDomain):
     DOMAIN_NAME = 'goldminer'
-
+    derived_fluents = ['arm_empty','clear(']
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -993,7 +996,7 @@ class Goldminer(BaseDomain):
 
 class Grippers(BaseDomain):
     DOMAIN_NAME = 'grippers'
-
+    derived_fluents = ['free']
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1113,7 +1116,7 @@ class Grippers(BaseDomain):
 
 class Logistics(BaseDomain):
     DOMAIN_NAME = 'logistics'
-
+    derived_fluents = [] # kept this empty because no derived fluents for this domain
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1239,7 +1242,7 @@ class Logistics(BaseDomain):
 
 class Miconic(BaseDomain):
     DOMAIN_NAME = 'miconic'
-
+    derived_fluents = []
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1387,7 +1390,7 @@ class Miconic(BaseDomain):
 
 class Mystery(BaseDomain):
     DOMAIN_NAME = 'mystery'
-
+    derived_fluents = []
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1559,7 +1562,7 @@ class Mystery(BaseDomain):
 
 class Npuzzle(BaseDomain):
     DOMAIN_NAME = 'npuzzle'
-
+    derived_fluents = ['empty']
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1640,7 +1643,7 @@ class Npuzzle(BaseDomain):
 
 class Satellite(BaseDomain):
     DOMAIN_NAME = 'satellite'
-
+    derived_fluents = ['power_avail(']
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1822,7 +1825,7 @@ class Satellite(BaseDomain):
 
 class Spanner(BaseDomain):
     DOMAIN_NAME = 'spanner'
-
+    derived_fluents = ['useable(']
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -1973,7 +1976,7 @@ class Spanner(BaseDomain):
 
 class Zenotravel(BaseDomain):
     DOMAIN_NAME = 'zenotravel'
-
+    derived_fluents = []
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
@@ -2118,7 +2121,7 @@ class Zenotravel(BaseDomain):
 
 class Visitall(BaseDomain):
     DOMAIN_NAME = 'visitall'
-
+    derived_fluents = ['visited(']
     def __init__(self):
         self.domain_description_without_ram = self.domain_description_without_ram()
         self.domain_description_ram = self.domain_description_ram()
