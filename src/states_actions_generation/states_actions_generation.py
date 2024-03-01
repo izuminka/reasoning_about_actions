@@ -6,7 +6,7 @@ sys.path.append('..')
 sys.path.append('../../')
 from src.common import *
 
-
+ASP_CODE_PATH = f'{CODE_PATH}/states_actions_generation/ASP'
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
 
 

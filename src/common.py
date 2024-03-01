@@ -8,12 +8,7 @@ DATA_PATH = f'{PROJECT_PATH}/data'
 QUESTIONS_PATH = f'{DATA_PATH}/questions'
 STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
 STATISTICS_PATH = f'{PROJECT_PATH}/stats'
-
 RESULTS_PATH = f'{PROJECT_PATH}/results'  # todo rn to results dir
-
-ASP_EXECUTION_TIME_LIMIT = 10
-ASP_CODE_PATH = f'{CODE_PATH}/ASP'
-TMP_ASP_EXEC_PATH = f'{ASP_CODE_PATH}/tmp'
 
 # JSONL KEYS
 INIT_ACTION_KEY = 'action_init'
