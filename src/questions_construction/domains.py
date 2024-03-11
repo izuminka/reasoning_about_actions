@@ -557,7 +557,7 @@ class Depots(BaseDomain):
                 f'{crate} is released to {surface} with {hoist} on {place}'
             ])
             # return f'{crate} is released to {surface} with {hoist} on {place}'  # released
-        elif action.startswith('load('):   ############### Trnsported can mean the same thing as Load
+        elif action.startswith('load('):   ############### Transported can mean the same thing as Load
             hoist, crate, truck, place = self.extract_multi_variable(action)
             return random.choice([
                 f'{crate} is transported with {hoist} in {truck} from {place}'
@@ -717,8 +717,8 @@ class Driverlog(BaseDomain):
             package, truck, location = self.extract_multi_variable(action)
             return random.choice([
                 f'{package} is unloaded from {truck} at location {location}',
-                f'{truck} is loaded with {package} at location {location}',
-                f'at location {location}, {package} is loaded in {truck}'
+                f'{truck} is unloaded with {package} at location {location}',
+                f'at location {location}, {package} is unloaded in {truck}'
             ])
             # return f'{package} is unload from {truck} at location {location}'
         elif action.startswith('board_truck('):
@@ -732,91 +732,188 @@ class Driverlog(BaseDomain):
         elif action.startswith('disembark_truck('):
             driver, truck, location = self.extract_multi_variable(action)
             return random.choice([
-                f'{driver} disembarks from {truck} at location {location}'
+                f'{driver} disembarks from {truck} at location {location}',
+                f'at location {location}, {driver} disembarks from {truck}',
+                f'from {truck}, {driver} disembarks at location {location}'
             ])
             # return f'{driver} disembarks from {truck} at location {location}'
         elif action.startswith('drive_truck('):
             truck, driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return f'{driver} drives {truck} from location {loc_from} to location {loc_to}'
+            return random.choice([
+                f'{driver} drives {truck} from location {loc_from} to location {loc_to}',
+                f'{truck} is driven from location {loc_from} to {loc_to} by {driver}',
+                f'{driver} drives {truck} to location {loc_to} from location {loc_from}'
+            ])
+            # return f'{driver} drives {truck} from location {loc_from} to location {loc_to}'
         elif action.startswith('walk('):
             driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return f'{driver} walks from location {loc_from} to location {loc_to}'
+            return random.choice([
+                f'{driver} walks from location {loc_from} to location {loc_to}',
+                f'{driver} walks to location {loc_to} from location {loc_from}',
+                f'{driver} walks from location {loc_from} to {loc_to}'
+            ])
+            # return f'{driver} walks from location {loc_from} to location {loc_to}'
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
-                return f'{obj} is parked at location {location}'  # parked at
+                return random.choice([
+                    f'{obj} is parked at location {location}',
+                    f'at location {location}, {obj} is parked'
+                ])
+                # return f'{obj} is parked at location {location}'  # parked at
             else:
-                return f'{obj} is near location {location}'  # near
+                return random.choice([
+                    f'{obj} is near location {location}',
+                    f'{obj} is located near location {location}'
+                ])
+                # return f'{obj} is near location {location}'  # near
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
-                return f'{obj} is not parked at location {location}'  # parked at
+                return random.choice([
+                    f'{obj} is not parked at location {location}',
+                    f'at location {location}, {obj} is not parked'
+                ])
+                # return f'{obj} is not parked at location {location}'  # parked at
             else:
-                return f'{obj} is not near location {location}'  # near
+                return random.choice([
+                    f'{obj} is not near location {location}',
+                    f'{obj} is not located near location {location}'
+                ])
+                # return f'{obj} is not near location {location}'  # near
 
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'{obj1} is placed into {obj2}'  # placed
+            return random.choice([ ################### placed is similar to original in
+                f'{obj1} is placed into {obj2}',
+            ])
+            # return f'{obj1} is placed into {obj2}'  # placed
         elif fluent.startswith('-in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'{obj1} is not  placed into {obj2}'  # near
+            return random.choice([ ################### placed is similar to original in
+                f'{obj1} is not placed into {obj2}',
+            ])
+            # return f'{obj1} is not placed into {obj2}'  # near
 
         elif fluent.startswith('driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'{obj1} is steering {obj2}'  # steering
+            return random.choice([ ################# Steering can be same as driving
+                f'{obj1} is steering {obj2}'
+            ])
+            # return f'{obj1} is steering {obj2}'  # steering
         elif fluent.startswith('-driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'{obj1} is not steering {obj2}'
+            return random.choice([ ################ Steering can be same as driving
+                f'{obj1} is not steering {obj2}'
+            ])
+            # return f'{obj1} is not steering {obj2}'
 
         elif fluent.startswith('link('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'location {obj1} neighbors location {obj2}'  # neighbors
+            return random.choice([
+                f'location {obj1} neighbors location {obj2}',
+                f'locations {obj1} and {obj2} are neighbors',
+                f'location {obj1} and location {obj2} are neighbors'
+            ])
+            # return f'location {obj1} neighbors location {obj2}'  # neighbors
         elif fluent.startswith('-link('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'location {obj1} does not neighbor location {obj2}'
+            return random.choice([
+                f'location {obj1} does not neighbor location {obj2}',
+                f'locations {obj1} and {obj2} are not neightbors',
+                f'location {obj1} and location {obj2} are not neighbors'
+            ])
+            # return f'location {obj1} does not neighbor location {obj2}'
 
         elif fluent.startswith('path('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'location {obj1} neighbors location {obj2}'  # neighbors
+            return random.choice([
+                f'location {obj1} neighbors location {obj2}',
+                f'locations {obj1} and {obj2} are neighbors',
+                f'location {obj1} and location {obj2} are neighbors'
+            ])
+            # return f'location {obj1} neighbors location {obj2}'  # neighbors
         elif fluent.startswith('-path('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return f'location {obj1} does not neighbor location {obj2}'
+            return random.choice([
+                f'location {obj1} does not neighbor location {obj2}',
+                f'locations {obj1} and {obj2} are not neightbors',
+                f'location {obj1} and location {obj2} are not neighbors'
+            ])
+            # return f'location {obj1} does not neighbor location {obj2}'
 
         elif fluent.startswith('empty('):
             obj = self.extract_single_variable(fluent)
-            return f'{obj} is overloaded'  # overloaded
+            return random.choice([
+                f'{obj} is overloaded',
+                f'{obj} is overloaded with packages'
+            ])
+            # return f'{obj} is overloaded'  # overloaded
         elif fluent.startswith('-empty('):
             obj = self.extract_single_variable(fluent)
-            return f'{obj} is not overloaded'
+            return random.choice([
+                f'{obj} is not overloaded',
+                f'{obj} is not overloaded with packages'
+            ])
+            # return f'{obj} is not overloaded'
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return f'{package} is returned at location {location}'  # return
+            return random.choice([
+                f'{package} is returned at location {location}',
+                f'{package} is returned to lcoation {location}',
+                f'{package} is returned back to location {location}'
+            ])
+            # return f'{package} is returned at location {location}'  # return
         elif action.startswith('unload_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return f'{package} is delivered at location {location}'  # deliver
+            return random.choice([
+                f'{package} is delivered at location {location}',
+                f'{package} is delivered to customer at location {location}'
+            ])
+            # return f'{package} is delivered at location {location}'  # deliver
         elif action.startswith('board_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return f'{driver} inspects {truck} at location {location}'  # inspect
+            return random.choice([
+                f'{driver} inspects {truck} at location {location}',
+                f'{truck} is inspected by {driver} at location {location}',
+                f'at location {location}, {driver} inspects {truck}'
+            ])
+            # return f'{driver} inspects {truck} at location {location}'  # inspect
         elif action.startswith('disembark_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return f'{driver} repairs {truck} at location {location}'  # repairs
+            return random.choice([
+                f'{driver} repairs {truck} at location {location}',
+                f'{truck} is repaired by {driver} at location {location}',
+                f'at location {location}, {driver} repairs {truck}'
+            ])
+            # return f'{driver} repairs {truck} at location {location}'  # repairs
         elif action.startswith('drive_truck('):
             truck, driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return f'{driver} checks {truck} at location {loc_from} and location {loc_to}'  # checks
+            return random.choice([
+                f'{driver} checks {truck} at location {loc_from} and location {loc_to}',
+                f'{truck} is checked by {driver} at locations {loc_from} and {loc_to}',
+                f'checking of {truck} is conducted at locations {loc_from} and {loc_to} by {driver}'
+            ])
+            # return f'{driver} checks {truck} at location {loc_from} and location {loc_to}'  # checks
         elif action.startswith('walk('):
             driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return f'{driver} rests at location {loc_from} and at location {loc_to}'  # rests
+            return random.choice([
+                f'{driver} rests at location {loc_from} and at location {loc_to}',
+                f'at locations {loc_from} and {loc_to}, {driver} takes a rest',
+                f'{driver} rests at locations {loc_from} and {loc_to}'
+            ])
+            # return f'{driver} rests at location {loc_from} and at location {loc_to}'  # rests
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 class Goldminer(BaseDomain):
