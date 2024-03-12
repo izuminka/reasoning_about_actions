@@ -22,9 +22,9 @@ class Generate_prompting_template:
         self.instance_id = instance_id
         self.jsonl_instance_path = self.root_directory + self.domain_folder_name + 'Instance_' + str(self.instance_id) + '.jsonl'
         if is_ramifications:
-            self.domain_description = self.domain_class.domain_description_ram
+            self.domain_description = self.domain_class.DOMAIN_DESC_WITH_RAM
         else:
-            self.domain_description = self.domain_class.domain_description_without_ram
+            self.domain_description = self.domain_class.DOMAIN_DESC_WITHOUT_RAM
         self.unique_instance_dict = unique_instance_dict
 
     def zero_shot_prompt(self):
