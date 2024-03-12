@@ -1589,6 +1589,13 @@ class Mystery(BaseDomain):
         "The location's fuel level is unique. "
         "The vehicle's amount of space is unique. ")
     DERIVED_FLUENTS = []  # TODO double check
+    ALL_TO_RAND = {
+        'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
+        'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
+        'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
+        'fuel': 'vyumzovixm', 'fuels': 'vyumzovixm',
+        'space': 'kiurijzhmd', 'spaces': 'kiurijzhmd',
+        'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connecting': 'qqqxlayhxq', 'connected': 'qqqxlayhxq'}
 
 
 def fluent_to_natural_language_helper(self, fluent):
