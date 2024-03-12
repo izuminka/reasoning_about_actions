@@ -1854,6 +1854,21 @@ class Satellite(BaseDomain):
         "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
         "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
     DERIVED_FLUENTS = ['power_avail(']
+    ALL_TO_RAND = {
+        'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
+        'source': 'uuwgcgehnr',
+        'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
+        'destination': 'izwwbtklpt',
+        'direction': 'apdptereua', 'directions': 'apdptereua',
+        'instrument': 'rstzlaxvor', 'instruments': 'rstzlaxvor',
+        'onboard': 'icafejchri',
+        'image': 'fetzcryvyb', 'images': 'fetzcryvyb',
+        'turn': 'gwuqwrsowb', 'turns': 'gwuqwrsowb', 'turning': 'gwuqwrsowb', 'turned': 'gwuqwrsowb',
+        'switch': 'sqsicvmhrn', 'switches': 'sqsicvmhrn', 'switching': 'sqsicvmhrn', 'switched': 'sqsicvmhrn',
+        'calibrate': 'dymysndcxa', 'calibrates': 'dymysndcxa', 'calibrating': 'dymysndcxa', 'calibrated': 'dymysndcxa',
+        'take': 'idrpvqprlo', 'takes': 'idrpvqprlo', 'taking': 'idrpvqprlo', 'taken': 'idrpvqprlo',
+        'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq', 'powered': 'ymikwvufrq'}
+
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
