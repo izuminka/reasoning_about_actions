@@ -2209,11 +2209,23 @@ class Zenotravel(BaseDomain):
 
         "Refueling the aircraft in a city is executable if the aircraft is in the city. It changes the current fuel level to its next level. "
 
-        "A person is not  present in a city if the person is in some aircraft. "
+        "A person is not present in a city if the person is in some aircraft. "
         "The aircraft cannot be in two different cities at the same time. "
         "An aircraft cannot have two different fuel levels. "
         "Person can only be at one place.")
     DERIVED_FLUENTS = []  # TODO double check
+    ALL_TO_RAND = {
+        'board': 'jxfvtxvzgh', 'boards': 'jxfvtxvzgh', 'boarding': 'jxfvtxvzgh', 'boarded': 'jxfvtxvzgh',
+        'debark': 'jnjwzqrpms', 'debarks': 'jnjwzqrpms', 'debarking': 'jnjwzqrpms', 'debarked': 'jnjwzqrpms',
+        'fly': 'gartdizjnu', 'flies': 'gartdizjnu', 'flying': 'gartdizjnu', 'flown': 'gartdizjnu',
+        'zoom': 'rqdfjbixnz', 'zooms': 'rqdfjbixnz', 'zooming': 'rqdfjbixnz', 'zoomed': 'rqdfjbixnz',
+        'refuel': 'egufeqdcrz', 'refuels': 'egufeqdcrz', 'refueling': 'egufeqdcrz', 'refueled': 'egufeqdcrz',
+        'fuel': 'njzcihffcg', 'fuels': 'njzcihffcg', 'fueling': 'njzcihffcg', 'fueled': 'njzcihffcg',
+
+        'person': 'ihpgygxfoe', 'persons': 'ihpgygxfoe', 'people': 'ihpgygxfoe',
+        'city': 'uibqqmoerq', 'cities': 'uibqqmoerq',
+        'aircraft': 'psjemaawdi', 'aircrafts': 'psjemaawdi',
+        'airport': 'vuvceigmai', 'airports': 'vuvceigmai'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
