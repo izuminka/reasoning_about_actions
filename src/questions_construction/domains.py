@@ -2045,6 +2045,17 @@ class Spanner(BaseDomain):
         "The nut is not loose if and only if it is tightened. "
         "The spanner is not usable if and only if the nut is tightened. ")
     DERIVED_FLUENTS = ['useable(']
+    ALL_TO_RAND = {
+        'nut': 'uwdhnrpile', 'nuts': 'uwdhnrpile',
+        'man': 'bmojqrwpdg',
+        'usable': 'fgbcjqnbgp',
+        'spanner': 'ujzeqlcecc', 'spanners': 'ujzeqlcecc',
+        'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
+        'link': 'qzylwqxpoq',  'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
+        'walk': 'fvuxqntacz', 'walks': 'fvuxqntacz', 'walking': 'fvuxqntacz', 'walked': 'fvuxqntacz',
+        'pick': 'rcholfpyyj', 'picks': 'rcholfpyyj', 'picking': 'rcholfpyyj', 'picked': 'rcholfpyyj',
+        'tighten': 'xvxccombol', 'tightens': 'xvxccombol', 'tightening': 'xvxccombol', 'tightened': 'xvxccombol',
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
