@@ -8,8 +8,10 @@ def strip_action_prefix(action):
         return action[len('action_'):]
     return action
 
+
 def gen_random_str(length=10):
     return ''.join(random.choices(string.ascii_lowercase, k=length))
+
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -122,11 +124,12 @@ class Blocksworld(BaseDomain):
     OBJ_TYPE_TO_RAND = {'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs'}
     ACTION_TO_RAND = {'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
                       'put down': 'xskgihccqt', 'putting down': 'xskgihccqt',
-                      'stack': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
-                      'unstack': 'wxqdwukszo', 'unstacking': 'wxqdwukszo', 'unstacked': 'wxqdwukszo'}
+                      'stack': 'oscckwdtoh', 'stacks': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
+                      'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo',
+                      'unstacked': 'wxqdwukszo'}
     FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
                       'clear': 'ormkfgqwve',
-                      'holding': 'casqqrrojp', 'held': 'casqqrrojp',
+                      'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
                       'empty': 'yqttlkcqqj',
                       'hand': 'egpbpdtalq'}
     ALL_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
@@ -405,14 +408,14 @@ class Depots(BaseDomain):
                    'crate': 'pjrluufopq',
                    'truck': 'nblmdziyqf',
                    'location': 'eejxtwabwx',
-                   'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy',
-                   'hoist': 'suhmddooyi',
-                   'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc',  'lifts': 'aeaygzpsjc',
                    'clear': 'sypgozifms',
                    'available': 'xlhhnyciys',
-                   'dropping': 'uckhudtpif', 'drops': 'uckhudtpif',
-                   'loading': 'gjqgfjtbnf', 'loaded': 'gjqgfjtbnf',
-                   'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux'}
+                   'hoist': 'suhmddooyi',
+                   'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy', 'drove': 'jzmscukkyy',
+                   'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc', 'lifts': 'aeaygzpsjc', 'lifted': 'aeaygzpsjc',
+                   'drop': 'uckhudtpif', 'drops': 'uckhudtpif', 'dropping': 'uckhudtpif', 'dropped': 'uckhudtpif',
+                   'load': 'gjqgfjtbnf', 'loads': 'gjqgfjtbnf', 'loading': 'gjqgfjtbnf', 'loaded': 'gjqgfjtbnf',
+                   'unload': 'gpztfzvsux', 'unloads': 'gpztfzvsux', 'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -709,16 +712,17 @@ class Driverlog(BaseDomain):
         "A driver can only be at one location.")
     DERIVED_FLUENTS = ['empty']
 
-    ALL_TO_RAND = { 'load': 'yvlcghamlt',  'loads': 'yvlcghamlt',  'loading': 'yvlcghamlt',
-                    'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj',
-                    'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua',
-                    'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm',
-                    'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie',
-                    'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh',
-                    'truck': 'zkkizjecwh',
-                    'location': 'iatympbexj',
-                    'object': 'omkfkvxwrg',
-                    'driver': 'fxwdnwxasu'}
+    ALL_TO_RAND = {'truck': 'zkkizjecwh',
+                   'location': 'iatympbexj',
+                   'object': 'omkfkvxwrg',
+                   'driver': 'fxwdnwxasu',
+                   'load': 'yvlcghamlt', 'loads': 'yvlcghamlt', 'loading': 'yvlcghamlt', 'loaded': 'yvlcghamlt',
+                   'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj', 'unloaded': 'zfjywbftzj',
+                   'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua', 'boarded': 'kqrkdhivua',
+                   'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm', 'disembarked': 'qstuhdgygm',
+                   'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie',  'drove': 'wqfrddftie',  'driven': 'wqfrddftie',
+                   'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh', 'walked': 'elasopyqsh',
+                   }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -912,12 +916,12 @@ class Goldminer(BaseDomain):
                    'gold': 'gbxztwroqz',
                    'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
                    'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
-                   'detonate': 'vputhhsycf','detonates': 'vputhhsycf','detonating': 'vputhhsycf',
-                   'find': 'qwyadblmhl',  'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl',
-                   'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc','moving': 'zdmlakgkqc',
-                   'pick up': 'wlcfexwxse',  'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse',
+                   'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf',
+                   'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl',  'found': 'qwyadblmhl',
+                   'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc',  'moved': 'zdmlakgkqc',
+                   'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse',  'picked up': 'wlcfexwxse',
                    'put down': 'lrlcipamts', 'puts down': 'lrlcipamts', 'putting down': 'lrlcipamts',
-                   'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi'}
+                   'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi',  'fired': 'arvmgimcpi'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
@@ -1165,8 +1169,6 @@ class Grippers(BaseDomain):
                    'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn', 'dropped': 'qhfmsjkotn',
                    'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt', 'transported': 'kseqanhkzt',
                    'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
-
-
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
