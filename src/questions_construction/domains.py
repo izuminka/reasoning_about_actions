@@ -403,14 +403,14 @@ class Depots(BaseDomain):
         "A crate can only be on top of one surface. ")
     DERIVED_FLUENTS = ['clear(', 'available(']
 
-    ALL_TO_RAND = {'surface': 'fshxjwxean',
-                   'pallet': 'tzrwjuotxz',
-                   'crate': 'pjrluufopq',
-                   'truck': 'nblmdziyqf',
-                   'location': 'eejxtwabwx',
+    ALL_TO_RAND = {'surface': 'fshxjwxean', 'surfaces': 'fshxjwxean',
+                   'pallet': 'tzrwjuotxz', 'pallets': 'tzrwjuotxz',
+                   'crate': 'pjrluufopq', 'crates': 'pjrluufopq',
+                   'truck': 'nblmdziyqf', 'trucks': 'nblmdziyqf',
+                   'location': 'eejxtwabwx', 'locations': 'eejxtwabwx',
                    'clear': 'sypgozifms',
                    'available': 'xlhhnyciys',
-                   'hoist': 'suhmddooyi',
+                   'hoist': 'suhmddooyi', 'hoists': 'suhmddooyi',
                    'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy', 'drove': 'jzmscukkyy',
                    'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc', 'lifts': 'aeaygzpsjc', 'lifted': 'aeaygzpsjc',
                    'drop': 'uckhudtpif', 'drops': 'uckhudtpif', 'dropping': 'uckhudtpif', 'dropped': 'uckhudtpif',
@@ -712,15 +712,19 @@ class Driverlog(BaseDomain):
         "A driver can only be at one location.")
     DERIVED_FLUENTS = ['empty']
 
-    ALL_TO_RAND = {'truck': 'zkkizjecwh',
-                   'location': 'iatympbexj',
-                   'object': 'omkfkvxwrg',
-                   'driver': 'fxwdnwxasu',
+    ALL_TO_RAND = {'truck': 'zkkizjecwh', 'trucks': 'zkkizjecwh',
+                   'location': 'iatympbexj', 'locations': 'iatympbexj',
+                   'object': 'omkfkvxwrg', 'objects': 'omkfkvxwrg',
+                   'driver': 'fxwdnwxasu', 'drivers': 'fxwdnwxasu',
+                   'link': 'umwttodbts', 'links': 'umwttodbts',
+                   'path': 'zgbnmmdljx', 'paths': 'zgbnmmdljx',
+                   'empty': 'fgrxzszxhm',
                    'load': 'yvlcghamlt', 'loads': 'yvlcghamlt', 'loading': 'yvlcghamlt', 'loaded': 'yvlcghamlt',
                    'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj', 'unloaded': 'zfjywbftzj',
                    'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua', 'boarded': 'kqrkdhivua',
-                   'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm', 'disembarked': 'qstuhdgygm',
-                   'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie',  'drove': 'wqfrddftie',  'driven': 'wqfrddftie',
+                   'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm',
+                   'disembarked': 'qstuhdgygm',
+                   'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie', 'driven': 'wqfrddftie',
                    'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh', 'walked': 'elasopyqsh',
                    }
 
@@ -907,21 +911,22 @@ class Goldminer(BaseDomain):
 
     DERIVED_FLUENTS = ['arm_empty', 'clear(']
     ALL_TO_RAND = {'robot': 'oiycijmjmo',
-                   'location': 'cltqghvirt',
+                   'location': 'cltqghvirt', 'locations': 'cltqghvirt',
                    'laser': 'jaakaxcemj',
                    'clear': 'qvnmedqflj',
-                   'arm': 'jawtollkbp',
+                   'arm': 'jawtollkbp', 'arms': 'jawtollkbp',
                    'empty': 'kqtvognkhw',
                    'bomb': 'ojyinshkhj',
                    'gold': 'gbxztwroqz',
                    'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
                    'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
                    'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf',
-                   'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl',  'found': 'qwyadblmhl',
-                   'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc',  'moved': 'zdmlakgkqc',
-                   'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse',  'picked up': 'wlcfexwxse',
+                   'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl', 'found': 'qwyadblmhl',
+                   'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc', 'moved': 'zdmlakgkqc',
+                   'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse',
+                   'picked up': 'wlcfexwxse',
                    'put down': 'lrlcipamts', 'puts down': 'lrlcipamts', 'putting down': 'lrlcipamts',
-                   'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi',  'fired': 'arvmgimcpi'}
+                   'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi', 'fired': 'arvmgimcpi'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
@@ -1159,15 +1164,16 @@ class Grippers(BaseDomain):
         "If the robot is not carrying the object then the object a in the room. "
         "Robot can only be at one place. ")
 
-    ALL_TO_RAND = {'robot': 'jjjrptnvkh',
-                   'room': 'ixokqrvnqn',
-                   'destination': 'ezrqqoajas',
-                   'object': 'wtdcrmrabz',
+    ALL_TO_RAND = {'robot': 'jjjrptnvkh', 'robots': 'jjjrptnvkh',
+                   'room': 'ixokqrvnqn', 'rooms': 'ixokqrvnqn',
+                   'destination': 'ezrqqoajas', 'destinations': 'ezrqqoajas',
+                   'object': 'wtdcrmrabz', 'objects': 'wtdcrmrabz',
                    'gripper': 'yegitqlmuq', 'grippers': 'yegitqlmuq',
                    'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
                    'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
                    'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn', 'dropped': 'qhfmsjkotn',
-                   'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt', 'transported': 'kseqanhkzt',
+                   'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt',
+                   'transported': 'kseqanhkzt',
                    'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
 
     def fluent_to_natural_language_helper(self, fluent):
@@ -1294,14 +1300,20 @@ class Logistics(BaseDomain):
         "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
         "A truck can only be at one location at a time. A plane can only be in one location at a time.")
     DERIVED_FLUENTS = []  # kept this empty because no derived fluents for this domain
-    ALL_TO_RAND = {'package': 'tnzistccqp',
-                   'truck': 'pvcuetihtl',
-                   'airplane': 'xmyqeckfwm',
-                   'location': 'wesxmnrgzy',
+    ALL_TO_RAND = {'package': 'tnzistccqp', 'packages': 'tnzistccqp',
+                   'truck': 'pvcuetihtl', 'trucks': 'pvcuetihtl',
+                   'airplane': 'xmyqeckfwm', 'airplanes': 'xmyqeckfwm',
+                   'airport': 'qpplrkefyr', 'airports': 'qpplrkefyr',
+                   'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
+                   'object': 'causdnkeoz', 'objects': 'causdnkeoz',
+                   'vehicle': 'qmgahdodkq', 'vehicles': 'qmgahdodkq',
+                   'city': 'bpzwevlomd', 'cities': 'bpzwevlomd',
                    'load': 'nxrnxkjybr', 'loads': 'nxrnxkjybr', 'loading': 'nxrnxkjybr', 'loaded': 'nxrnxkjybr',
                    'unload': 'bdfszwzdpi', 'unloads': 'bdfszwzdpi', 'unloading': 'bdfszwzdpi', 'unloaded': 'bdfszwzdpi',
-                   'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn', 'driven': 'umcjrdgfyn',
-                   'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar',}
+                   'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn',
+                   'driven': 'umcjrdgfyn',
+                   'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar',
+                   'flown': 'umnkjqinar'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('in_city('):
