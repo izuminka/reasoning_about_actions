@@ -72,7 +72,7 @@ class BaseDomain:
             nl_fluent = self.fluent_to_hallucinated_natural_language_helper(fluent)
 
         if self.is_random_sub:
-            return self.replace_substrings(nl_fluent, self.ALL_TO_RAND)
+            return self.replace_substring(nl_fluent, self.ALL_TO_RAND)
         else:
             return nl_fluent
 
@@ -83,7 +83,7 @@ class BaseDomain:
             nl_action = self.action_to_hallucinated_natural_language_helper(action)
 
         if self.is_random_sub:
-            return self.replace_substrings(nl_action, self.ALL_TO_RAND)
+            return self.replace_substring(nl_action, self.ALL_TO_RAND)
         else:
             return nl_action
 
