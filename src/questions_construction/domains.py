@@ -1294,6 +1294,14 @@ class Logistics(BaseDomain):
         "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
         "A truck can only be at one location at a time. A plane can only be in one location at a time.")
     DERIVED_FLUENTS = []  # kept this empty because no derived fluents for this domain
+    ALL_TO_RAND = {'package': 'tnzistccqp',
+                   'truck': 'pvcuetihtl',
+                   'airplane': 'xmyqeckfwm',
+                   'location': 'wesxmnrgzy',
+                   'load': 'nxrnxkjybr', 'loads': 'nxrnxkjybr', 'loading': 'nxrnxkjybr', 'loaded': 'nxrnxkjybr',
+                   'unload': 'bdfszwzdpi', 'unloads': 'bdfszwzdpi', 'unloading': 'bdfszwzdpi', 'unloaded': 'bdfszwzdpi',
+                   'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn', 'driven': 'umcjrdgfyn',
+                   'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar',}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('in_city('):
