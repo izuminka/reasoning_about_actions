@@ -9,7 +9,7 @@ def strip_action_prefix(action):
     return action
 
 def gen_random_str(length=10):
-    ''.join(random.choices(string.ascii_lowercase, k=length))
+    return ''.join(random.choices(string.ascii_lowercase, k=length))
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -371,7 +371,7 @@ class Depots(BaseDomain):
         'A truck can be driven from one location to another only if it is present at the first location. '
         'Driving the truck makes the truck to be present at the final destination and not at the starting location. '
         'A hoist can lift a crate from a surface only when the hoist and the crate are present in the same location, the hoist is available, the crate is present on the surface, and the crate is clear. '
-        'Lifting causes the hoist to lift the crate  the crate to be not in that location, not clear, and not on top of the previous surface, which is now clear. '
+        'Lifting causes the hoist to lift the crate, the crate to be not in that location, not clear, and not on top of the previous surface, which is now clear. '
         'Moreover, lifting the crate causes the hoist to be not available. '
         'Dropping the crate is possible only if the hoist, crate, and surface are present in the same location, the hoist is lifting the crate, and the surface is clear. '
         'Dropping the crate causes it to be on top of the surface, be present in the location where it was dropped, and be clear. '
@@ -399,6 +399,20 @@ class Depots(BaseDomain):
         "A crate can only be at one location. "
         "A crate can only be on top of one surface. ")
     DERIVED_FLUENTS = ['clear(', 'available(']
+
+    ALL_TO_RAND = {'surface': 'fshxjwxean',
+                   'pallet': 'tzrwjuotxz',
+                   'crate': 'pjrluufopq',
+                   'truck': 'nblmdziyqf',
+                   'location': 'eejxtwabwx',
+                   'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy',
+                   'hoist': 'suhmddooyi',
+                   'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc',  'lifts': 'aeaygzpsjc',
+                   'clear': 'sypgozifms',
+                   'available': 'xlhhnyciys',
+                   'dropping': 'uckhudtpif', 'drops': 'uckhudtpif',
+                   'loading': 'gjqgfjtbnf', 'loaded': 'gjqgfjtbnf',
+                   'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -694,6 +708,17 @@ class Driverlog(BaseDomain):
         "An object can only be at one location. "
         "A driver can only be at one location.")
     DERIVED_FLUENTS = ['empty']
+
+    ALL_TO_RAND = { 'load': 'yvlcghamlt',  'loads': 'yvlcghamlt',  'loading': 'yvlcghamlt',
+                    'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj',
+                    'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua',
+                    'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm',
+                    'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie',
+                    'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh',
+                    'truck': 'zkkizjecwh',
+                    'location': 'iatympbexj',
+                    'object': 'omkfkvxwrg',
+                    'driver': 'fxwdnwxasu'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
