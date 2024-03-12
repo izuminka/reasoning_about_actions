@@ -724,7 +724,8 @@ class Driverlog(BaseDomain):
                    'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua', 'boarded': 'kqrkdhivua',
                    'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm',
                    'disembarked': 'qstuhdgygm',
-                   'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie', 'driven': 'wqfrddftie',
+                   'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie',
+                   'driven': 'wqfrddftie',
                    'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh', 'walked': 'elasopyqsh',
                    }
 
@@ -1430,18 +1431,19 @@ class Miconic(BaseDomain):
         "A lift can only be on one floor at a time. "
         "If the passenger is served, then the passenger is not boarded.")
     DERIVED_FLUENTS = []  # TODO double check
-    ALL_TO_RAND = { 'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
-                    'up': 'lfapuhgnsn',
-                    'down': 'mmphaaxcri',
-                    'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
-                    'source': 'outpkddlno',
-                    'above': 'idfiasmopc',
-                    'served': 'vpdiuemmjp',
-                    'elevator': 'jbbturclrd',
-                    'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
-                    'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
-                    'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
-                    'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja', 'departed': 'jbctpepaja', }
+    ALL_TO_RAND = {'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
+                   'up': 'lfapuhgnsn',
+                   'down': 'mmphaaxcri',
+                   'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
+                   'source': 'outpkddlno',
+                   'above': 'idfiasmopc',
+                   'served': 'vpdiuemmjp',
+                   'elevator': 'jbbturclrd',
+                   'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
+                   'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
+                   'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
+                   'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja',
+                   'departed': 'jbctpepaja', }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('origin('):
@@ -1869,7 +1871,6 @@ class Satellite(BaseDomain):
         'take': 'idrpvqprlo', 'takes': 'idrpvqprlo', 'taking': 'idrpvqprlo', 'taken': 'idrpvqprlo',
         'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq', 'powered': 'ymikwvufrq'}
 
-
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
@@ -2051,7 +2052,7 @@ class Spanner(BaseDomain):
         'usable': 'fgbcjqnbgp',
         'spanner': 'ujzeqlcecc', 'spanners': 'ujzeqlcecc',
         'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
-        'link': 'qzylwqxpoq',  'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
+        'link': 'qzylwqxpoq', 'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
         'walk': 'fvuxqntacz', 'walks': 'fvuxqntacz', 'walking': 'fvuxqntacz', 'walked': 'fvuxqntacz',
         'pick': 'rcholfpyyj', 'picks': 'rcholfpyyj', 'picking': 'rcholfpyyj', 'picked': 'rcholfpyyj',
         'tighten': 'xvxccombol', 'tightens': 'xvxccombol', 'tightening': 'xvxccombol', 'tightened': 'xvxccombol',
@@ -2225,7 +2226,10 @@ class Zenotravel(BaseDomain):
         'person': 'ihpgygxfoe', 'persons': 'ihpgygxfoe', 'people': 'ihpgygxfoe',
         'city': 'uibqqmoerq', 'cities': 'uibqqmoerq',
         'aircraft': 'psjemaawdi', 'aircrafts': 'psjemaawdi',
-        'airport': 'vuvceigmai', 'airports': 'vuvceigmai'}
+        'airport': 'vuvceigmai', 'airports': 'vuvceigmai',
+        'source': 'xfdqznnlrs',
+        'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
+        'level': 'ndozmmwian', 'levels': 'ndozmmwian'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
