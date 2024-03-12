@@ -14,7 +14,8 @@ for domain in "${DOMAINS[@]}"; do
         echo '#SBATCH -t 1-16:00:00' >> $sbatch_file_name
         echo '#SBATCH -p general' >> $sbatch_file_name
         echo '#SBATCH -q prerelease' >> $sbatch_file_name
-        echo '#SBATCH --mail-type=NONE' >> $sbatch_file_name
+        echo '#SBATCH --mail-type=ALL' >> $sbatch_file_name
+        echo '#SBATCH --output=NONE' >> $sbatch_file_name
         echo '#SBATCH --export=NONE' >> $sbatch_file_name
         echo 'module purge' >> $sbatch_file_name
         echo 'module load mamba/latest' >> $sbatch_file_name
