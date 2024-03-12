@@ -1753,6 +1753,13 @@ class Npuzzle(BaseDomain):
     DOMAIN_DESC_WITH_RAM = (
         'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
         "A position is not empty if the tile is at that position. A tile cannot be on multiple positions at the same time.")
+    ALL_TO_RAND = {
+        'tile': 'gkxiurkpij', 'tiles': 'gkxiurkpij',
+        'move': 'edclnosigi', 'moves': 'edclnosigi', 'moving': 'edclnosigi', 'moved': 'edclnosigi',
+        'source': 'dfqdjcpgle',
+        'destination': 'jfyxocsjve',
+        'empty': 'vigzxelnpn',
+        'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
