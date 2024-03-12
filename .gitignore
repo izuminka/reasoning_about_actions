@@ -7,3 +7,7 @@ src/tests/__pycache__/
 /external_code/
 /data/questions.bkp/
 /data/questions_older/
+
+src/evaluation/prompting/gemini.api.key
+src/evaluation/prompting/gemini_keys
+
