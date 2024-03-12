@@ -902,6 +902,22 @@ class Goldminer(BaseDomain):
         "The robot is holding a laser if and only if the laser is not at a location. ")
 
     DERIVED_FLUENTS = ['arm_empty', 'clear(']
+    ALL_TO_RAND = {'robot': 'oiycijmjmo',
+                   'location': 'cltqghvirt',
+                   'laser': 'jaakaxcemj',
+                   'clear': 'qvnmedqflj',
+                   'arm': 'jawtollkbp',
+                   'empty': 'kqtvognkhw',
+                   'bomb': 'ojyinshkhj',
+                   'gold': 'gbxztwroqz',
+                   'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
+                   'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
+                   'detonate': 'vputhhsycf','detonates': 'vputhhsycf','detonating': 'vputhhsycf',
+                   'find': 'qwyadblmhl',  'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl',
+                   'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc','moving': 'zdmlakgkqc',
+                   'pick up': 'wlcfexwxse',  'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse',
+                   'put down': 'lrlcipamts', 'puts down': 'lrlcipamts', 'putting down': 'lrlcipamts',
+                   'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
