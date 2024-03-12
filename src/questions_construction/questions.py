@@ -788,7 +788,7 @@ class HallucinationQuestions(QuestionGenerator):
         if is_answer_true:
             nl_fluent = self.domain_class.fluent_to_natural_language(fluent)
         else:
-            nl_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluent)
+            nl_fluent = self.domain_class.fluent_to_natural_language(fluent, hallucinate=True)
 
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS)}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
@@ -805,7 +805,7 @@ class HallucinationQuestions(QuestionGenerator):
         if is_answer_true:
             nl_action = self.domain_class.action_to_natural_language(action)
         else:
-            nl_action = self.domain_class.action_to_hallucinated_natural_language(action)
+            nl_action = self.domain_class.action_to_natural_language(action, hallucinate=True)
 
         question_setup = self.question_setup(f'{action_type} actions')
         question = f"{self.nl_question_prefix(plan_length, is_planned=True)} {question_setup}. Is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?"
@@ -856,7 +856,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_fluents = self.nl_fluents(fluents)
         else:
             nl_fluent = self.domain_class.fluent_to_natural_language(fluents[0])
-            nl_hallucinated_fluent = self.domain_class.fluent_to_hallucinated_natural_language(fluents[0])
+            nl_hallucinated_fluent = self.domain_class.fluent_to_natural_language(fluents[0], hallucinate=True)
             random.shuffle(fluents)
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type}')}. What {fluent_type} out of, {nl_fluents}, is not defined? Write None if all are defined."
@@ -882,7 +882,7 @@ class HallucinationQuestions(QuestionGenerator):
             actions = self.given_plan_sequence[:plan_length]
             random_int = random.randint(0, len(actions) - 1)
             nl_selected_action = self.domain_class.action_to_natural_language(actions[random_int])
-            nl_hallucinated_action = self.domain_class.action_to_hallucinated_natural_language(actions[random_int])
+            nl_hallucinated_action = self.domain_class.action_to_natural_language(actions[random_int], hallucinate=True)
             nl_actions = self.nl_actions(actions).replace(nl_selected_action, nl_hallucinated_action)
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_actions} {postfix}."
             answer = nl_hallucinated_action

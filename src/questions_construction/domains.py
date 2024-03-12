@@ -55,15 +55,39 @@ class BaseDomain:
                 new_tokens.append(token)
         return ' '.join(new_tokens)
 
-    def fluent_to_natural_language(self, fluent):
-        if self.is_random_sub:
-            return self.replace_substrings(fluent, self.ALL_TO_RAND)
-        return self.replace_substrings(fluent, self.ALL_TO_RAND)
+    def fluent_to_natural_language_helper(self, fluent):
+        raise 'Implement in child class'
 
-    def action_to_natural_language(self, action):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        raise 'Implement in child class'
+
+    def action_to_natural_language_helper(self, action):
+        raise 'Implement in child class'
+
+    def action_to_hallucinated_natural_language_helper(self, action):
+        raise 'Implement in child class'
+
+    def fluent_to_natural_language(self, fluent, hallucinate=False):
+        if not hallucinate:
+            nl_fluent = self.fluent_to_natural_language_helper(fluent)
+        else:
+            nl_fluent = self.fluent_to_hallucinated_natural_language_helper(fluent)
+
         if self.is_random_sub:
-            return self.replace_substrings(action, self.ALL_TO_RAND)
-        return self.replace_substrings(action, self.ALL_TO_RAND)
+            return self.replace_substrings(nl_fluent, self.ALL_TO_RAND)
+        else:
+            return nl_fluent
+
+    def action_to_natural_language(self, action, hallucinate=False):
+        if not hallucinate:
+            nl_action = self.action_to_natural_language_helper(action)
+        else:
+            nl_action = self.action_to_hallucinated_natural_language_helper(action)
+
+        if self.is_random_sub:
+            return self.replace_substrings(nl_action, self.ALL_TO_RAND)
+        else:
+            return nl_action
 
 
 class Blocksworld(BaseDomain):
@@ -94,7 +118,7 @@ class Blocksworld(BaseDomain):
         "A block is said to be clear if it is not being held and there are no blocks that are on top of it. "
         "The hand is said to be empty if and only if it is not holding any block. "
         "The block can only be at one place at a time.")
-    DERIVED_FLUENTS = ['clear(', 'handempty']  # TODO capitalize DERIVED_FLUENTS
+    DERIVED_FLUENTS = ['clear(', 'handempty']
 
     # FOR RANDOM SUBSTITUTIONS
     OBJ_TYPE_TO_RAND = {'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs'}
@@ -221,7 +245,7 @@ class Blocksworld(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # under
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
@@ -302,7 +326,7 @@ class Blocksworld(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
@@ -535,7 +559,7 @@ class Depots(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         flag = True
         for prefix_asp, prefix_nl in [('-', 'not '), ('', '')]:
             if fluent.startswith(f'{prefix_asp}at('):
@@ -601,7 +625,7 @@ class Depots(BaseDomain):
         if flag:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('drive('):
             truck, distributor1, distributor2 = self.extract_multi_variable(action)
@@ -735,7 +759,7 @@ class Driverlog(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
@@ -786,7 +810,7 @@ class Driverlog(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
@@ -959,7 +983,7 @@ class Goldminer(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
             place = self.extract_single_variable(fluent)
             return f'robot communicates at location {place}'  # communicates
@@ -1038,7 +1062,7 @@ class Goldminer(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             location1, location2 = self.extract_multi_variable(action)
@@ -1135,7 +1159,7 @@ class Grippers(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
             return f'{robot} is engaged in {room}'  # is engaged
@@ -1166,7 +1190,7 @@ class Grippers(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('pick('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
@@ -1260,7 +1284,7 @@ class Logistics(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('in_city('):
             place, city = self.extract_multi_variable(fluent)
             return f'place {place} is outside the city {city}'  # outside
@@ -1284,7 +1308,7 @@ class Logistics(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
@@ -1329,7 +1353,7 @@ class Miconic(BaseDomain):
 
         "A lift can only be on one floor at a time. "
         "If the passenger is served, then the passenger is not boarded.")
-    DERIVED_FLUENTS = [] #TODO double check
+    DERIVED_FLUENTS = []  # TODO double check
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('origin('):
@@ -1388,7 +1412,7 @@ class Miconic(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
             return f'passenger {passenger} waits at floor {floor}'  # waits
@@ -1433,7 +1457,7 @@ class Miconic(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             floor, passenger = self.extract_multi_variable(action)
@@ -1552,7 +1576,7 @@ def action_to_natural_language_helper(self, action):
         raise 'action is not defined'
 
 
-def fluent_to_hallucinated_natural_language(self, fluent):
+def fluent_to_hallucinated_natural_language_helper(self, fluent):
     if fluent.startswith('at('):
         obj, location = self.extract_multi_variable(fluent)
         if obj.startswith('vehicle'):
@@ -1610,7 +1634,7 @@ def fluent_to_hallucinated_natural_language(self, fluent):
         raise 'fluent is not defined'
 
 
-def action_to_hallucinated_natural_language(self, action):
+def action_to_hallucinated_natural_language_helper(self, action):
     action = strip_action_prefix(action)
     if action.startswith('move('):
         vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
@@ -1665,7 +1689,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             tile, position = self.extract_multi_variable(fluent)
             return f'tile {tile} is stuck at position {position}'  # stuck
@@ -1689,7 +1713,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
@@ -1801,7 +1825,7 @@ class Satellite(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
             return f'{instrument} is out of order on {satellite}'  # out of order
@@ -1860,7 +1884,7 @@ class Satellite(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('turn_to('):
             satellite, new_dir, old_dir = self.extract_multi_variable(action)
@@ -1959,7 +1983,7 @@ class Spanner(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('man'):
@@ -2013,7 +2037,7 @@ class Spanner(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('walk'):
             start, end, man = self.extract_multi_variable(action)
@@ -2117,7 +2141,7 @@ class Zenotravel(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, city = self.extract_multi_variable(fluent)
             if obj.startswith('person'):
@@ -2153,7 +2177,7 @@ class Zenotravel(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)
@@ -2216,7 +2240,7 @@ class Visitall(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at_robot('):
             place = self.extract_multi_variable(fluent)
             return f"robot is stuck at {place}"  # stuck
@@ -2241,7 +2265,7 @@ class Visitall(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
@@ -2252,9 +2276,3 @@ class Visitall(BaseDomain):
 
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
                       Satellite, Spanner, Visitall, Zenotravel]
-
-# For testing
-if __name__ == '__main__':
-    obj = ALL_DOMAIN_CLASSES[0]()
-    print(obj.DOMAIN_NAME)
-    print(obj.action_to_hallucinated_natural_language('pick_up(b4)'))
