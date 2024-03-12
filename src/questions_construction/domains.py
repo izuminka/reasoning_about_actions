@@ -1,5 +1,6 @@
 import re
 import random
+import string
 
 
 def strip_action_prefix(action):
@@ -7,12 +8,8 @@ def strip_action_prefix(action):
         return action[len('action_'):]
     return action
 
-
-def obj_type_plus_plural(obj_type_dict):
-    for k, v in obj_type_dict.items():
-        obj_type_dict[k + 's'] = v
-    return obj_type_dict
-
+def gen_random_str(length=10):
+    ''.join(random.choices(string.ascii_lowercase, k=length))
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -20,15 +17,16 @@ class BaseDomain:
     DOMAIN_DESC_WITH_RAM = None
     ALL_TO_RAND = {}
 
-    def __init__(self, is_random_sub=False):
+    def __init__(self, is_random_sub, is_ramifications):
         self.is_random_sub = is_random_sub
-        if not is_random_sub:
-            self.domain_description_without_ram = self.DOMAIN_DESC_WITHOUT_RAM
-            self.domain_description_ram = self.DOMAIN_DESC_WITH_RAM
+        self.is_ramifications = is_ramifications
+        if is_ramifications:
+            self.domain_description = self.DOMAIN_DESC_WITH_RAM
         else:
-            self.domain_description_without_ram = self.replace_substrings(self.DOMAIN_DESC_WITHOUT_RAM,
-                                                                          self.ALL_TO_RAND)
-            self.domain_description_ram = self.replace_substrings(self.DOMAIN_DESC_WITH_RAM, self.ALL_TO_RAND)
+            self.domain_description = self.DOMAIN_DESC_WITHOUT_RAM
+        if is_random_sub:
+
+            self.domain_description = self.replace_substrings(self.domain_description, self.ALL_TO_RAND)
 
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
@@ -39,20 +37,22 @@ class BaseDomain:
 
     @staticmethod
     def replace_substrings(text, obj_dict):
+        #TODO fix this for phrases
         patterns = [re.compile(rf'\b{re.escape(old_word)}\b') for old_word, new_word in obj_dict.items()]
 
         tokens = text.split()
         new_tokens = []
         for token in tokens:
-            is_subbed = False
+            is_capitalized = token[0].isupper()
+            new_token = token.lower()
             for pattern in patterns:
-                match = pattern.match(token)
+                match = pattern.match(new_token)
                 if match:
-                    new_tokens.append(pattern.sub(obj_dict[match[0]], token))
-                    is_subbed = True
+                    new_token = pattern.sub(obj_dict[match[0]], new_token)
                     break
-            if not is_subbed:
-                new_tokens.append(token)
+            if is_capitalized:
+                new_token = new_token.capitalize()
+            new_tokens.append(new_token)
         return ' '.join(new_tokens)
 
     def fluent_to_natural_language_helper(self, fluent):
@@ -67,8 +67,8 @@ class BaseDomain:
     def action_to_hallucinated_natural_language_helper(self, action):
         raise 'Implement in child class'
 
-    def fluent_to_natural_language(self, fluent, hallucinate=False):
-        if not hallucinate:
+    def fluent_to_natural_language(self, fluent, is_hallucinated=False):
+        if not is_hallucinated:
             nl_fluent = self.fluent_to_natural_language_helper(fluent)
         else:
             nl_fluent = self.fluent_to_hallucinated_natural_language_helper(fluent)
@@ -78,8 +78,8 @@ class BaseDomain:
         else:
             return nl_fluent
 
-    def action_to_natural_language(self, action, hallucinate=False):
-        if not hallucinate:
+    def action_to_natural_language(self, action, is_hallucinated=False):
+        if not is_hallucinated:
             nl_action = self.action_to_natural_language_helper(action)
         else:
             nl_action = self.action_to_hallucinated_natural_language_helper(action)
@@ -126,8 +126,10 @@ class Blocksworld(BaseDomain):
                       'put down': 'xskgihccqt', 'puting down': 'xskgihccqt',
                       'stack': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
                       'unstack': 'wxqdwukszo', 'unstacking': 'wxqdwukszo', 'unstacked': 'wxqdwukszo'}
-    FLUENT_TO_RAND = {'on': 'zewwtdxhfs', 'clear': 'ormkfgqwve',
+    FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
+                      'clear': 'ormkfgqwve',
                       'holding': 'casqqrrojp', 'held': 'casqqrrojp',
+                      'empty': 'yqttlkcqqj',
                       'hand': 'egpbpdtalq'}
     ALL_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
 
@@ -2276,3 +2278,9 @@ class Visitall(BaseDomain):
 
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
                       Satellite, Spanner, Visitall, Zenotravel]
+
+if __name__ == '__main__':
+    dom = Blocksworld(is_random_sub=False, is_ramifications=True)
+    print(dom.domain_description)
+    dom = Blocksworld(is_random_sub=True, is_ramifications=True)
+    print(dom.domain_description)
