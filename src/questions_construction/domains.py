@@ -1430,6 +1430,18 @@ class Miconic(BaseDomain):
         "A lift can only be on one floor at a time. "
         "If the passenger is served, then the passenger is not boarded.")
     DERIVED_FLUENTS = []  # TODO double check
+    ALL_TO_RAND = { 'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
+                    'up': 'lfapuhgnsn',
+                    'down': 'mmphaaxcri',
+                    'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
+                    'source': 'outpkddlno',
+                    'above': 'idfiasmopc',
+                    'served': 'vpdiuemmjp',
+                    'elevator': 'jbbturclrd',
+                    'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
+                    'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
+                    'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
+                    'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja', 'departed': 'jbctpepaja', }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('origin('):
