@@ -1155,6 +1155,19 @@ class Grippers(BaseDomain):
         "If the robot is not carrying the object then the object a in the room. "
         "Robot can only be at one place. ")
 
+    ALL_TO_RAND = {'robot': 'jjjrptnvkh',
+                   'room': 'ixokqrvnqn',
+                   'destination': 'ezrqqoajas',
+                   'object': 'wtdcrmrabz',
+                   'gripper': 'yegitqlmuq', 'grippers': 'yegitqlmuq',
+                   'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
+                   'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
+                   'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn', 'dropped': 'qhfmsjkotn',
+                   'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt', 'transported': 'kseqanhkzt',
+                   'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
+
+
+
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
