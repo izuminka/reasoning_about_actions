@@ -2353,6 +2353,13 @@ class Visitall(BaseDomain):
 
         "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. ")
     DERIVED_FLUENTS = ['visited(']
+    ALL_TO_RAND = {
+        'robot': 'xtjpivjhco', 'robots': 'xtjpivjhco',
+        'position': 'puxuduuqen', 'positions': 'puxuduuqen',
+        'connect': 'dlipeeieju', 'connects': 'dlipeeieju', 'connecting': 'dlipeeieju', 'connected': 'dlipeeieju',
+        'move': 'pkjjnojvly', 'moves': 'pkjjnojvly', 'moving': 'pkjjnojvly', 'moved': 'pkjjnojvly',
+        'visit': 'lknwwwkrbf', 'visits': 'lknwwwkrbf', 'visiting': 'lknwwwkrbf', 'visited': 'lknwwwkrbf',
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robot('):
