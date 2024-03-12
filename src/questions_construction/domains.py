@@ -25,7 +25,6 @@ class BaseDomain:
         else:
             self.domain_description = self.DOMAIN_DESC_WITHOUT_RAM
         if is_random_sub:
-
             self.domain_description = self.replace_substrings(self.domain_description, self.ALL_TO_RAND)
 
     def extract_single_variable(self, obj):
@@ -36,24 +35,23 @@ class BaseDomain:
         return match.group(1).split(',')
 
     @staticmethod
-    def replace_substrings(text, obj_dict):
-        #TODO fix this for phrases
-        patterns = [re.compile(rf'\b{re.escape(old_word)}\b') for old_word, new_word in obj_dict.items()]
+    def replace_substring(text, old_sub, new_sub):
+        # sentence.replace(old_sub, new_sub)
+        pattern = r'(?<!\S)' + re.escape(old_sub) + r'(?![^\s"\'\.\,:;?!])'
+        return re.sub(pattern, new_sub, text)
 
-        tokens = text.split()
-        new_tokens = []
-        for token in tokens:
-            is_capitalized = token[0].isupper()
-            new_token = token.lower()
-            for pattern in patterns:
-                match = pattern.match(new_token)
-                if match:
-                    new_token = pattern.sub(obj_dict[match[0]], new_token)
-                    break
-            if is_capitalized:
-                new_token = new_token.capitalize()
-            new_tokens.append(new_token)
-        return ' '.join(new_tokens)
+    @staticmethod
+    def replace_substrings(text, obj_dict):
+        result = []
+        sentences = text.split('. ')
+        for sentence in sentences:
+            if sentence:
+                sentence = sentence.lower()
+                for old_word, new_word in obj_dict.items():
+                    sentence = BaseDomain.replace_substring(sentence, old_word, new_word)
+                sentence = sentence[0].upper() + sentence[1:]
+            result.append(sentence)
+        return '. '.join(result)
 
     def fluent_to_natural_language_helper(self, fluent):
         raise 'Implement in child class'
@@ -123,7 +121,7 @@ class Blocksworld(BaseDomain):
     # FOR RANDOM SUBSTITUTIONS
     OBJ_TYPE_TO_RAND = {'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs'}
     ACTION_TO_RAND = {'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
-                      'put down': 'xskgihccqt', 'puting down': 'xskgihccqt',
+                      'put down': 'xskgihccqt', 'putting down': 'xskgihccqt',
                       'stack': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
                       'unstack': 'wxqdwukszo', 'unstacking': 'wxqdwukszo', 'unstacked': 'wxqdwukszo'}
     FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
