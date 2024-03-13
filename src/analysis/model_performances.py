@@ -13,14 +13,17 @@ import numpy as np
 from src.questions_construction.main import *
 from src.common import *
 
-TRUE_ANSWER = 'True'
-FALSE_ANSWER = 'False'
-ANSWER_RESPONSES = [TRUE_FALSE_ANSWER, FREE_ANSWER]
+# STATS dict keys
+SK_PLAN_LENGTH = OUT_OBJ_PLAN_LENGTH
+SK_CATEGORY = OUT_OBJ_QUESTION_CATEGORY
+SK_RAMIFICATION = 'ramification_type'
+SK_ANSWER_TYPE = OUT_OBJ_ANSWER_TYPE
+SK_MODEL = 'model'
+SK_PROMPT_TYPE = 'prompt_type'
+SK_RESULT = 'result'
+SK_DOMAIN = 'domain'
 
-ALL_LENGTHS_KEY = 'all_lengths'
-ALL_DOMAINS_KEY = 'all_domains'
-ALL_CATEGORIES_KEY = 'all_categories'
-
+# Metrics & Metrics Related
 F1_SCORE_KEY = 'f1'
 F1_SCORE_TYPE = 'micro'
 ACCURACY_SCORE_KEY = 'accuracy'
@@ -29,6 +32,20 @@ SCORE_KEYS = [F1_SCORE_KEY, ACCURACY_SCORE_KEY]
 ROUGE_SCORE_TYPE = 'rougeL'
 ROUGE_SCORER = rouge_scorer.RougeScorer([ROUGE_SCORE_TYPE], use_stemmer=True)
 
+TRUE_ANSWER = 'True'
+FALSE_ANSWER = 'False'
+ANSWER_RESPONSES = [TRUE_FALSE_ANSWER, FREE_ANSWER]
+
+
+ALL_LENGTHS_KEY = 'all_lengths'
+ALL_DOMAINS_KEY = 'all_domains'
+ALL_CATEGORIES_KEY = 'all_categories'
+
+DOMAIN_NAMES = ['blocksworld', 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics', 'miconic', 'mystery',
+                'npuzzle', 'satellite', 'spanner', 'visitall', 'zenotravel']
+
+PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'mistral_7b_instruct']  # TODO add , 'gpt4'
+PROMPT_TYPES = ['zero_shot_data', 'few_shot_4', 'few_shot_4_cot']  # TODO clean up dirs
 
 def gather_data():
     all_data = []

@@ -1,5 +1,7 @@
 import re
 import random
+import string
+
 
 def strip_action_prefix(action):
     if action.startswith('action_'):
@@ -7,8 +9,27 @@ def strip_action_prefix(action):
     return action
 
 
+def gen_random_str(length=10):
+    return ''.join(random.choices(string.ascii_lowercase, k=length))
+
+
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
+    DOMAIN_DESC_WITHOUT_RAM = None
+    DOMAIN_DESC_WITH_RAM = None
+    SUBSTRINGS_TO_RAND = {}
+    REPLACE_REGEX_PREFIX = r'(?<!\S)'
+    REPLACE_REGEX_POSTFIX = r'(?![^\s"\'\.\,:;?!])'
+
+    def __init__(self, is_random_sub, is_ramifications):
+        self.is_random_sub = is_random_sub
+        self.is_ramifications = is_ramifications
+        if is_ramifications:
+            self.domain_description = self.DOMAIN_DESC_WITH_RAM
+        else:
+            self.domain_description = self.DOMAIN_DESC_WITHOUT_RAM
+        if is_random_sub:
+            self.domain_description = self.replace_substrings(self.domain_description, self.SUBSTRINGS_TO_RAND)
 
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
@@ -17,35 +38,104 @@ class BaseDomain:
         match = re.search(self.OBJ_IN_PAREN_REGEX, obj)
         return match.group(1).split(',')
 
+    @staticmethod
+    def replace_substring(text, old_sub, new_sub):
+        pattern = BaseDomain.REPLACE_REGEX_PREFIX + re.escape(old_sub) + BaseDomain.REPLACE_REGEX_POSTFIX
+        return re.sub(pattern, new_sub, text)
+
+    @staticmethod
+    def replace_substrings(text, obj_dict, sentence_split_token='. '):
+        result = []
+        sentences = text.split(sentence_split_token)
+        for sentence in sentences:
+            if sentence:
+                sentence = sentence.lower()
+                for old_word, new_word in obj_dict.items():
+                    sentence = BaseDomain.replace_substring(sentence, old_word, new_word)
+                sentence = sentence[0].upper() + sentence[1:]
+            result.append(sentence)
+        return sentence_split_token.join(result)
+
+    def fluent_to_natural_language_helper(self, fluent):
+        raise 'Implement in child class'
+
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        raise 'Implement in child class'
+
+    def action_to_natural_language_helper(self, action):
+        raise 'Implement in child class'
+
+    def action_to_hallucinated_natural_language_helper(self, action):
+        raise 'Implement in child class'
+
+    def fluent_to_natural_language(self, fluent, is_hallucinated=False):
+        if not is_hallucinated:
+            nl_fluent = self.fluent_to_natural_language_helper(fluent)
+        else:
+            nl_fluent = self.fluent_to_hallucinated_natural_language_helper(fluent)
+
+        if self.is_random_sub:
+            return self.replace_substring(nl_fluent, self.SUBSTRINGS_TO_RAND)
+        else:
+            return nl_fluent
+
+    def action_to_natural_language(self, action, is_hallucinated=False):
+        if not is_hallucinated:
+            nl_action = self.action_to_natural_language_helper(action)
+        else:
+            nl_action = self.action_to_hallucinated_natural_language_helper(action)
+
+        if self.is_random_sub:
+            return self.replace_substring(nl_action, self.SUBSTRINGS_TO_RAND)
+        else:
+            return nl_action
+
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
-    derived_fluents = ['clear(','handempty']
+    DERIVED_FLUENTS = ['clear(', 'handempty']
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
+        'By picking up that block, it makes that block not present on the table and not clear. '
+        'It also leads to the block being held and makes the hand not empty. '
+        'Putting down the block can only be executed if the block is being held. '
+        'Putting down the block causes that block to be clear and on the table. '
+        'It also causes the hand to be not holding the block and makes the hand empty. '
+        'A block can be stacked on the second block if it is being held and the second block is clear. '
+        'By stacking the first block on the second, it causes the first block to clear and on top of the second block. '
+        'Meanwhile, the second block is not clear, and the hand becomes empty as it is not holding the block. '
+        'The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. '
+        'Unstacking the first block from the second causes the second block to be clear. '
+        'The first block is now being held, not clear, and not on top of the second block. '
+        'Furthermore, the hand is not empty.')
+    DOMAIN_DESC_WITH_RAM = (
+        'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
+        'Picking up the block leads to the block being held. '
+        "Putting down the block can only be executed if the block is being held. "
+        "Putting down the block causes the block to be on the table. "
+        "A block can be stacked on the second block if it is being held and the second block is clear. "
+        "By stacking the first block on the second, it causes the first block to be on top of the second block. "
+        "The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. "
+        "Unstacking the first block from the second causes first block to be held "
+        "A block is said to be clear if it is not being held and there are no blocks that are on top of it. "
+        "The hand is said to be empty if and only if it is not holding any block. "
+        "The block can only be at one place at a time.")
 
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    # FOR RANDOM SUBSTITUTIONS
+    OBJ_TYPE_TO_RAND = {'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs'}
+    ACTION_TO_RAND = {'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
+                      'put down': 'xskgihccqt', 'puts down': 'xskgihccqt', 'putting down': 'xskgihccqt',
+                      'stack': 'oscckwdtoh', 'stacks': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
+                      'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo',
+                      'unstacked': 'wxqdwukszo'}
+    FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
+                      # 'clear': 'ormkfgqwve',
+                       'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
+                      # 'empty': 'yqttlkcqqj',
+                      'hand': 'egpbpdtalq'}
+    SUBSTRINGS_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. By picking up that block, it makes that block not present on the table and not clear. It also leads to the block being held and makes the hand not empty. Putting down the block can only be executed if the block is being held. Putting down the block causes that block to be clear and on the table. It also causes the hand to be not holding the block and makes the hand empty. A block can be stacked on the second block if it is being held and the second block is clear. By stacking the first block on the second, it causes the first block to clear and on top of the second block. Meanwhile, the second block is not clear, and the hand becomes empty as it is not holding the block. The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. Unstacking the first block from the second causes the second block to be clear. The first block is now being held, not clear, and not on top of the second block. Furthermore, the hand is not empty.'
-        return domain_description
-
-    @staticmethod
-    def domain_description_ram():
-        return ('Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
-                'Picking up the block leads to the block being held. '
-                "Putting down the block can only be executed if the block is being held. "
-                "Putting down the block causes the block to be on the table. "
-                "A block can be stacked on the second block if it is being held and the second block is clear. "
-                "By stacking the first block on the second, it causes the first block to be on top of the second block. "
-                "The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. "
-                "Unstacking the first block from the second causes first block to be held "
-                "A block is said to be clear if it is not being held and there are no blocks that are on top of it. "
-                "The hand is said to be empty if and only if it is not holding any block. "
-                "The block can only be at one place at a time.")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return random.choice([
@@ -123,7 +213,7 @@ class Blocksworld(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
@@ -159,7 +249,7 @@ class Blocksworld(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # under
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
@@ -240,7 +330,7 @@ class Blocksworld(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
@@ -280,42 +370,61 @@ class Blocksworld(BaseDomain):
 
 class Depots(BaseDomain):
     DOMAIN_NAME = 'depots'
-    derived_fluents = ['clear(','available(']
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A surface can be a pallet or a crate. '
+        'A truck can be driven from one location to another only if it is present at the first location. '
+        'Driving the truck makes the truck to be present at the final destination and not at the starting location. '
+        'A hoist can lift a crate from a surface only when the hoist and the crate are present in the same location, the hoist is available, the crate is present on the surface, and the crate is clear. '
+        'Lifting causes the hoist to lift the crate, the crate to be not in that location, not clear, and not on top of the previous surface, which is now clear. '
+        'Moreover, lifting the crate causes the hoist to be not available. '
+        'Dropping the crate is possible only if the hoist, crate, and surface are present in the same location, the hoist is lifting the crate, and the surface is clear. '
+        'Dropping the crate causes it to be on top of the surface, be present in the location where it was dropped, and be clear. '
+        'It also causes the hoist to become available, and not lift the crate. The surface on which the crate was dropped becomes not clear. '
+        'Loading the crate on a truck can be executed only when the crate and truck are present in the same location, and the hoist is lifting the crate. '
+        'Loading the crate onto the truck causes the hoist to be available and not lifting the crate, and crate to be in the truck. '
+        'Unloading the crate from the truck can be done only if the hoist and truck are in the same place, the hoist is available, and the crate is present in the truck. '
+        'Unloading the crate from the truck causes the crate to be not in the truck, and the hoist to be lifting the crate and not available.')
+    DOMAIN_DESC_WITH_RAM = (
+        'A surface can be a pallet or a crate. '
+        "A truck can be driven from one location to another only if it is present at the first location. "
+        "Driving the truck makes the truck to be present at the final destination. "
+        "A hoist can lift a crate from a surface only when the hoist and the crate are present in the same location, the hoist is available, the crate is present on the surface, and the crate is clear."
+        "Lifting causes the hoist to lift the crate. "
+        "Dropping the crate is possible only if the hoist, crate, and surface are present in the same location, the hoist is lifting the crate, and the surface is clear. "
+        "Dropping the crate causes it to be on top of the surface and be present at the location where it was dropped. It also causes the hoist to not lift the crate. "
+        "Loading the crate on a truck can be executed only when the crate and truck are present in the same location and the hoist is lifting the crate. "
+        "Loading the crate onto the truck causes the hoist to be not lifting the crate, and the crate to be in the truck. "
+        "Unloading the crate from the truck can be done only if the hoist and truck are in the same place, the hoist is available, and the crate is present in the truck. "
+        "Unloading the crate from the truck causes the crate to be not in the truck, and the hoist to be lifting the crate. "
+        "A hoist is available if and only if it does not lift anything (any crate). "
+        "A surface  is clear if and only if no crates are on top of that surface. "
+        "A crate is clear if and only if no hoist is lifting that crate. "
+        "A truck can be only at one location. "
+        "A crate can only be at one location. "
+        "A crate can only be on top of one surface. ")
+    DERIVED_FLUENTS = ['clear(', 'available(']
 
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    SUBSTRINGS_TO_RAND = {
+        'surface': 'fshxjwxean', 'surfaces': 'fshxjwxean',
+        'pallet': 'tzrwjuotxz', 'pallets': 'tzrwjuotxz',
+        'crate': 'pjrluufopq', 'crates': 'pjrluufopq',
+        'truck': 'nblmdziyqf', 'trucks': 'nblmdziyqf',
+        'hoist': 'suhmddooyi', 'hoists': 'suhmddooyi',
+        'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy', 'drove': 'jzmscukkyy',
+        'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc', 'lifts': 'aeaygzpsjc', 'lifted': 'aeaygzpsjc',
+        'drop': 'uckhudtpif', 'drops': 'uckhudtpif', 'dropping': 'uckhudtpif', 'dropped': 'uckhudtpif',
+        'load': 'gjqgfjtbnf', 'loads': 'gjqgfjtbnf', 'loading': 'gjqgfjtbnf', 'loaded': 'gjqgfjtbnf',
+        'unload': 'gpztfzvsux', 'unloads': 'gpztfzvsux', 'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux',
+        # 'location': 'eejxtwabwx', 'locations': 'eejxtwabwx',
+        # 'clear': 'sypgozifms',
+        # 'available': 'xlhhnyciys',
+    }
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'A surface can be a pallet or a crate. A truck can be driven from one location to another only if it is present at the first location. Driving the truck makes the truck to be present at the final destination and not at the starting location. A hoist can lift a crate from a surface only when the hoist and the crate are present in the same location, the hoist is available, the crate is present on the surface, and the crate is clear. Lifting causes the hoist to lift the crate  the crate to be not in that location, not clear, and not on top of the previous surface, which is now clear. Moreover, lifting the crate causes the hoist to be not available. Dropping the crate is possible only if the hoist, crate, and surface are present in the same location, the hoist is lifting the crate, and the surface is clear. Dropping the crate causes it to be on top of the surface, be present in the location where it was dropped, and be clear. It also causes the hoist to become available, and not lift the crate. The surface on which the crate was dropped becomes not clear. Loading the crate on a truck can be executed only when the crate and truck are present in the same location, and the hoist is lifting the crate. Loading the crate onto the truck causes the hoist to be available and not lifting the crate, and crate to be in the truck. Unloading the crate from the truck can be done only if the hoist and truck are in the same place, the hoist is available, and the crate is present in the truck. Unloading the crate from the truck causes the crate to be not in the truck, and the hoist to be lifting the crate and not available.'
-        return domain_description
-
-    @staticmethod
-    def domain_description_ram():
-        return ('A surface can be a pallet or a crate. '
-                "A truck can be driven from one location to another only if it is present at the first location. "
-                "Driving the truck makes the truck to be present at the final destination. "
-                "A hoist can lift a crate from a surface only when the hoist and the crate are present in the same location, the hoist is available, the crate is present on the surface, and the crate is clear."
-                "Lifting causes the hoist to lift the crate. "
-                "Dropping the crate is possible only if the hoist, crate, and surface are present in the same location, the hoist is lifting the crate, and the surface is clear. "
-                "Dropping the crate causes it to be on top of the surface and be present at the location where it was dropped. It also causes the hoist to not lift the crate. "
-                "Loading the crate on a truck can be executed only when the crate and truck are present in the same location and the hoist is lifting the crate. "
-                "Loading the crate onto the truck causes the hoist to be not lifting the crate, and the crate to be in the truck. "
-                "Unloading the crate from the truck can be done only if the hoist and truck are in the same place, the hoist is available, and the crate is present in the truck. "
-                "Unloading the crate from the truck causes the crate to be not in the truck, and the hoist to be lifting the crate. "
-                "A hoist is available if and only if it does not lift anything (any crate). "
-                "A surface  is clear if and only if no crates are on top of that surface. "
-                "A crate is clear if and only if no hoist is lifting that crate. "
-                "A truck can be only at one location. "
-                "A crate can only be at one location. "
-                "A crate can only be on top of one surface. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, place = self.extract_multi_variable(fluent)
             if (obj.startswith('truck') or obj.startswith('crate')
-                or obj.startswith('hoist') or obj.startswith('pallet')):
+                    or obj.startswith('hoist') or obj.startswith('pallet')):
                 return random.choice([
                     f'{obj} is at {place}',
                     f'{obj} is located at {place}',
@@ -329,7 +438,7 @@ class Depots(BaseDomain):
         elif fluent.startswith('-at('):
             obj, place = self.extract_multi_variable(fluent)
             if (obj.startswith('truck') or obj.startswith('crate')
-                or obj.startswith('hoist') or obj.startswith('pallet')):
+                    or obj.startswith('hoist') or obj.startswith('pallet')):
                 return random.choice([
                     f'{obj} is not at {place}',
                     f'{obj} is not located at {place}',
@@ -425,7 +534,7 @@ class Depots(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('drive('):
             truck, distributor1, distributor2 = self.extract_multi_variable(action)
@@ -470,7 +579,7 @@ class Depots(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         flag = True
         for prefix_asp, prefix_nl in [('-', 'not '), ('', '')]:
             if fluent.startswith(f'{prefix_asp}at('):
@@ -493,7 +602,7 @@ class Depots(BaseDomain):
                         f'{obj} is {prefix_nl}located near {place}'
                     ])
                     # return f'{obj} is {prefix_nl} near {place}'  # near
-                elif obj.startswith('pallet'):     ############## On is a defined fluent in this domain
+                elif obj.startswith('pallet'):  ############## On is a defined fluent in this domain
                     return random.choice([
                         f'{obj} is {prefix_nl}on top of {place}'
                     ])
@@ -521,13 +630,13 @@ class Depots(BaseDomain):
                     f'{crate} is {prefix_nl}being transported by {hoist}'
                 ])
                 # return f'{hoist} is {prefix_nl} transporting {crate}'  # transporting
-            elif fluent.startswith(f'{prefix_asp}available('):   ############### Free means the same thing as available
+            elif fluent.startswith(f'{prefix_asp}available('):  ############### Free means the same thing as available
                 hoist = self.extract_single_variable(fluent)
                 return random.choice([
                     f'{hoist} is {prefix_nl} free',
                 ])
                 # return f'{hoist} is {prefix_nl} free'  # free
-            elif fluent.startswith(f'{prefix_asp}clear('):   ############### Free means the same thing as clear
+            elif fluent.startswith(f'{prefix_asp}clear('):  ############### Free means the same thing as clear
                 surface = self.extract_single_variable(fluent)
                 return random.choice([
                     f'{surface} is {prefix_nl} free'
@@ -536,7 +645,7 @@ class Depots(BaseDomain):
         if flag:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('drive('):
             truck, distributor1, distributor2 = self.extract_multi_variable(action)
@@ -545,13 +654,13 @@ class Depots(BaseDomain):
                 f'inspection of {truck} occurs at {distributor1} and {distributor2}'
             ])
             # return f'{truck} is inspected at {distributor1} and at {distributor2}'  # inspected
-        elif action.startswith('lift('):   ############### Lowered means the same thing as drop
+        elif action.startswith('lift('):  ############### Lowered means the same thing as drop
             hoist, crate, surface, place = self.extract_multi_variable(action)
             return random.choice([
                 f'{crate} is lowered from {surface} with {hoist} from {place}'
             ])
             # return f'{crate} is lowered from {surface} with {hoist} from {place}'  # lowered
-        elif action.startswith('drop('):   ############### Released can mean the same thing as drop
+        elif action.startswith('drop('):  ############### Released can mean the same thing as drop
             hoist, crate, surface, place = self.extract_multi_variable(action)
             return random.choice([
                 f'{crate} is released to {surface} with {hoist} on {place}'
@@ -563,7 +672,7 @@ class Depots(BaseDomain):
                 f'{crate} is transported with {hoist} in {truck} from {place}'
             ])
             # return f'{crate} is transported with {hoist} in {truck} from {place}'  # transports
-        elif action.startswith('unload('):   ############### Maneuvered can mean the same thing as Unload
+        elif action.startswith('unload('):  ############### Maneuvered can mean the same thing as Unload
             hoist, crate, truck, place = self.extract_multi_variable(action)
             return random.choice([
                 f'{crate} is maneuvered with {hoist} from {truck} from {place}'
@@ -575,36 +684,58 @@ class Depots(BaseDomain):
 
 class Driverlog(BaseDomain):
     DOMAIN_NAME = 'driverlog'
-    derived_fluents = ['empty']
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'To load an object onto a truck at a location, the truck and the object must be at the same location. '
+        'Loading the object onto the truck causes the object to not be at its initial location and to be inside the truck. '
+        'To unload an object from a truck at a location, the truck must be at the specified location and the object should be in the truck. '
+        'Unloading the object from the truck causes the object to not be inside the truck and to be at the specified location. '
+        'To board a truck, the driver and the truck must be at the same location, and the truck must be empty. '
+        'Boarding the truck makes the driver not be at the initial location, to be driving the truck, and the truck becomes not empty. '
+        'Disembarking from a truck is only possible when the driver is driving the truck and the truck is at the location. '
+        'Disembarking from the truck causes the driver to stop driving the truck, be at the specified location, and the truck to be empty. '
+        'To drive a truck from one location to another, the truck must be at the initial location, the driver must be driving the truck, and there must be a link between the initial and final locations. '
+        'Driving the truck causes it to no longer be at the initial location but to be at the final location. '
+        'To walk from one location to another, the driver must be at the initial location, and there must be a path between the initial and final locations. '
+        'Walking causes the driver to no longer be at the initial location but to be at the final location.')
+    DOMAIN_DESC_WITH_RAM = (
+        'To load an object onto a truck at a location, the truck and the object must be at the same location. '
+        'Loading the object onto the truck causes the object to be inside the truck. '
+        'To unload an object from a truck at a location, the truck must be at the same location and the object should be in the truck. '
+        'Unloading the object from the truck causes the object to be at the specified location. '
+        "To board a truck, the driver and the truck must be at the same location, and the truck must be empty. Boarding the truck causes the driver to be driving the truck. "
+        "Disembarking from a truck is only possible when the driver is driving the truck and the truck is at the location. "
+        "Disembarking from the truck causes the driver to be at the specified location. "
+        "To drive a truck from one location to another, the truck must be at the initial location, the driver must be driving the truck, and there must be a link between the initial and final locations. "
+        "Driving the truck causes it to be at the final location. "
+        "To walk from one location to another, the driver must be at the initial location, and there must be a path between the initial and final locations. "
+        "Walking from inital location to final location, causes the driver to be at the final location. "
+        "A truck is empty if and only if it is not driven by anyone (any driver). "
+        "A driver is driving the truck if and only if the driver is not at a location "
+        "An object can only be at one location. "
+        "A driver can only be at one location.")
+    DERIVED_FLUENTS = ['empty']
 
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    SUBSTRINGS_TO_RAND = {
+        'truck': 'zkkizjecwh', 'trucks': 'zkkizjecwh',
+        'object': 'omkfkvxwrg', 'objects': 'omkfkvxwrg',
+        'driver': 'fxwdnwxasu', 'drivers': 'fxwdnwxasu',
+        'link': 'umwttodbts', 'links': 'umwttodbts',
+        'path': 'zgbnmmdljx', 'paths': 'zgbnmmdljx',
+        # 'empty': 'fgrxzszxhm',
+        'load': 'yvlcghamlt', 'loads': 'yvlcghamlt', 'loading': 'yvlcghamlt', 'loaded': 'yvlcghamlt',
+        'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj',
+        'unloaded': 'zfjywbftzj',
+        'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua',
+        'boarded': 'kqrkdhivua',
+        'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm',
+        'disembarked': 'qstuhdgygm',
+        'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie',
+        'driven': 'wqfrddftie',
+        'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh', 'walked': 'elasopyqsh',
+        # 'location': 'iatympbexj', 'locations': 'iatympbexj',
+    }
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'To load an object onto a truck at a location, the truck and the object must be at the same location. Loading the object onto the truck causes the object to not be at its initial location and to be inside the truck. To unload an object from a truck at a location, the truck must be at the specified location and the object should be in the truck. Unloading the object from the truck causes the object to not be inside the truck and to be at the specified location. To board a truck, the driver and the truck must be at the same location, and the truck must be empty. Boarding the truck makes the driver not be at the initial location, to be driving the truck, and the truck becomes not empty. Disembarking from a truck is only possible when the driver is driving the truck and the truck is at the location. Disembarking from the truck causes the driver to stop driving the truck, be at the specified location, and the truck to be empty. To drive a truck from one location to another, the truck must be at the initial location, the driver must be driving the truck, and there must be a link between the initial and final locations. Driving the truck causes it to no longer be at the initial location but to be at the final location. To walk from one location to another, the driver must be at the initial location, and there must be a path between the initial and final locations. Walking causes the driver to no longer be at the initial location but to be at the final location.'
-        return domain_description
-
-    @staticmethod
-    def domain_description_ram():
-        return ('To load an object onto a truck at a location, the truck and the object must be at the same location. '
-                'Loading the object onto the truck causes the object to be inside the truck. '
-                'To unload an object from a truck at a location, the truck must be at the same location and the object should be in the truck. '
-                'Unloading the object from the truck causes the object to be at the specified location. '
-                "To board a truck, the driver and the truck must be at the same location, and the truck must be empty. Boarding the truck causes the driver to be driving the truck. "
-                "Disembarking from a truck is only possible when the driver is driving the truck and the truck is at the location. "
-                "Disembarking from the truck causes the driver to be at the specified location. "
-                "To drive a truck from one location to another, the truck must be at the initial location, the driver must be driving the truck, and there must be a link between the initial and final locations. "
-                "Driving the truck causes it to be at the final location. "
-                "To walk from one location to another, the driver must be at the initial location, and there must be a path between the initial and final locations. "
-                "Walking from inital location to final location, causes the driver to be at the final location. "
-                "A truck is empty if and only if it is not driven by anyone (any driver). "
-                "A driver is driving the truck if and only if the driver is not at a location "
-                "An object can only be at one location. "
-                "A driver can only be at one location.")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             return random.choice([
@@ -703,7 +834,7 @@ class Driverlog(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
@@ -756,7 +887,7 @@ class Driverlog(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
@@ -863,7 +994,7 @@ class Driverlog(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
@@ -918,45 +1049,67 @@ class Driverlog(BaseDomain):
 
 class Goldminer(BaseDomain):
     DOMAIN_NAME = 'goldminer'
-    derived_fluents = ['arm_empty','clear(']
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A robot can move from one location to another if it is currently at the starting location, the locations are connected, and the destination is clear. '
+        'Moving causes the robot to be at the new location, and it is no longer at the previous location. '
+        'The robot is capable of picking up a laser at a specific location if it is at that location, the laser is present at that location, and the robot\'s arm is empty. '
+        'Picking up the laser results in the robot\'s arm being no longer empty, holding the laser, and the laser no longer being at that location. '
+        'Similarly, the robot can pick up a bomb at a particular location if it is at that location, the bomb is present at that location, and the robot\'s arm is empty. Picking up the bomb results in the robot\'s arm being no longer empty, and it now holds the bomb. '
+        'The robot can put down a laser at a specific location if it is at that location and currently holds the laser. '
+        'Putting down the laser results in the robot\'s arm being empty, not holding the laser, and the laser being at that location. '
+        'A robot that is present at one location, can detonate the bomb at another location only if the robot is holding a bomb, the locations are connected and there is a soft rock at the second location. '
+        'Detonating the bomb results in the robot\'s arm becoming empty and not holding the bomb anymore. The second location becomes clear and the soft rock is destroyed. '
+        'Firing a laser from one location to another is executable only if the robot is at the starting location, holds a laser, and the locations are connected. '
+        'Firing the laser results in the destination being clear, with no soft rocks, no gold, and no hard rocks at the destination. '
+        'Finally, the robot can pick up gold at a specific location if it is at that location, the robot\'s arm is empty, and there is gold at that location. '
+        'Picking up gold results in the robot\'s arm no longer being empty, and it now holds the gold.')
+    DOMAIN_DESC_WITH_RAM = (
+        'A robot can move from one location to another if it is currently at the starting location, the locations are connected, and the destination is clear. '
+        "Moving causes the robot to be at the new location. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'A robot can move from one location to another if it is currently at the starting location, the locations are connected, and the destination is clear. Moving causes the robot to be at the new location, and it is no longer at the previous location. The robot is capable of picking up a laser at a specific location if it is at that location, the laser is present at that location, and the robot\'s arm is empty. Picking up the laser results in the robot\'s arm being no longer empty, holding the laser, and the laser no longer being at that location. Similarly, the robot can pick up a bomb at a particular location if it is at that location, the bomb is present at that location, and the robot\'s arm is empty. Picking up the bomb results in the robot\'s arm being no longer empty, and it now holds the bomb. The robot can put down a laser at a specific location if it is at that location and currently holds the laser. Putting down the laser results in the robot\'s arm being empty, not holding the laser, and the laser being at that location. A robot that is present at one location, can detonate the bomb at another location only if the robot is holding a bomb, the locations are connected and there is a soft rock at the second location. Detonating the bomb results in the robot\'s arm becoming empty and not holding the bomb anymore. The second location becomes clear and the soft rock is destroyed. Firing a laser from one location to another is executable only if the robot is at the starting location, holds a laser, and the locations are connected. Firing the laser results in the destination being clear, with no soft rocks, no gold, and no hard rocks at the destination. Finally, the robot can pick up gold at a specific location if it is at that location, the robot\'s arm is empty, and there is gold at that location. Picking up gold results in the robot\'s arm no longer being empty, and it now holds the gold.'
-        return domain_description
+        "The robot can pick up a laser at a specific location only if it is at that location, the laser is present at that location, and the robot's arm is empty. "
+        "Picking up the laser results in the robot holding the laser. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'A robot can move from one location to another if it is currently at the starting location, the locations are connected, and the destination is clear. '
-            "Moving causes the robot to be at the new location. "
+        "Similarly, the robot can pick up a bomb at a particular location if it is at that location, the bomb is present at that location, and the robot's arm is empty. "
+        "Picking up the bomb results in the robot holding the bomb. "
 
-            "The robot can pick up a laser at a specific location only if it is at that location, the laser is present at that location, and the robot's arm is empty. "
-            "Picking up the laser results in the robot holding the laser. "
+        "The robot can put down a laser at a specific location if it is at that location and currently holds the laser. Putting down the laser results in the laser being at that location. "
 
-            "Similarly, the robot can pick up a bomb at a particular location if it is at that location, the bomb is present at that location, and the robot's arm is empty. "
-            "Picking up the bomb results in the robot holding the bomb. "
+        "A robot that is present at one location, can detonate the bomb at another location only if the robot is holding a bomb, the locations are connected and there is a soft rock at the second location. "
+        "Detonating the bomb results in the robot not holding the bomb anymore and the soft rock being destroyed. "
 
-            "The robot can put down a laser at a specific location if it is at that location and currently holds the laser. Putting down the laser results in the laser being at that location. "
+        "Firing a laser from one location to another is executable only if the robot is at the starting location, holds a laser, and the locations are connected. "
+        "Firing the laser results in the destination having no soft rocks, no gold, and no hard rocks. "
 
-            "A robot that is present at one location, can detonate the bomb at another location only if the robot is holding a bomb, the locations are connected and there is a soft rock at the second location. "
-            "Detonating the bomb results in the robot not holding the bomb anymore and the soft rock being destroyed. "
+        "Finally, the robot can pick up gold at a specific location if it is at that location, the robot's arm is empty, and there is gold at that location. "
+        "Picking up gold results in the robot holding the gold. "
 
-            "Firing a laser from one location to another is executable only if the robot is at the starting location, holds a laser, and the locations are connected. "
-            "Firing the laser results in the destination having no soft rocks, no gold, and no hard rocks. "
+        "A robot cannot be in two places at once. "
+        "The arm is said to be empty if and only if it is not holding a laser and not holding a bomb and not holding gold. "
+        "The place is clear if and only if it does not contain any soft rock, gold, or hard rock. "
+        "The robot is holding a laser if and only if the laser is not at a location. ")
 
-            "Finally, the robot can pick up gold at a specific location if it is at that location, the robot's arm is empty, and there is gold at that location. "
-            "Picking up gold results in the robot holding the gold. "
+    DERIVED_FLUENTS = ['arm_empty', 'clear(']
+    SUBSTRINGS_TO_RAND = {
+        'robot': 'oiycijmjmo',
+        'laser': 'jaakaxcemj',
+        'arm': 'jawtollkbp', 'arms': 'jawtollkbp',
+        'bomb': 'ojyinshkhj',
+        'gold': 'gbxztwroqz',
+        'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
+        'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
+        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf',
+        'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl', 'found': 'qwyadblmhl',
+        'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc', 'moved': 'zdmlakgkqc',
+        'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse', 'picked up': 'wlcfexwxse',
+        'put down': 'lrlcipamts', 'puts down': 'lrlcipamts', 'putting down': 'lrlcipamts',
+        'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi', 'fired': 'arvmgimcpi',
+        # 'clear': 'qvnmedqflj',
+        # 'empty': 'kqtvognkhw',
+        # 'location': 'cltqghvirt', 'locations': 'cltqghvirt',
+    }
 
-            "A robot cannot be in two places at once. "
-            "The arm is said to be empty if and only if it is not holding a laser and not holding a bomb and not holding gold. "
-            "The place is clear if and only if it does not contain any soft rock, gold, or hard rock. "
-            "The robot is holding a laser if and only if the laser is not at a location. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
             place = self.extract_single_variable(fluent)
             return random.choice([
@@ -1147,7 +1300,7 @@ class Goldminer(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             location1, location2 = self.extract_multi_variable(action)
@@ -1201,7 +1354,7 @@ class Goldminer(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
             place = self.extract_single_variable(fluent)
             return random.choice([
@@ -1366,7 +1519,7 @@ class Goldminer(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             location1, location2 = self.extract_multi_variable(action)
@@ -1424,34 +1577,43 @@ class Goldminer(BaseDomain):
 
 class Grippers(BaseDomain):
     DOMAIN_NAME = 'grippers'
-    derived_fluents = ['free']
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DERIVED_FLUENTS = ['free']
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A robot can move from a specified room if it is in that room. '
+        'Moving the robot causes it to be not in the said room but in the destination room. '
+        'A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. '
+        'Picking up the object causes the robot to carry that object using its gripper, the object to be not in that room, and the said gripper not free. '
+        'Dropping the object in a specified room is only executable when the robot is carrying that object using its gripper, and the robot is in the said room. '
+        'Dropping an object in a room makes the object be in that room, the gripper be free and the robot not carrying the object anymore.')
+    DOMAIN_DESC_WITH_RAM = (
+        "A robot can move from a specified room if it is in that room. "
+        "Moving the robot causes  it to be in the destination room. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'A robot can move from a specified room if it is in that room. Moving the robot causes it to be not in the said room but in the destination room. A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. Picking up the object causes the robot to carry that object using its gripper, the object to be not in that room, and the said gripper not free. Dropping the object in a specified room is only executable when the robot is carrying that object using its gripper, and the robot is in the said room. Dropping an object in a room makes the object be in that room, the gripper be free and the robot not carrying the object anymore.'
-        return domain_description
+        "A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. "
+        "Picking up the object causes the robot to carry the object via its gripper. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            "A robot can move from a specified room if it is in that room. "
-            "Moving the robot causes  it to be in the destination room. "
+        "Dropping the object in a specified room is executable if and only if the robot is carrying the object using its gripper, and the robot is in the room. "
+        "Dropping the object causes the robot to not carry the object. "
 
-            "A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. "
-            "Picking up the object causes the robot to carry the object via its gripper. "
+        "A robot's gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
+        "If the robot is carrying the object then the object is not in the room. "
+        "If the robot is not carrying the object then the object a in the room. "
+        "Robot can only be at one place. ")
 
-            "Dropping the object in a specified room is executable if and only if the robot is carrying the object using its gripper, and the robot is in the room. "
-            "Dropping the object causes the robot to not carry the object. "
+    SUBSTRINGS_TO_RAND = {
+        'robot': 'jjjrptnvkh', 'robots': 'jjjrptnvkh',
+        'room': 'ixokqrvnqn', 'rooms': 'ixokqrvnqn',
+        # 'destination': 'ezrqqoajas', 'destinations': 'ezrqqoajas',
+        'object': 'wtdcrmrabz', 'objects': 'wtdcrmrabz',
+        'gripper': 'yegitqlmuq', 'grippers': 'yegitqlmuq',
+        'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
+        'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
+        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn','dropped': 'qhfmsjkotn',
+        'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt',
+        'transported': 'kseqanhkzt',
+        'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
 
-            "A robot's gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
-            "If the robot is carrying the object then the object is not in the room. "
-            "If the robot is not carrying the object then the object a in the room. "
-            "Robot can only be at one place. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
             return random.choice([
@@ -1518,7 +1680,7 @@ class Grippers(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('pick('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
@@ -1546,7 +1708,7 @@ class Grippers(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
             return random.choice([
@@ -1611,7 +1773,7 @@ class Grippers(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('pick('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
@@ -1641,38 +1803,55 @@ class Grippers(BaseDomain):
 
 class Logistics(BaseDomain):
     DOMAIN_NAME = 'logistics'
-    derived_fluents = [] # kept this empty because no derived fluents for this domain
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Loading a package onto a truck is only possible if both the package and the truck are in the same location. '
+        'Loading the package onto the truck causes the package not to be at that location but to be in the truck. '
+        'Loading a package onto an airplane is possible if and only if both the package and the airplane are in the same location. '
+        'Loading the package onto the airplane causes the package to not be at the location but in the airplane. '
+        'Unloading from a truck is executable if the truck is in a location and the package is in the truck. '
+        'Unloading the package from the truck causes the package to be not in the truck anymore, but be present in that location. '
+        'Unloading a package from an airplane is possible only when the package is in the airplane and the plane is in a location. '
+        'Unloading from the airplane makes the package present in that location and not in the plane anymore. '
+        'Driving a truck is possible only when the truck is in a location where the source and destination are in the same city. '
+        'Driving the truck causes it to be at the destination and not at the source. Flying an airplane is possible if and only if the airplane is at a location. '
+        'Flying the airplane causes it to be not at the source location but at the destination location.')
+    DOMAIN_DESC_WITH_RAM = (
+        'Loading a package onto a truck is only possible if both the package and the truck are in the same location. Loading the package onto the truck causes the package to be in the truck. '
+        "Loading a package onto an airplane is possible if and only if both the package and the airplane are in the same location. "
+        "Loading the package onto the airplane causes the package to be in the airplane. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'Loading a package onto a truck is only possible if both the package and the truck are in the same location. Loading the package onto the truck causes the package not to be at that location but to be in the truck. Loading a package onto an airplane is possible if and only if both the package and the airplane are in the same location. Loading the package onto the airplane causes the package to not be at the location but in the airplane. Unloading from a truck is executable if the truck is in a location and the package is in the truck. Unloading the package from the truck causes the package to be not in the truck anymore, but be present in that location. Unloading a package from an airplane is possible only when the package is in the airplane and the plane is in a location. Unloading from the airplane makes the package present in that location and not in the plane anymore. Driving a truck is possible only when the truck is in a location where the source and destination are in the same city. Driving the truck causes it to be at the destination and not at the source. Flying an airplane is possible if and only if the airplane is at a location. Flying the airplane causes it to be not at the source location but at the destination location.'
-        return domain_description
+        "Unloading from a truck is executable if the truck is in a location and the package is in the truck. "
+        "Unloading the package from the truck causes the package to be present in that location. "
+        "Unloading a package from an airplane is possible only when the package is in the airplane and the plane is in the location. "
+        "Unloading from the airplane makes the package present in that location. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'Loading a package onto a truck is only possible if both the package and the truck are in the same location. Loading the package onto the truck causes the package to be in the truck. '
-            "Loading a package onto an airplane is possible if and only if both the package and the airplane are in the same location. "
-            "Loading the package onto the airplane causes the package to be in the airplane. "
+        "Driving a truck is possible only when the truck is in a location where the source and destination are in the same city. "
+        "Driving the truck causes it to be at the destination. "
 
-            "Unloading from a truck is executable if the truck is in a location and the package is in the truck. "
-            "Unloading the package from the truck causes the package to be present in that location. "
-            "Unloading a package from an airplane is possible only when the package is in the airplane and the plane is in the location. "
-            "Unloading from the airplane makes the package present in that location. "
+        "Flying an airplane is possible if and only if the airplane is at a location. "
+        "Flying the airplane causes it to be at the destination location. "
 
-            "Driving a truck is possible only when the truck is in a location where the source and destination are in the same city. "
-            "Driving the truck causes it to be at the destination. "
+        "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
+        "A truck can only be at one location at a time. A plane can only be in one location at a time.")
+    DERIVED_FLUENTS = []  # kept this empty because no derived fluents for this domain
+    SUBSTRINGS_TO_RAND = {
+        'package': 'tnzistccqp', 'packages': 'tnzistccqp',
+        'truck': 'pvcuetihtl', 'trucks': 'pvcuetihtl',
+        'airplane': 'xmyqeckfwm', 'airplanes': 'xmyqeckfwm',
+        'airport': 'qpplrkefyr', 'airports': 'qpplrkefyr',
+        'object': 'causdnkeoz', 'objects': 'causdnkeoz',
+        'vehicle': 'qmgahdodkq', 'vehicles': 'qmgahdodkq',
+        'city': 'bpzwevlomd', 'cities': 'bpzwevlomd',
+        'load': 'nxrnxkjybr', 'loads': 'nxrnxkjybr', 'loading': 'nxrnxkjybr', 'loaded': 'nxrnxkjybr',
+        'unload': 'bdfszwzdpi', 'unloads': 'bdfszwzdpi', 'unloading': 'bdfszwzdpi',
+        'unloaded': 'bdfszwzdpi',
+        'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn',
+        'driven': 'umcjrdgfyn',
+        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar', 'flown': 'umnkjqinar',
+        # 'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
+    }
 
-            "Flying an airplane is possible if and only if the airplane is at a location. "
-            "Flying the airplane causes it to be at the destination location. "
-
-            "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
-            "A truck can only be at one location at a time. A plane can only be in one location at a time.")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('in_city('):
             airport, city = self.extract_multi_variable(fluent)
             return random.choice([
@@ -1724,7 +1903,7 @@ class Logistics(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, airport = self.extract_multi_variable(action)
@@ -1821,7 +2000,7 @@ class Logistics(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
@@ -1873,33 +2052,42 @@ class Logistics(BaseDomain):
 
 class Miconic(BaseDomain):
     DOMAIN_NAME = 'miconic'
-    derived_fluents = []
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A passenger can board the lift on a floor only if the lift is on that floor and the passenger\'s travel originates from that floor. '
+        'Boarding the lift causes the passenger to be boarded. Departing from the lift is executable only when the lift is on the floor, the passenger is boarded, and the passenger\'s destination is on that floor. '
+        'Departing from the lift causes the passenger to be served and not boarded. A lift can go up from one floor to another if and only if it is currently on the floor and the destination floor is above the source floor. '
+        'Going up makes the lift on the destination floor. A lift can go down from one floor to another if and only if it is currently on a floor and the source floor is above the destination floor. '
+        'Going down makes the lift on the destination floor.')
+    DOMAIN_DESC_WITH_RAM = (
+        "A passenger can board the lift on a floor only if the lift is on that floor and the passenger's travel originates from that floor. "
+        "Boarding the lift causes the passenger to be boarded. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'A passenger can board the lift on a floor only if the lift is on that floor and the passenger\'s travel originates from that floor. Boarding the lift causes the passenger to be boarded. Departing from the lift is executable only when the lift is on the floor, the passenger is boarded, and the passenger\'s destination is on that floor. Departing from the lift causes the passenger to be served and not boarded. A lift can go up from one floor to another if and only if it is currently on the floor and the destination floor is above the source floor. Going up makes the lift on the destination floor. A lift can go down from one floor to another if and only if it is currently on a floor and the source floor is above the destination floor. Going down makes the lift on the destination floor.'
-        return domain_description
+        "Departing from the lift is executable only when the lift is on the floor, the passenger is boarded, and the passenger's destination is on that floor. "
+        "Departing from the lift causes the passenger to be served. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            "A passenger can board the lift on a floor only if the lift is on that floor and the passenger's travel originates from that floor. "
-            "Boarding the lift causes the passenger to be boarded. "
+        "A lift can go up from one floor to another if and only if it is currently on the floor and the destination floor is above the source floor. "
+        "Going up makes the lift on the destination floor. A lift can go down from one floor to another if and only if it is currently on a floor and the source floor is above the destination floor. "
+        "Going down makes the lift on the destination floor. "
 
-            "Departing from the lift is executable only when the lift is on the floor, the passenger is boarded, and the passenger's destination is on that floor. "
-            "Departing from the lift causes the passenger to be served. "
+        "A lift can only be on one floor at a time. "
+        "If the passenger is served, then the passenger is not boarded.")
+    DERIVED_FLUENTS = []  # TODO double check
+    SUBSTRINGS_TO_RAND = {
+        # 'up': 'lfapuhgnsn',
+        # 'down': 'mmphaaxcri',
+        # 'source': 'outpkddlno',
+        # 'above': 'idfiasmopc',
+        'served': 'vpdiuemmjp',
+        'elevator': 'jbbturclrd', 'elevators': 'jbbturclrd',
+        'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
+        # 'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
+        'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
+        'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
+        'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
+        'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja','departed': 'jbctpepaja'
+    }
 
-            "A lift can go up from one floor to another if and only if it is currently on the floor and the destination floor is above the source floor. "
-            "Going up makes the lift on the destination floor. A lift can go down from one floor to another if and only if it is currently on a floor and the source floor is above the destination floor. "
-            "Going down makes the lift on the destination floor. "
-
-            "A lift can only be on one floor at a time. "
-            "If the passenger is served, then the passenger is not boarded.")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
             return random.choice([
@@ -1993,7 +2181,7 @@ class Miconic(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             floor, passenger = self.extract_multi_variable(action)
@@ -2029,6 +2217,7 @@ class Miconic(BaseDomain):
             # return f'the elevator goes down from floor {floor1} to floor {floor2}'
         else:
             raise Exception('action is not defined')
+
 
     def fluent_to_hallucinated_natural_language(self, fluent):
         if fluent.startswith('origin('): ############################# Origin means same as Wait in this domain
@@ -2125,7 +2314,7 @@ class Miconic(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('): ############################# Origin means same as Wait in this domain
             floor, passenger = self.extract_multi_variable(action)
@@ -2158,34 +2347,40 @@ class Miconic(BaseDomain):
 
 class Mystery(BaseDomain):
     DOMAIN_NAME = 'mystery'
-    derived_fluents = []
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A vehicle has a set of spaces inside next to each other for carrying cargo. '
+        'Locations can have sets of fuel that neighbor each other. '
+        'A vehicle can move from the initial to the final location if it is currently at the initial location, the initial and final locations are connected, the initial location has fuel, and there is an additional fuel next to it. '
+        'As a result, a vehicle is no longer at the original location, it is at the destination, there is no first set of fuel at the initial location, but a second set of fuel is present at the initial location. '
+        'A vehicle can be loaded if cargo is at a location, the vehicle is at the same location, the vehicle has space, and there is an additional space in the vehicle. '
+        'When cargo is loaded into the vehicle, cargo is no longer at a location, cargo is now in the vehicle, the first space in the vehicle is occupied, but the vehicle has a secondary space. '
+        'A vehicle can be unloaded if the cargo is in the vehicle, the vehicle is at a location, the vehicle has space, and there is an additional space next to it. '
+        'When a vehicle is unloaded, cargo is no longer in the vehicle, cargo is at a location, the vehicle no longer has the initial space, and there is a secondary space.')
+    DOMAIN_DESC_WITH_RAM = (
+        "Moving a vehicle from source location to destination location is executable if the vehicle is at source location, there is a connection between the source location and destination location, and the location's fuel level has some neighboring level. "
+        "Moving a vehicle from source location to destination location causes the vehicle to be present at the destination location and decreases the location's fuel level to its next level. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'A vehicle has a set of spaces inside next to each other for carrying cargo. Locations can have sets of fuel that neighbor each other. A vehicle can move from the initial to the final location if it is currently at the initial location, the initial and final locations are connected, the initial location has fuel, and there is an additional fuel next to it. As a result, a vehicle is no longer at the original location, it is at the destination, there is no first set of fuel at the initial location, but a second set of fuel is present at the initial location. A vehicle can be loaded if cargo is at a location, the vehicle is at the same location, the vehicle has space, and there is an additional space in the vehicle. When cargo is loaded into the vehicle, cargo is no longer at a location, cargo is now in the vehicle, the first space in the vehicle is occupied, but the vehicle has a secondary space. A vehicle can be unloaded if the cargo is in the vehicle, the vehicle is at a location, the vehicle has space, and there is an additional space next to it. When a vehicle is unloaded, cargo is no longer in the vehicle, cargo is at a location, the vehicle no longer has the initial space, and there is a secondary space.'
-        return domain_description
+        "A cargo can be loaded onto a vehicle if the cargo and the vehicle are at the same location and the vehicle has some space. "
+        "When a cargo is loaded into the vehicle, it is in the vehicle. It also decreases the vehicle's space to its next level. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            "Moving a vehicle from source location to destination location is executable if the vehicle is at source location, there is a connection between the source location and destination location, and the location's fuel level has some neighboring level. "
-            "Moving a vehicle from source location to destination location causes the vehicle to be present at the destination location and decreases the location's fuel level to its next level. "
+        "A cargo can be unloaded from a vehicle if the cargo is in the vehicle. "
+        "When a cargo is unloaded from the vehicle, it is at the same location as that of the vehicle. It also increases the vehicle's space to its next higher level. "
 
-            "A cargo can be loaded onto a vehicle if the cargo and the vehicle are at the same location and the vehicle has some space. "
-            "When a cargo is loaded into the vehicle, it is in the vehicle. It also decreases the vehicle's space to its next level. "
+        "Vehicle can only be at one location at a time. "
+        "Cargo can only be at one place at a time. "
+        "The location's fuel level is unique. "
+        "The vehicle's amount of space is unique. ")
+    DERIVED_FLUENTS = []  # TODO double check
+    SUBSTRINGS_TO_RAND = {
+        'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
+        'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
+        'fuel': 'vyumzovixm', 'fuels': 'vyumzovixm',
+        'space': 'kiurijzhmd', 'spaces': 'kiurijzhmd',
+        'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connecting': 'qqqxlayhxq', 'connected': 'qqqxlayhxq',
+        # 'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
+    }
 
-            "A cargo can be unloaded from a vehicle if the cargo is in the vehicle. "
-            "When a cargo is unloaded from the vehicle, it is at the same location as that of the vehicle. It also increases the vehicle's space to its next higher level. "
-
-            "Vehicle can only be at one location at a time. "
-            "Cargo can only be at one place at a time. "
-            "The location's fuel level is unique. "
-            "The vehicle's amount of space is unique. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
@@ -2316,7 +2511,7 @@ class Mystery(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
@@ -2342,7 +2537,7 @@ class Mystery(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
@@ -2467,7 +2662,7 @@ class Mystery(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
@@ -2495,23 +2690,23 @@ class Mystery(BaseDomain):
 
 class Npuzzle(BaseDomain):
     DOMAIN_NAME = 'npuzzle'
-    derived_fluents = ['empty']
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DERIVED_FLUENTS = ['empty']
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
+        'Moving a tile from source position to destination position causes the tile to be present at destination position, destination position to be not empty, and causes source position to be empty.')
+    DOMAIN_DESC_WITH_RAM = (
+        'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
+        "A position is not empty if the tile is at that position. A tile cannot be on multiple positions at the same time.")
+    SUBSTRINGS_TO_RAND = {
+        'tile': 'gkxiurkpij', 'tiles': 'gkxiurkpij',
+        'move': 'edclnosigi', 'moves': 'edclnosigi', 'moving': 'edclnosigi', 'moved': 'edclnosigi',
+        # 'source': 'dfqdjcpgle',
+        # 'destination': 'jfyxocsjve',
+        # 'empty': 'vigzxelnpn',
+        # 'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'
+    }
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. Moving a tile from source position to destination position causes the tile to be present at destination position, destination position to be not empty, and causes source position to be empty.'
-        return domain_description
-
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
-            "A position is not empty if the tile is at that position. A tile cannot be on multiple positions at the same time.")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             tile, position = self.extract_multi_variable(fluent)
             return f'tile {tile} is at position {position}'
@@ -2533,7 +2728,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
@@ -2541,7 +2736,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             tile, position = self.extract_multi_variable(fluent)
             return f'tile {tile} is stuck at position {position}'  # stuck
@@ -2565,7 +2760,7 @@ class Npuzzle(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
@@ -2576,35 +2771,51 @@ class Npuzzle(BaseDomain):
 
 class Satellite(BaseDomain):
     DOMAIN_NAME = 'satellite'
-    derived_fluents = ['power_avail(']
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Turning a satellite to the intended direction from the source direction is executable if the satellite is facing to the source direction initially. '
+        'Turning a satellite to the intended direction from the source direction causes the satellite to point to the intended direction, it also causes the satellite to not point at the source direction. '
+        'Switching on the instrument on a satellite is executable if the instrument is onboard with the satellite and power is available on the satellite. '
+        'Switching on the instrument on a satellite causes the instrument to power on but not calibrated. '
+        'Switching on the instrument causes the satellite to not have power available. '
+        'Switching off the instrument on a satellite is executable if the instrument is onboard with the satellite and the instrument is powered on. '
+        'Switching off the instrument on the satellite causes the instrument to power off, and causes the satellite to have power available. '
+        'Calibrating the instrument on the satellite to the intended direction is executable if the instrument is onboard with the satellite, calibration target of the instrument is set to the intended direction, the satellite is pointing to the intended direction and the instrument is powered on. '
+        'Calibrating the instrument on the satellite to the intended direction causes the instrument to be calibrated. '
+        'Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. '
+        'Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to.')
+    DOMAIN_DESC_WITH_RAM = (
+        'Turning a satellite to the intended direction from the source direction is executable if the satellite is facing to the source direction initially. '
+        "Turning a satellite to the intended direction from the source direction causes the satellite to point to the intended direction. The satellite cannot point to two different directions simultaneously. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'Turning a satellite to the intended direction from the source direction is executable if the satellite is facing to the source direction initially. Turning a satellite to the intended direction from the source direction causes the satellite to point to the intended direction, it also causes the satellite to not point at the source direction. Switching on the instrument on a satellite is executable if the instrument is onboard with the satellite and power is available on the satellite. Switching on the instrument on a satellite causes the instrument to power on but not calibrated. Switching on the instrument causes the satellite to not have power available.  Switching off the instrument on a satellite is executable if the instrument is onboard with the satellite and the instrument is powered on. Switching off the instrument on the satellite causes the instrument to power off, and causes the satellite to have power available. Calibrating the instrument on the satellite to the intended direction is executable if the instrument is onboard with the satellite, calibration target of the instrument is set to the intended direction, the satellite is pointing to the intended direction and the instrument is powered on. Calibrating the instrument on the satellite to the intended direction causes the instrument to be calibrated. Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to.'
-        return domain_description
+        "Switching on the instrument on a satellite is executable if the instrument is onboard with the satellite and power is available on the satellite. "
+        "Switching on the instrument on a satellite causes the instrument to be powered on but not calibrated. If the instrument is powered on then the satellite does not have power. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'Turning a satellite to the intended direction from the source direction is executable if the satellite is facing to the source direction initially. '
-            "Turning a satellite to the intended direction from the source direction causes the satellite to point to the intended direction. The satellite cannot point to two different directions simultaneously. "
+        "Switching off the instrument on a satellite is executable if the instrument is onboard with the satellite and the instrument is powered on. "
+        "Switching off the instrument on the satellite causes the instrument to be powered off. If the instrument is not powered on then power is available on the satellite. "
 
-            "Switching on the instrument on a satellite is executable if the instrument is onboard with the satellite and power is available on the satellite. "
-            "Switching on the instrument on a satellite causes the instrument to be powered on but not calibrated. If the instrument is powered on then the satellite does not have power. "
+        "Calibrating the instrument on the satellite to the intended direction is executable if the instrument is onboard with the satellite, calibration target of the instrument is set to the intended direction, the satellite is pointing to the intended direction and the instrument is powered on. "
+        "Calibrating the instrument on the satellite to the intended direction causes the instrument to be calibrated. "
 
-            "Switching off the instrument on a satellite is executable if the instrument is onboard with the satellite and the instrument is powered on. "
-            "Switching off the instrument on the satellite causes the instrument to be powered off. If the instrument is not powered on then power is available on the satellite. "
+        "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
+        "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
+    DERIVED_FLUENTS = ['power_avail(']
+    SUBSTRINGS_TO_RAND = {
+        'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
+        'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
+        'direction': 'apdptereua', 'directions': 'apdptereua',
+        'instrument': 'rstzlaxvor', 'instruments': 'rstzlaxvor',
+        'onboard': 'icafejchri',
+        'image': 'fetzcryvyb', 'images': 'fetzcryvyb',
+        'turn': 'gwuqwrsowb', 'turns': 'gwuqwrsowb', 'turning': 'gwuqwrsowb', 'turned': 'gwuqwrsowb',
+        'switch': 'sqsicvmhrn', 'switches': 'sqsicvmhrn', 'switching': 'sqsicvmhrn', 'switched': 'sqsicvmhrn',
+        'calibrate': 'dymysndcxa', 'calibrates': 'dymysndcxa', 'calibrating': 'dymysndcxa', 'calibrated': 'dymysndcxa',
+        'take': 'idrpvqprlo', 'takes': 'idrpvqprlo', 'taking': 'idrpvqprlo', 'taken': 'idrpvqprlo',
+        'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq', 'powered': 'ymikwvufrq',
+        # 'destination': 'izwwbtklpt',
+        # 'source': 'uuwgcgehnr',
+    }
 
-            "Calibrating the instrument on the satellite to the intended direction is executable if the instrument is onboard with the satellite, calibration target of the instrument is set to the intended direction, the satellite is pointing to the intended direction and the instrument is powered on. "
-            "Calibrating the instrument on the satellite to the intended direction causes the instrument to be calibrated. "
-
-            "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
-            "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
             return f'{instrument} is on board {satellite}'
@@ -2656,7 +2867,7 @@ class Satellite(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('turn_to('):
             satellite, new_dir, old_dir = self.extract_multi_variable(action)
@@ -2676,7 +2887,7 @@ class Satellite(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
             return f'{instrument} is out of order on {satellite}'  # out of order
@@ -2735,7 +2946,7 @@ class Satellite(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('turn_to('):
             satellite, new_dir, old_dir = self.extract_multi_variable(action)
@@ -2758,33 +2969,40 @@ class Satellite(BaseDomain):
 
 class Spanner(BaseDomain):
     DOMAIN_NAME = 'spanner'
-    derived_fluents = ['useable(']
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Walking from start location to destination location is executable if the man is at the start location and there is a link between start and the destination location. '
+        'Walking from start location to destination location causes the man to be at the destination location and not be at the start location. '
+        'Picking up a spanner from a location is executable if the man and the spanner is at the same location. '
+        'Picking up a spanner from a location causes the man to carry the spanner, and the spanner to be not at any location. '
+        'Tightening the nut at a location with a spanner is executable if the man and the nut are at the same location, the man is carrying the spanner, the spanner is usable, and the nut is loose. '
+        'Tightening the nut at a location with a spanner causes the nut to be not loose, the spanner to be unusable and the nut to be tightened.')
+    DOMAIN_DESC_WITH_RAM = (
+        'Walking from start location to destination location is executable if the man is at the start location initially and there is a link between start and the destination location. '
+        "Walking from start location to destination location causes the man to be at the destination location after the walk action from start location to destination location is executed. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'Walking from start location to destination location is executable if the man is at the start location and there is a link between start and the destination location. Walking from start location to destination location causes the man to be at the destination location and not be at the start location. Picking up a spanner from a location is executable if the man and the spanner is at the same location. Picking up a spanner from a location causes the man to carry the spanner, and the spanner to be not at any location. Tightening the nut at a location with a spanner is executable if the man and the nut are at the same location, the man is carrying the spanner, the spanner is usable, and the nut is loose. Tightening the nut at a location with a spanner causes the nut to be not loose, the spanner to be unusable and the nut to be tightened.'
-        return domain_description
+        "Picking up a spanner from start location is executable if the man is at start location and spanner is at start location. Picking up a spanner from the start location causes the man to carry the spanner. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'Walking from start location to destination location is executable if the man is at the start location initially and there is a link between start and the destination location. '
-            "Walking from start location to destination location causes the man to be at the destination location after the walk action from start location to destination location is executed. "
+        "Tightening the nut at start location with a spanner is executable if the man is at start location, nut is at the start location, the man is carrying the spanner, the spanner is usable and the nut is loose. "
+        "Tightening the nut at start location with a spanner causes the nut to be tightened. "
 
-            "Picking up a spanner from start location is executable if the man is at start location and spanner is at start location. Picking up a spanner from the start location causes the man to carry the spanner. "
+        "A man cannot be at two different places at the same time. "
+        "The spanner is not at a location if it is being hold by the man. "
+        "The nut is not loose if and only if it is tightened. "
+        "The spanner is not usable if and only if the nut is tightened. ")
+    DERIVED_FLUENTS = ['useable(']
+    SUBSTRINGS_TO_RAND = {
+        'nut': 'uwdhnrpile', 'nuts': 'uwdhnrpile',
+        'man': 'bmojqrwpdg',
+        'usable': 'fgbcjqnbgp',
+        'spanner': 'ujzeqlcecc', 'spanners': 'ujzeqlcecc',
+        'link': 'qzylwqxpoq', 'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
+        'walk': 'fvuxqntacz', 'walks': 'fvuxqntacz', 'walking': 'fvuxqntacz', 'walked': 'fvuxqntacz',
+        'pick': 'rcholfpyyj', 'picks': 'rcholfpyyj', 'picking': 'rcholfpyyj', 'picked': 'rcholfpyyj',
+        'tighten': 'xvxccombol', 'tightens': 'xvxccombol', 'tightening': 'xvxccombol', 'tightened': 'xvxccombol',
+        # 'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
+    }
 
-            "Tightening the nut at start location with a spanner is executable if the man is at start location, nut is at the start location, the man is carrying the spanner, the spanner is usable and the nut is loose. "
-            "Tightening the nut at start location with a spanner causes the nut to be tightened. "
-
-            "A man cannot be at two different places at the same time. "
-            "The spanner is not at a location if it is being hold by the man. "
-            "The nut is not loose if and only if it is tightened. "
-            "The spanner is not usable if and only if the nut is tightened. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             return f"{obj} is at {location}"
@@ -2824,7 +3042,7 @@ class Spanner(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('walk'):
             start, end, man = self.extract_multi_variable(action)
@@ -2838,7 +3056,7 @@ class Spanner(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('man'):
@@ -2892,7 +3110,7 @@ class Spanner(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('walk'):
             start, end, man = self.extract_multi_variable(action)
@@ -2909,39 +3127,55 @@ class Spanner(BaseDomain):
 
 class Zenotravel(BaseDomain):
     DOMAIN_NAME = 'zenotravel'
-    derived_fluents = []
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Boarding a person in a city is executable if the person and the aircraft are both present in the city. '
+        'Boarding a person in the city causes the person to be in the aircraft and not present in the city. '
+        'Debarking a person in a city is executable if the person is in the aircraft and the aircraft is present in the city. '
+        'Debarking a person in the city causes the person to be present in the city and not present in the aircraft. '
+        'Flying an aircraft from a city to another city is executable if the aircraft is present in the city and has an initial fuel level that is next to (i.e., higher than) some fuel level. '
+        'Flying the aircraft from a city to a destination city causes the aircraft to be present in the destination city and not present in the original city. '
+        'It also decreases the fuel level of the aircraft to the next level. '
+        'Zooming the aircraft from a city to a destination city is executable if the aircraft is present in the city and has some initial fuel level that is at least two levels up compared to the lowest possible fuel level. '
+        'It causes the aircraft to be present in the destination city and not present in the original city. It also decreases the fuel level of the aircraft two levels down. '
+        'Refueling the aircraft in a city is executable if the aircraft is in the city. '
+        'It changes the current fuel level to its next level.')
+    DOMAIN_DESC_WITH_RAM = (
+        'Boarding a person in a city is executable if the person and the aircraft are both present in the city. '
+        "Boarding a person in the city causes the person to be in the aircraft. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'Boarding a person in a city is executable if the person and the aircraft are both present in the city. Boarding a person in the city causes the person to be in the aircraft and not present in the city. Debarking a person in a city is executable if the person is in the aircraft and the aircraft is present in the city. Debarking a person in the city causes the person to be present in the city and not present in the aircraft. Flying an aircraft from a city to another city is executable if the aircraft is present in the city and has an initial fuel level that is next to (i.e., higher than) some fuel level. Flying the aircraft from a city to a destination city causes the aircraft to be present in the destination city and not present in the original city. It also decreases the fuel level of the aircraft to the next level. Zooming the aircraft from a city to a destination city is executable if the aircraft is present in the city and has some initial fuel level that is at least two levels up compared to the lowest possible fuel level. It causes the aircraft to be present in the destination city and not present in the original city. It also decreases the fuel level of the aircraft two levels down. Refueling the aircraft in a city is executable if the aircraft is in the city. It changes the current fuel level to its next level.'
-        return domain_description
+        "Debarking a person in a city is executable if the person is in the aircraft and the aircraft is present in the city. "
+        "Debarking a person in the city causes the person to be present in the city. "
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'Boarding a person in a city is executable if the person and the aircraft are both present in the city. '
-            "Boarding a person in the city causes the person to be in the aircraft. "
+        "Flying an aircraft from a city to another city is executable if the aircraft is present in the city and has some initial fuel level that is more than the lowest possible fuel level. "
+        "Flying the aircraft from a city to a destination city causes the aircraft to be present in the destination city. It also decreases the fuel level of the aircraft to the next level. "
 
-            "Debarking a person in a city is executable if the person is in the aircraft and the aircraft is present in the city. "
-            "Debarking a person in the city causes the person to be present in the city. "
+        "Zooming the aircraft from a city to a destination city is executable if the aircraft is present in the city and has some initial fuel level that is at least two levels up compared to the lowest possible fuel level. "
+        "It causes the aircraft to be present in the destination city. It also decreases the fuel level of the aircraft two levels down. "
 
-            "Flying an aircraft from a city to another city is executable if the aircraft is present in the city and has some initial fuel level that is more than the lowest possible fuel level. "
-            "Flying the aircraft from a city to a destination city causes the aircraft to be present in the destination city. It also decreases the fuel level of the aircraft to the next level. "
+        "Refueling the aircraft in a city is executable if the aircraft is in the city. It changes the current fuel level to its next level. "
 
-            "Zooming the aircraft from a city to a destination city is executable if the aircraft is present in the city and has some initial fuel level that is at least two levels up compared to the lowest possible fuel level. "
-            "It causes the aircraft to be present in the destination city. It also decreases the fuel level of the aircraft two levels down. "
+        "A person is not present in a city if the person is in some aircraft. "
+        "The aircraft cannot be in two different cities at the same time. "
+        "An aircraft cannot have two different fuel levels. "
+        "Person can only be at one place.")
+    DERIVED_FLUENTS = []  # TODO double check
+    SUBSTRINGS_TO_RAND = {
+        'board': 'jxfvtxvzgh', 'boards': 'jxfvtxvzgh', 'boarding': 'jxfvtxvzgh', 'boarded': 'jxfvtxvzgh',
+        'debark': 'jnjwzqrpms', 'debarks': 'jnjwzqrpms', 'debarking': 'jnjwzqrpms', 'debarked': 'jnjwzqrpms',
+        'fly': 'gartdizjnu', 'flies': 'gartdizjnu', 'flying': 'gartdizjnu', 'flown': 'gartdizjnu',
+        'zoom': 'rqdfjbixnz', 'zooms': 'rqdfjbixnz', 'zooming': 'rqdfjbixnz', 'zoomed': 'rqdfjbixnz',
+        'refuel': 'egufeqdcrz', 'refuels': 'egufeqdcrz', 'refueling': 'egufeqdcrz', 'refueled': 'egufeqdcrz',
+        'fuel': 'njzcihffcg', 'fuels': 'njzcihffcg', 'fueling': 'njzcihffcg', 'fueled': 'njzcihffcg',
 
-            "Refueling the aircraft in a city is executable if the aircraft is in the city. It changes the current fuel level to its next level. "
+        'person': 'ihpgygxfoe', 'persons': 'ihpgygxfoe', 'people': 'ihpgygxfoe',
+        'city': 'uibqqmoerq', 'cities': 'uibqqmoerq',
+        'aircraft': 'psjemaawdi', 'aircrafts': 'psjemaawdi',
+        'airport': 'vuvceigmai', 'airports': 'vuvceigmai',
+        # 'source': 'xfdqznnlrs',
+        # 'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
+        'level': 'ndozmmwian', 'levels': 'ndozmmwian'}
 
-            "A person is not  present in a city if the person is in some aircraft. "
-            "The aircraft cannot be in two different cities at the same time. "
-            "An aircraft cannot have two different fuel levels. "
-            "Person can only be at one place.")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, city = self.extract_multi_variable(fluent)
             if obj.startswith('person'):
@@ -2975,7 +3209,7 @@ class Zenotravel(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)
@@ -2995,7 +3229,7 @@ class Zenotravel(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, city = self.extract_multi_variable(fluent)
             if obj.startswith('person'):
@@ -3031,7 +3265,7 @@ class Zenotravel(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)
@@ -3054,25 +3288,24 @@ class Zenotravel(BaseDomain):
 
 class Visitall(BaseDomain):
     DOMAIN_NAME = 'visitall'
-    derived_fluents = ['visited(']
-    def __init__(self):
-        self.domain_description_without_ram = self.domain_description_without_ram()
-        self.domain_description_ram = self.domain_description_ram()
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A robot can move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. '
+        'Moving from the current position to the next position causes the robot to be at the next position, not at the current position anymore, and marks the next position as visited.')
+    DOMAIN_DESC_WITH_RAM = (
+        'A robot can only move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. '
+        "Moving from a current position to the next position causes the robot to be present at the next position. "
 
-    @staticmethod
-    def domain_description_without_ram():
-        domain_description = 'A robot can move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. Moving from the current position to the next position causes the robot to be at the next position, not at the current position anymore, and marks the next position as visited.'
-        return domain_description
+        "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. ")
+    DERIVED_FLUENTS = ['visited(']
+    SUBSTRINGS_TO_RAND = {
+        'robot': 'xtjpivjhco', 'robots': 'xtjpivjhco',
+        'position': 'puxuduuqen', 'positions': 'puxuduuqen',
+        'connect': 'dlipeeieju', 'connects': 'dlipeeieju', 'connecting': 'dlipeeieju', 'connected': 'dlipeeieju',
+        'move': 'pkjjnojvly', 'moves': 'pkjjnojvly', 'moving': 'pkjjnojvly', 'moved': 'pkjjnojvly',
+        'visit': 'lknwwwkrbf', 'visits': 'lknwwwkrbf', 'visiting': 'lknwwwkrbf', 'visited': 'lknwwwkrbf',
+    }
 
-    @staticmethod
-    def domain_description_ram():
-        return (
-            'A robot can only move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. '
-            "Moving from a current position to the next position causes the robot to be present at the next position. "
-
-            "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. ")
-
-    def fluent_to_natural_language(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robot('):
             place = self.extract_single_variable(fluent)
             return f"robot is at {place}"
@@ -3094,7 +3327,7 @@ class Visitall(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_natural_language(self, action):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
@@ -3102,7 +3335,7 @@ class Visitall(BaseDomain):
         else:
             raise 'action is not defined'
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at_robot('):
             place = self.extract_multi_variable(fluent)
             return f"robot is stuck at {place}"  # stuck
@@ -3127,7 +3360,7 @@ class Visitall(BaseDomain):
         else:
             raise 'fluent is not defined'
 
-    def action_to_hallucinated_natural_language(self, action):
+    def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
@@ -3139,9 +3372,8 @@ class Visitall(BaseDomain):
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
                       Satellite, Spanner, Visitall, Zenotravel]
 
-
-# For testing
 if __name__ == '__main__':
-    obj = ALL_DOMAIN_CLASSES[0]()
-    print(obj.DOMAIN_NAME)
-    print(obj.action_to_hallucinated_natural_language('pick_up(b4)'))
+    dom = Blocksworld(is_random_sub=False, is_ramifications=True)
+    print(dom.domain_description)
+    dom = Blocksworld(is_random_sub=True, is_ramifications=True)
+    print(dom.domain_description)

@@ -15,16 +15,12 @@ from src.questions_construction.questions import *
 
 
 class Generate_prompting_template:
-    def __init__(self,root_directory,domain_class,instance_id,domain_folder_name,unique_instance_dict, is_ramifications):
+    def __init__(self, root_directory,domain_class,instance_id,domain_folder_name,unique_instance_dict, is_ramifications):
         self.root_directory = root_directory
         self.domain_class = domain_class
         self.domain_folder_name = domain_folder_name
         self.instance_id = instance_id
         self.jsonl_instance_path = self.root_directory + self.domain_folder_name + 'Instance_' + str(self.instance_id) + '.jsonl'
-        if is_ramifications:
-            self.domain_description = self.domain_class.domain_description_ram
-        else:
-            self.domain_description = self.domain_class.domain_description_without_ram
         self.unique_instance_dict = unique_instance_dict
 
     def zero_shot_prompt(self):
@@ -38,7 +34,7 @@ class Generate_prompting_template:
                 initial_state_nl = asp_to_nl(dictionary_item['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
                 if len(dictionary_item.keys()) == 0:
                     continue
-                dictionary_item['prompt'] = f'{self.domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
+                dictionary_item['prompt'] = f'{self.domain_class.domain_description}\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{dictionary_item["question"]}\n\n[ANSWER]:\n'
                 results.append(dictionary_item)
         return results
     
@@ -68,7 +64,7 @@ class Generate_prompting_template:
             for i in range(n_shot):
                 if i==0:
                     initial_state_nl = asp_to_nl(examples_list[i]['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
-                    prompt = f'{self.domain_description}\n\n[EXAMPLE_{i+1}]:\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{examples_list[i]["question"]}\n\n[ANSWER]:{examples_list[i]["answer"]}'
+                    prompt = f'{self.domain_class.domain_description}\n\n[EXAMPLE_{i+1}]:\n\n[INITIAL CONDITIONS]\nInitially, {initial_state_nl}\n\n[QUESTION]\n{examples_list[i]["question"]}\n\n[ANSWER]:{examples_list[i]["answer"]}'
                     prompts.append(prompt)
                 else:
                     initial_state_nl = asp_to_nl(examples_list[i]['initial_state']['fluents'], self.domain_class.fluent_to_natural_language,None)
