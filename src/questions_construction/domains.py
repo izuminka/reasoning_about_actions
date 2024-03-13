@@ -1599,151 +1599,147 @@ class Mystery(BaseDomain):
         'space': 'kiurijzhmd', 'spaces': 'kiurijzhmd',
         'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connecting': 'qqqxlayhxq', 'connected': 'qqqxlayhxq'}
 
+    def fluent_to_natural_language_helper(self, fluent):
+        if fluent.startswith('at('):
+            obj, location = self.extract_multi_variable(fluent)
+            if obj.startswith('vehicle'):
+                return f'vehicle {obj} is at location {location}'
+            else:
+                return f'cargo {obj} is at location {location}'
+        elif fluent.startswith('-at('):
+            obj, location = self.extract_multi_variable(fluent)
+            if obj.startswith('vehicle'):
+                return f'vehicle {obj} is not at location {location}'
+            else:
+                return f'cargo {obj} is not at location {location}'
+        elif fluent.startswith('conn('):
+            location1, location2 = self.extract_multi_variable(fluent)
+            return f'location {location1} is connected to location {location2}'
+        elif fluent.startswith('-conn('):
+            location1, location2 = self.extract_multi_variable(fluent)
+            return f'location {location1} is not connected to location {location2}'
 
-def fluent_to_natural_language_helper(self, fluent):
-    if fluent.startswith('at('):
-        obj, location = self.extract_multi_variable(fluent)
-        if obj.startswith('vehicle'):
-            return f'vehicle {obj} is at location {location}'
+        elif fluent.startswith('has_fuel('):
+            location, fuel = self.extract_multi_variable(fluent)
+            return f'location {location} has fuel {fuel}'
+        elif fluent.startswith('-has_fuel('):
+            location, fuel = self.extract_multi_variable(fluent)
+            return f'location {location} does not have fuel {fuel}'
+
+        elif fluent.startswith('fuel_neighbor('):
+            f1, f2 = self.extract_multi_variable(fluent)
+            return f'fuel level {f1} neighbours fuel level {f2}'
+        elif fluent.startswith('-fuel_neighbor('):
+            f1, f2 = self.extract_multi_variable(fluent)
+            return f'fuel level {f1} does not neighbour fuel level {f2}'
+
+        elif fluent.startswith('in('):
+            cargo, vehicle = self.extract_multi_variable(fluent)
+            return f'cargo {cargo} is in vehicle {vehicle}'
+        elif fluent.startswith('-in('):
+            cargo, vehicle = self.extract_multi_variable(fluent)
+            return f'cargo {cargo} is not in vehicle {vehicle}'
+
+        elif fluent.startswith('has_space('):
+            vehicle, space = self.extract_multi_variable(fluent)
+            return f'vehicle {vehicle} has space {space}'
+        elif fluent.startswith('-has_space('):
+            vehicle, space = self.extract_multi_variable(fluent)
+            return f'vehicle {vehicle} does not have space {space}'
+
+        elif fluent.startswith('space_neighbor('):
+            s1, s2 = self.extract_multi_variable(fluent)
+            return f'space {s1} neighbours space {s2}'
+        elif fluent.startswith('-space_neighbor('):
+            s1, s2 = self.extract_multi_variable(fluent)
+            return f'space {s1} does not neighbour space {s2}'
         else:
-            return f'cargo {obj} is at location {location}'
-    elif fluent.startswith('-at('):
-        obj, location = self.extract_multi_variable(fluent)
-        if obj.startswith('vehicle'):
-            return f'vehicle {obj} is not at location {location}'
+            raise 'fluent is not defined'
+
+    def action_to_natural_language_helper(self, action):
+        action = strip_action_prefix(action)
+        if action.startswith('move('):
+            vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
+            return f'vehicle {vehicle} moves to location {location2} from location {location1} that has fuel level {fuel_level1} and {fuel_level2}'
+        elif action.startswith('load('):
+            cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
+            return f'cargo {cargo} is loaded in vehicle {vehicle} with space {space1} and space {space2} at location {location}'
+        elif action.startswith('unload('):
+            cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
+            return f'cargo {cargo} is unloaded from vehicle {vehicle} with space {space1} and space {space2} at location {location}'
         else:
-            return f'cargo {obj} is not at location {location}'
-    elif fluent.startswith('conn('):
-        location1, location2 = self.extract_multi_variable(fluent)
-        return f'location {location1} is connected to location {location2}'
-    elif fluent.startswith('-conn('):
-        location1, location2 = self.extract_multi_variable(fluent)
-        return f'location {location1} is not connected to location {location2}'
+            raise 'action is not defined'
 
-    elif fluent.startswith('has_fuel('):
-        location, fuel = self.extract_multi_variable(fluent)
-        return f'location {location} has fuel {fuel}'
-    elif fluent.startswith('-has_fuel('):
-        location, fuel = self.extract_multi_variable(fluent)
-        return f'location {location} does not have fuel {fuel}'
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        if fluent.startswith('at('):
+            obj, location = self.extract_multi_variable(fluent)
+            if obj.startswith('vehicle'):
+                return f'vehicle {obj} is being maintained at location {location}'  # maintained
+            else:
+                return f'cargo {obj} is inspected at location {location}'  # inspected
+        elif fluent.startswith('-at('):
+            obj, location = self.extract_multi_variable(fluent)
+            if obj.startswith('vehicle'):
+                return f'vehicle {obj} is not being maintained at location {location}'  # maintained
+            else:
+                return f'cargo {obj} is not inspected at location {location}'  # inspected
+        elif fluent.startswith('conn('):
+            location1, location2 = self.extract_multi_variable(fluent)
+            return f'location {location1} is far from location {location2}'  # far
+        elif fluent.startswith('-conn('):
+            location1, location2 = self.extract_multi_variable(fluent)
+            return f'location {location1} is not far from location {location2}'
 
-    elif fluent.startswith('fuel_neighbor('):
-        f1, f2 = self.extract_multi_variable(fluent)
-        return f'fuel level {f1} neighbours fuel level {f2}'
-    elif fluent.startswith('-fuel_neighbor('):
-        f1, f2 = self.extract_multi_variable(fluent)
-        return f'fuel level {f1} does not neighbour fuel level {f2}'
+        elif fluent.startswith('has_fuel('):
+            location, fuel = self.extract_multi_variable(fluent)
+            return f'location {location} sells fuel {fuel}'  # sells
+        elif fluent.startswith('-has_fuel('):
+            location, fuel = self.extract_multi_variable(fluent)
+            return f'location {location} does not sell fuel {fuel}'
 
-    elif fluent.startswith('in('):
-        cargo, vehicle = self.extract_multi_variable(fluent)
-        return f'cargo {cargo} is in vehicle {vehicle}'
-    elif fluent.startswith('-in('):
-        cargo, vehicle = self.extract_multi_variable(fluent)
-        return f'cargo {cargo} is not in vehicle {vehicle}'
+        elif fluent.startswith('fuel_neighbor('):
+            f1, f2 = self.extract_multi_variable(fluent)
+            return f'location {f1} and location {f2} are secure'  # secure
+        elif fluent.startswith('-fuel_neighbor('):
+            f1, f2 = self.extract_multi_variable(fluent)
+            return f'location {f1} and location {f2} are not secure'
 
-    elif fluent.startswith('has_space('):
-        vehicle, space = self.extract_multi_variable(fluent)
-        return f'vehicle {vehicle} has space {space}'
-    elif fluent.startswith('-has_space('):
-        vehicle, space = self.extract_multi_variable(fluent)
-        return f'vehicle {vehicle} does not have space {space}'
+        elif fluent.startswith('in('):
+            cargo, vehicle = self.extract_multi_variable(fluent)
+            return f'cargo {cargo} is secured in vehicle {vehicle}'  # not secured
+        elif fluent.startswith('-in('):
+            cargo, vehicle = self.extract_multi_variable(fluent)
+            return f'cargo {cargo} is not secured in vehicle {vehicle}'
 
-    elif fluent.startswith('space_neighbor('):
-        s1, s2 = self.extract_multi_variable(fluent)
-        return f'space {s1} neighbours space {s2}'
-    elif fluent.startswith('-space_neighbor('):
-        s1, s2 = self.extract_multi_variable(fluent)
-        return f'space {s1} does not neighbour space {s2}'
-    else:
-        raise 'fluent is not defined'
+        elif fluent.startswith('has_space('):
+            vehicle, space = self.extract_multi_variable(fluent)
+            return f'vehicle {vehicle} parks in space {space}'  # parks in
+        elif fluent.startswith('-has_space('):
+            vehicle, space = self.extract_multi_variable(fluent)
+            return f'vehicle {vehicle} does not parks in space {space}'
 
-
-def action_to_natural_language_helper(self, action):
-    action = strip_action_prefix(action)
-    if action.startswith('move('):
-        vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
-        return f'vehicle {vehicle} moves to location {location2} from location {location1} that has fuel level {fuel_level1} and {fuel_level2}'
-    elif action.startswith('load('):
-        cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-        return f'cargo {cargo} is loaded in vehicle {vehicle} with space {space1} and space {space2} at location {location}'
-    elif action.startswith('unload('):
-        cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-        return f'cargo {cargo} is unloaded from vehicle {vehicle} with space {space1} and space {space2} at location {location}'
-    else:
-        raise 'action is not defined'
-
-
-def fluent_to_hallucinated_natural_language_helper(self, fluent):
-    if fluent.startswith('at('):
-        obj, location = self.extract_multi_variable(fluent)
-        if obj.startswith('vehicle'):
-            return f'vehicle {obj} is being maintained at location {location}'  # maintained
+        elif fluent.startswith('space_neighbor('):
+            s1, s2 = self.extract_multi_variable(fluent)
+            return f'space {s1} is in the same city as space {s2}'  # is the same city as
+        elif fluent.startswith('-space_neighbor('):
+            s1, s2 = self.extract_multi_variable(fluent)
+            return f'space {s1} is not in the same city as space {s2}'
         else:
-            return f'cargo {obj} is inspected at location {location}'  # inspected
-    elif fluent.startswith('-at('):
-        obj, location = self.extract_multi_variable(fluent)
-        if obj.startswith('vehicle'):
-            return f'vehicle {obj} is not being maintained at location {location}'  # maintained
+            raise 'fluent is not defined'
+
+    def action_to_hallucinated_natural_language_helper(self, action):
+        action = strip_action_prefix(action)
+        if action.startswith('move('):
+            vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
+            return f'vehicle {vehicle} gets pulled over at {location1}'  # gets pulled over
+        elif action.startswith('load('):
+            cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
+            return f'cargo {cargo} is transported into vehicle {vehicle} at location {location} with space {space1} to space {space2}'  # transported
+        elif action.startswith('unload('):
+            cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
+            return f'cargo {cargo} and vehicle {vehicle} are inspected at location {location}'  # inspected
         else:
-            return f'cargo {obj} is not inspected at location {location}'  # inspected
-    elif fluent.startswith('conn('):
-        location1, location2 = self.extract_multi_variable(fluent)
-        return f'location {location1} is far from location {location2}'  # far
-    elif fluent.startswith('-conn('):
-        location1, location2 = self.extract_multi_variable(fluent)
-        return f'location {location1} is not far from location {location2}'
-
-    elif fluent.startswith('has_fuel('):
-        location, fuel = self.extract_multi_variable(fluent)
-        return f'location {location} sells fuel {fuel}'  # sells
-    elif fluent.startswith('-has_fuel('):
-        location, fuel = self.extract_multi_variable(fluent)
-        return f'location {location} does not sell fuel {fuel}'
-
-    elif fluent.startswith('fuel_neighbor('):
-        f1, f2 = self.extract_multi_variable(fluent)
-        return f'location {f1} and location {f2} are secure'  # secure
-    elif fluent.startswith('-fuel_neighbor('):
-        f1, f2 = self.extract_multi_variable(fluent)
-        return f'location {f1} and location {f2} are not secure'
-
-    elif fluent.startswith('in('):
-        cargo, vehicle = self.extract_multi_variable(fluent)
-        return f'cargo {cargo} is secured in vehicle {vehicle}'  # not secured
-    elif fluent.startswith('-in('):
-        cargo, vehicle = self.extract_multi_variable(fluent)
-        return f'cargo {cargo} is not secured in vehicle {vehicle}'
-
-    elif fluent.startswith('has_space('):
-        vehicle, space = self.extract_multi_variable(fluent)
-        return f'vehicle {vehicle} parks in space {space}'  # parks in
-    elif fluent.startswith('-has_space('):
-        vehicle, space = self.extract_multi_variable(fluent)
-        return f'vehicle {vehicle} does not parks in space {space}'
-
-    elif fluent.startswith('space_neighbor('):
-        s1, s2 = self.extract_multi_variable(fluent)
-        return f'space {s1} is in the same city as space {s2}'  # is the same city as
-    elif fluent.startswith('-space_neighbor('):
-        s1, s2 = self.extract_multi_variable(fluent)
-        return f'space {s1} is not in the same city as space {s2}'
-    else:
-        raise 'fluent is not defined'
-
-
-def action_to_hallucinated_natural_language_helper(self, action):
-    action = strip_action_prefix(action)
-    if action.startswith('move('):
-        vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
-        return f'vehicle {vehicle} gets pulled over at {location1}'  # gets pulled over
-    elif action.startswith('load('):
-        cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-        return f'cargo {cargo} is transported into vehicle {vehicle} at location {location} with space {space1} to space {space2}'  # transported
-    elif action.startswith('unload('):
-        cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-        return f'cargo {cargo} and vehicle {vehicle} are inspected at location {location}'  # inspected
-    else:
-        raise 'action is not defined'
+            raise 'action is not defined'
 
 
 class Npuzzle(BaseDomain):
