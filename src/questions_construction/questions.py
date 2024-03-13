@@ -311,9 +311,13 @@ class QuestionGenerator(QuestionGenerationHelpers):
 
     def question_constructors(self):
         return [self.question_1,
+                self.question_1_derived,
                 self.question_2,
+                self.question_2_derived,
                 self.question_3,
+                self.question_3_derived,
                 self.question_4,
+                self.question_4_derived,
                 self.question_5,
                 self.question_6,
                 self.question_7,
@@ -328,14 +332,26 @@ class QuestionGenerator(QuestionGenerationHelpers):
 
     def question_1(self, plan_length):
         return None
+    
+    def question_1_derived(self, plan_length):
+        return None
 
     def question_2(self, plan_length):
+        return None
+    
+    def question_2_derived(self, plan_length):
         return None
 
     def question_3(self, plan_length):
         return None
+    
+    def question_3_derived(self, plan_length):
+        return None
 
     def question_4(self, plan_length):
+        return None
+    
+    def question_4_derived(self, plan_length):
         return None
 
     def question_5(self, plan_length):
@@ -397,8 +413,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
             neg_fluents = self.neg_fluents_for_object(obj, plan_length)
             if not (len(pos_fluents) and len(neg_fluents)):
                 continue
-            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents,
-                                                          neg_fluents)
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents,neg_fluents)
             if min_chosen_fluents <= len(fluents):
                 num_samples = random.randint(min_chosen_fluents, len(fluents))
                 chosen_fluents = random.sample(fluents, num_samples)
