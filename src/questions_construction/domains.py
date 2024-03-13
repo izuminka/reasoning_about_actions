@@ -129,9 +129,9 @@ class Blocksworld(BaseDomain):
                       'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo',
                       'unstacked': 'wxqdwukszo'}
     FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
-                      'clear': 'ormkfgqwve',
-                      'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
-                      'empty': 'yqttlkcqqj',
+                      # 'clear': 'ormkfgqwve',
+                       'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
+                      # 'empty': 'yqttlkcqqj',
                       'hand': 'egpbpdtalq'}
     SUBSTRINGS_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
 
@@ -409,15 +409,16 @@ class Depots(BaseDomain):
         'pallet': 'tzrwjuotxz', 'pallets': 'tzrwjuotxz',
         'crate': 'pjrluufopq', 'crates': 'pjrluufopq',
         'truck': 'nblmdziyqf', 'trucks': 'nblmdziyqf',
-        'location': 'eejxtwabwx', 'locations': 'eejxtwabwx',
-        'clear': 'sypgozifms',
-        'available': 'xlhhnyciys',
         'hoist': 'suhmddooyi', 'hoists': 'suhmddooyi',
         'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy', 'drove': 'jzmscukkyy',
         'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc', 'lifts': 'aeaygzpsjc', 'lifted': 'aeaygzpsjc',
         'drop': 'uckhudtpif', 'drops': 'uckhudtpif', 'dropping': 'uckhudtpif', 'dropped': 'uckhudtpif',
         'load': 'gjqgfjtbnf', 'loads': 'gjqgfjtbnf', 'loading': 'gjqgfjtbnf', 'loaded': 'gjqgfjtbnf',
-        'unload': 'gpztfzvsux', 'unloads': 'gpztfzvsux', 'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux'}
+        'unload': 'gpztfzvsux', 'unloads': 'gpztfzvsux', 'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux',
+        # 'location': 'eejxtwabwx', 'locations': 'eejxtwabwx',
+        # 'clear': 'sypgozifms',
+        # 'available': 'xlhhnyciys',
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -716,12 +717,11 @@ class Driverlog(BaseDomain):
 
     SUBSTRINGS_TO_RAND = {
         'truck': 'zkkizjecwh', 'trucks': 'zkkizjecwh',
-        'location': 'iatympbexj', 'locations': 'iatympbexj',
         'object': 'omkfkvxwrg', 'objects': 'omkfkvxwrg',
         'driver': 'fxwdnwxasu', 'drivers': 'fxwdnwxasu',
         'link': 'umwttodbts', 'links': 'umwttodbts',
         'path': 'zgbnmmdljx', 'paths': 'zgbnmmdljx',
-        'empty': 'fgrxzszxhm',
+        # 'empty': 'fgrxzszxhm',
         'load': 'yvlcghamlt', 'loads': 'yvlcghamlt', 'loading': 'yvlcghamlt', 'loaded': 'yvlcghamlt',
         'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj',
         'unloaded': 'zfjywbftzj',
@@ -732,6 +732,7 @@ class Driverlog(BaseDomain):
         'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie',
         'driven': 'wqfrddftie',
         'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh', 'walked': 'elasopyqsh',
+        # 'location': 'iatympbexj', 'locations': 'iatympbexj',
     }
 
     def fluent_to_natural_language_helper(self, fluent):
@@ -918,11 +919,8 @@ class Goldminer(BaseDomain):
     DERIVED_FLUENTS = ['arm_empty', 'clear(']
     SUBSTRINGS_TO_RAND = {
         'robot': 'oiycijmjmo',
-        'location': 'cltqghvirt', 'locations': 'cltqghvirt',
         'laser': 'jaakaxcemj',
-        'clear': 'qvnmedqflj',
         'arm': 'jawtollkbp', 'arms': 'jawtollkbp',
-        'empty': 'kqtvognkhw',
         'bomb': 'ojyinshkhj',
         'gold': 'gbxztwroqz',
         'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
@@ -932,7 +930,11 @@ class Goldminer(BaseDomain):
         'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc', 'moved': 'zdmlakgkqc',
         'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse', 'picked up': 'wlcfexwxse',
         'put down': 'lrlcipamts', 'puts down': 'lrlcipamts', 'putting down': 'lrlcipamts',
-        'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi', 'fired': 'arvmgimcpi'}
+        'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi', 'fired': 'arvmgimcpi',
+        # 'clear': 'qvnmedqflj',
+        # 'empty': 'kqtvognkhw',
+        # 'location': 'cltqghvirt', 'locations': 'cltqghvirt',
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
@@ -1173,17 +1175,15 @@ class Grippers(BaseDomain):
     SUBSTRINGS_TO_RAND = {
         'robot': 'jjjrptnvkh', 'robots': 'jjjrptnvkh',
         'room': 'ixokqrvnqn', 'rooms': 'ixokqrvnqn',
-        'destination': 'ezrqqoajas', 'destinations': 'ezrqqoajas',
+        # 'destination': 'ezrqqoajas', 'destinations': 'ezrqqoajas',
         'object': 'wtdcrmrabz', 'objects': 'wtdcrmrabz',
         'gripper': 'yegitqlmuq', 'grippers': 'yegitqlmuq',
         'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
         'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
-        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn',
-        'dropped': 'qhfmsjkotn',
+        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn','dropped': 'qhfmsjkotn',
         'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt',
         'transported': 'kseqanhkzt',
-        'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj',
-        'carried': 'rwgciavjpj'}
+        'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
@@ -1314,7 +1314,6 @@ class Logistics(BaseDomain):
         'truck': 'pvcuetihtl', 'trucks': 'pvcuetihtl',
         'airplane': 'xmyqeckfwm', 'airplanes': 'xmyqeckfwm',
         'airport': 'qpplrkefyr', 'airports': 'qpplrkefyr',
-        'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
         'object': 'causdnkeoz', 'objects': 'causdnkeoz',
         'vehicle': 'qmgahdodkq', 'vehicles': 'qmgahdodkq',
         'city': 'bpzwevlomd', 'cities': 'bpzwevlomd',
@@ -1323,7 +1322,8 @@ class Logistics(BaseDomain):
         'unloaded': 'bdfszwzdpi',
         'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn',
         'driven': 'umcjrdgfyn',
-        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar', 'flown': 'umnkjqinar'
+        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar', 'flown': 'umnkjqinar',
+        # 'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
     }
 
     def fluent_to_natural_language_helper(self, fluent):
@@ -1442,14 +1442,14 @@ class Miconic(BaseDomain):
         "If the passenger is served, then the passenger is not boarded.")
     DERIVED_FLUENTS = []  # TODO double check
     SUBSTRINGS_TO_RAND = {
-        'up': 'lfapuhgnsn',
-        'down': 'mmphaaxcri',
-        'source': 'outpkddlno',
-        'above': 'idfiasmopc',
+        # 'up': 'lfapuhgnsn',
+        # 'down': 'mmphaaxcri',
+        # 'source': 'outpkddlno',
+        # 'above': 'idfiasmopc',
         'served': 'vpdiuemmjp',
         'elevator': 'jbbturclrd', 'elevators': 'jbbturclrd',
         'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
-        'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
+        # 'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
         'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
         'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
         'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
@@ -1605,10 +1605,11 @@ class Mystery(BaseDomain):
     SUBSTRINGS_TO_RAND = {
         'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
         'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
-        'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
         'fuel': 'vyumzovixm', 'fuels': 'vyumzovixm',
         'space': 'kiurijzhmd', 'spaces': 'kiurijzhmd',
-        'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connecting': 'qqqxlayhxq', 'connected': 'qqqxlayhxq'}
+        'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connecting': 'qqqxlayhxq', 'connected': 'qqqxlayhxq',
+        # 'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -1765,10 +1766,11 @@ class Npuzzle(BaseDomain):
     SUBSTRINGS_TO_RAND = {
         'tile': 'gkxiurkpij', 'tiles': 'gkxiurkpij',
         'move': 'edclnosigi', 'moves': 'edclnosigi', 'moving': 'edclnosigi', 'moved': 'edclnosigi',
-        'source': 'dfqdjcpgle',
-        'destination': 'jfyxocsjve',
-        'empty': 'vigzxelnpn',
-        'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'}
+        # 'source': 'dfqdjcpgle',
+        # 'destination': 'jfyxocsjve',
+        # 'empty': 'vigzxelnpn',
+        # 'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -1865,9 +1867,7 @@ class Satellite(BaseDomain):
     DERIVED_FLUENTS = ['power_avail(']
     SUBSTRINGS_TO_RAND = {
         'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
-        'source': 'uuwgcgehnr',
         'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
-        'destination': 'izwwbtklpt',
         'direction': 'apdptereua', 'directions': 'apdptereua',
         'instrument': 'rstzlaxvor', 'instruments': 'rstzlaxvor',
         'onboard': 'icafejchri',
@@ -1876,7 +1876,10 @@ class Satellite(BaseDomain):
         'switch': 'sqsicvmhrn', 'switches': 'sqsicvmhrn', 'switching': 'sqsicvmhrn', 'switched': 'sqsicvmhrn',
         'calibrate': 'dymysndcxa', 'calibrates': 'dymysndcxa', 'calibrating': 'dymysndcxa', 'calibrated': 'dymysndcxa',
         'take': 'idrpvqprlo', 'takes': 'idrpvqprlo', 'taking': 'idrpvqprlo', 'taken': 'idrpvqprlo',
-        'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq', 'powered': 'ymikwvufrq'}
+        'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq', 'powered': 'ymikwvufrq',
+        # 'destination': 'izwwbtklpt',
+        # 'source': 'uuwgcgehnr',
+    }
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
@@ -2058,11 +2061,11 @@ class Spanner(BaseDomain):
         'man': 'bmojqrwpdg',
         'usable': 'fgbcjqnbgp',
         'spanner': 'ujzeqlcecc', 'spanners': 'ujzeqlcecc',
-        'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
         'link': 'qzylwqxpoq', 'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
         'walk': 'fvuxqntacz', 'walks': 'fvuxqntacz', 'walking': 'fvuxqntacz', 'walked': 'fvuxqntacz',
         'pick': 'rcholfpyyj', 'picks': 'rcholfpyyj', 'picking': 'rcholfpyyj', 'picked': 'rcholfpyyj',
         'tighten': 'xvxccombol', 'tightens': 'xvxccombol', 'tightening': 'xvxccombol', 'tightened': 'xvxccombol',
+        # 'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
     }
 
     def fluent_to_natural_language_helper(self, fluent):
@@ -2234,8 +2237,8 @@ class Zenotravel(BaseDomain):
         'city': 'uibqqmoerq', 'cities': 'uibqqmoerq',
         'aircraft': 'psjemaawdi', 'aircrafts': 'psjemaawdi',
         'airport': 'vuvceigmai', 'airports': 'vuvceigmai',
-        'source': 'xfdqznnlrs',
-        'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
+        # 'source': 'xfdqznnlrs',
+        # 'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
         'level': 'ndozmmwian', 'levels': 'ndozmmwian'}
 
     def fluent_to_natural_language_helper(self, fluent):
