@@ -1267,25 +1267,16 @@ class HallucinationQuestions(QuestionGenerator):
 #                 return question, answer, random_action, question_without_result
 #
 
-# class CompositeQuestions(DomainQuestionGen):
-#         def __init__(self, states_actions_jsonl_path, instance_id):
-#             super().__init__(states_actions_jsonl_path, instance_id)
+class CompositeQuestions(QuestionGenerator):
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
 
-#         @staticmethod
-#     def question_category():
-#             return 'ObjectTracking'
+    @staticmethod
+    def question_category():
+        return 'composite_questions'
 
-#         def question_1(self, plan_length):
+    def question_1(self, plan_length):
+        pass
 
-#           true_fluents = self.given_fluent_sequence[plan_length+1]
-# random_index = random.randint(0, true_fluents - 1)
-#             inexecutable_sequence_nlp = self.ACTION_JOIN_STR.join(
-#                 [self.action_to_natural_language(action) for action in inexecutable_sequence])
-#             questions = [
-#                 f'Given the initial state, I plan to execute the following sequence of actions: {inexecutable_sequence_nlp}, what will be the state before the first inexecutable action occurs? If there are None, answer "None"',
-#                 f'Given the initial state and the sequence of actions: {inexecutable_sequence_nlp}, what is the state before the first inexecutable action? If there are None, answer "None"',
-#             ]
-#             question = self.question_phrasing_choice(questions)
-#             answer = self.fluents_from_optimal_sequence[inexecutable_action_index - 1]
 
-#             return self.qa_data_object(self.composite_question_1.__name__, FREE_ANSWER, question, answer)
+
