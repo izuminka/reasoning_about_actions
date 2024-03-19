@@ -51,9 +51,13 @@ class TestDomains(unittest.TestCase):
         obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
         res = self.bd.replace_substrings(text, obj_dict)
         print(res)
-        expected = ('Ovyuecllio a qbyyxzqvdh is only possible if that qbyyxzqvdh is ormkfgqwve, on the zewwtdxhfs, and the egpbpdtalq is yqttlkcqqj. '
-                    'Wxqdwukszo the first qbyyxzqvdh from the second causes first qbyyxzqvdh to be casqqrrojp a qbyyxzqvdh is said to be ormkfgqwve if it is not being casqqrrojp and there are no qbyyxzqvdhs that are on top of it. '
-                    'The egpbpdtalq is said to be yqttlkcqqj if and only if it is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can only be at one place at a time.')
+        expected = ('Ovyuecllio a qbyyxzqvdh is only possible if that qbyyxzqvdh is clear, on the '
+                    'zewwtdxhfs, and the egpbpdtalq is empty. Wxqdwukszo the first qbyyxzqvdh '
+                    'from the second causes first qbyyxzqvdh to be casqqrrojp a qbyyxzqvdh is '
+                    'said to be clear if it is not being casqqrrojp and there are no qbyyxzqvdhs '
+                    'that are on top of it. The egpbpdtalq is said to be empty if and only if it '
+                    'is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can only be at one place at '
+                    'a time.')
         self.assertEqual(expected, res)
 
     def test_domains_init(self):
@@ -63,8 +67,6 @@ class TestDomains(unittest.TestCase):
                     domain_class = dom(is_random_sub, is_ramifications)
                     print(domain_class.domain_description)
                     self.assertTrue(domain_class)
-
-
 
 
 if __name__ == '__main__':
