@@ -68,6 +68,20 @@ class TestDomains(unittest.TestCase):
                     print(domain_class.domain_description)
                     self.assertTrue(domain_class)
 
+    def test_blocksworld_fluents_actions(self):
+        dom = ALL_DOMAIN_CLASSES[0]
+        for is_random_sub in [True, False]:
+            for is_ramifications in [True, False]:
+                domain_class = dom(is_random_sub, is_ramifications)
+                for is_hallucinated in [True, False]:
+                    res = domain_class.fluent_to_natural_language('clear(b1)', is_hallucinated)
+                    print(res)
+                    self.assertTrue(res)
+                    res = domain_class.action_to_natural_language('stack(b1,b2)', is_hallucinated)
+                    self.assertTrue(res)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
