@@ -1098,7 +1098,7 @@ class Goldminer(BaseDomain):
         'gold': 'gbxztwroqz',
         'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
         'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
-        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf',
+        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf', 'detonated': 'vputhhsycf',
         'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl', 'found': 'qwyadblmhl',
         'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc', 'moved': 'zdmlakgkqc',
         'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse', 'picked up': 'wlcfexwxse',
