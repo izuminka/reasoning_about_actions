@@ -43,6 +43,9 @@ NEGATIVE_FLUENT = 'valid property of the state that involves a negation'
 FLUENTS = 'properties of the state'
 POSITIVE_FLUENTS = 'valid properties of the state'
 NEGATIVE_FLUENTS = 'valid properties of the state that involve negations'
+DEFAULT_FLUENT = 'base_fluents'
+DERIVED_FLUENTS = 'derived_fluents'
+PERSISTENT_FLUENTS = 'persistent_fluents'
 
 PART_OF_THE_STATE = 'part of the state'
 MAX_TIMEOUT = 100
@@ -145,6 +148,20 @@ class QuestionGenerationHelpers:
     def extract_inexecutable_actions(self):
         """extracts the inexecutable actions for each time step"""
         return self.extract_actions(is_executable=False)
+    
+    def extract_derived_fluents(self, pos_fluents_for_timestep,neg_fluents_for_timestep):
+        """extracts derived fluents for given time step"""
+        derived_pos_fluents = []
+        derived_neg_fluents = []
+        for item in pos_fluents_for_timestep:
+            for prefix in self.domain_class.DERIVED_FLUENTS:
+                if item.startswith(prefix):
+                    derived_pos_fluents.append(item)
+        for item in neg_fluents_for_timestep:
+            for prefix in self.domain_class.DERIVED_FLUENTS:
+                if item.startswith(prefix):
+                    derived_neg_fluents.append(item)
+        return derived_pos_fluents, derived_neg_fluents
 
     def get_random_inexecutable_sequence(self, plan_length):
         # Checking whether any inexecutable actions are present till the sequence length
@@ -247,16 +264,18 @@ class QuestionGenerationHelpers:
 class QuestionGenerator(QuestionGenerationHelpers):
     digit_regex = '\d+'
     word_regex = '[a-zA-Z]+'
+    
 
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def qa_data_object(self, question, answer, answer_type, question_name, plan_length):
+    def qa_data_object(self, question, answer, answer_type, question_name, plan_length, fluent_type=DEFAULT_FLUENT):
         return {OUT_OBJ_ID: str(uuid.uuid4()),
                 OUT_OBJ_DOMAIN_NAME: self.domain_class.DOMAIN_NAME,
                 OUT_OBJ_INSTANCE_ID: self.instance_id,
                 OUT_OBJ_QUESTION_CATEGORY: self.question_category(),
                 OUT_OBJ_QUESTION_NAME: question_name,
+                OUT_OBJ_FLUENT_TYPE: fluent_type,
                 OUT_OBJ_ANSWER_TYPE: answer_type,
                 OUT_OBJ_QUESTION: question,
                 OUT_OBJ_ANSWER: str(answer),
@@ -427,22 +446,38 @@ class FluentTrackingQuestions(QuestionGenerator):
     def question_category():
         return 'fluent_tracking'
 
-    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name):
+    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name,fluent_type=DEFAULT_FLUENT):
         is_answer_true = random.choice([True, False])
-        pos_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
-        neg_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
-        fluent = \
-            self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+        if fluent_type == DERIVED_FLUENTS:
+            derived_pos_fluent, derived_neg_fluent = self.extract_derived_fluents(self.pos_fluents_given_plan[plan_length],self.neg_fluents_given_plan[plan_length])
+            if len(derived_pos_fluent) == 0 or len(derived_neg_fluent) == 0:
+                return None
+            else:
+                derived_pos_fluent = random.choice(derived_pos_fluent)
+                derived_neg_fluent = random.choice(derived_neg_fluent)
+                fluent = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [derived_pos_fluent], [derived_neg_fluent])[0]
+        else: 
+            pos_fluent = random.choice(self.pos_fluents_given_plan[plan_length])
+            neg_fluent = random.choice(self.neg_fluents_given_plan[plan_length])
+            fluent = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
 
-    def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name):
+    def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name,fluent_type=DEFAULT_FLUENT):
         is_answer_true = random.choice([True, False])
-        fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
+        if fluent_type==DERIVED_FLUENTS:
+            derived_pos_fluent, derived_neg_fluent = self.extract_derived_fluents(self.pos_fluents_given_plan[plan_length],self.neg_fluents_given_plan[plan_length])
+            if len(derived_pos_fluent) == 0 or len(derived_neg_fluent) == 0:
+                return None
+            else:
+                fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, derived_pos_fluent, derived_neg_fluent)
+        else:                            
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true,
                                                       self.pos_fluents_given_plan[plan_length],
                                                       self.neg_fluents_given_plan[plan_length])
+        
         question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
 
     def qa_5_6_helper(self, plan_length, is_pos_fluent_question, question_name, timeout=MAX_TIMEOUT):
         fluents = []
@@ -485,6 +520,29 @@ class FluentTrackingQuestions(QuestionGenerator):
     def question_6(self, plan_length):
         is_pos_fluent_question = False
         return self.qa_5_6_helper(plan_length, is_pos_fluent_question, self.question_6.__name__)
+    
+    def question_7(self,plan_length):
+        is_pos_fluent_question = True
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_7.__name__,fluent_type)
+    
+    def question_8(self,plan_length):
+        is_pos_fluent_question = False
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__,fluent_type)
+    
+    def question_9(self,plan_length):
+        is_pos_fluent_question = True
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_9.__name__,fluent_type)
+    
+    def question_10(self,plan_length):
+        is_pos_fluent_question = False
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_10.__name__,fluent_type)
+    
+        
+        
 
 
 class StateTrackingQuestions(QuestionGenerator):
@@ -495,14 +553,21 @@ class StateTrackingQuestions(QuestionGenerator):
     def question_category():
         return 'state_tracking'
 
-    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name):
+    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name,fluent_type=DEFAULT_FLUENT):
         is_answer_true = random.choice([True, False])
-        pos_fluents = self.pos_fluents_given_plan[plan_length]
-        neg_fluents = self.neg_fluents_given_plan[plan_length]
-        fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
+        if fluent_type == DERIVED_FLUENTS:
+            derived_pos_fluent, derived_neg_fluent = self.extract_derived_fluents(self.pos_fluents_given_plan[plan_length],self.neg_fluents_given_plan[plan_length])
+            if len(derived_pos_fluent) == 0 or len(derived_neg_fluent) == 0:
+                return None
+            else:
+                fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, derived_pos_fluent, derived_neg_fluent)
+        else:
+            pos_fluents = self.pos_fluents_given_plan[plan_length]
+            neg_fluents = self.neg_fluents_given_plan[plan_length]
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} are all of the following properties: {nl_fluents}, correct? Respond with {TRUE_OR_FALSE}."
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
 
     def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name):
         if is_pos_fluent_question:
@@ -530,6 +595,18 @@ class StateTrackingQuestions(QuestionGenerator):
     def question_4(self, plan_length):
         is_pos_fluent_question = False
         return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_4.__name__)
+    
+    def question_5(self,plan_length):
+        is_pos_fluent_question = True
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_5.__name__,fluent_type)
+    
+    def question_6(self,plan_length):
+        is_pos_fluent_question = False
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_6.__name__,fluent_type)
+    
+    
 
 
 def corrupt_action_sequence(true_actions, inexecutable_actions_timestep, plan_length):
@@ -613,8 +690,16 @@ class EffectsQuestions(QuestionGenerator):
             return f"{INITIAL_CONDITION_PREFIX},"
         else:
             return f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
+        
+    def derived_fluents(self,fluents_list):
+        derived_fluents = []
+        for item in fluents_list:
+            for prefix in self.domain_class.DERIVED_FLUENTS:
+                if item.startswith(prefix):
+                    derived_fluents.append(item)
+        return derived_fluents
 
-    def qa_1_2_helper(self, plan_length, is_answer_true, question_name):
+    def qa_1_2_helper(self, plan_length, is_answer_true, question_name,fluent_type=DEFAULT_FLUENT):
         action = self.given_plan_sequence[plan_length]
         fluents_current_state = set(self.pos_fluents_given_plan[plan_length]).union(set(self.neg_fluents_given_plan[plan_length]))
         fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1]).union(set(self.neg_fluents_given_plan[plan_length + 1]))
@@ -626,11 +711,17 @@ class EffectsQuestions(QuestionGenerator):
             corrupted_fluents = set([l for ls in fluents_all for l in ls]) - fluents_new_minus_old
             fluents = self.corrupted_not_corrupted_mix(list(fluents_new_minus_old), list(corrupted_fluents))
             fluents = random.sample(fluents, len(fluents_new_minus_old))
-
         fluents = list(fluents)
+        if fluent_type==DERIVED_FLUENTS:
+            fluents = self.derived_fluents(fluents)
+        else:
+            fluents = fluents
         random.shuffle(fluents)
-        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+        if len(fluents)==0:
+            return None
+        else:
+            question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {self.nl_fluents(fluents)}?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
 
     def qa_3_4_helper(self, plan_length, is_positive_fluents_question, question_name):
         action = self.given_plan_sequence[plan_length]
@@ -656,6 +747,16 @@ class EffectsQuestions(QuestionGenerator):
     def question_4(self, plan_length):
         is_positive_fluents_question = False
         return self.qa_3_4_helper(plan_length, is_positive_fluents_question, self.question_4.__name__)
+    
+    def question_5(self,plan_length):
+        is_positive_fluents_question = True
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_1_2_helper(plan_length, is_positive_fluents_question, self.question_5.__name__,fluent_type)
+    
+    def question_6(self,plan_length):
+        is_positive_fluents_question = False
+        fluent_type = DERIVED_FLUENTS
+        return self.qa_1_2_helper(plan_length, is_positive_fluents_question, self.question_6.__name__,fluent_type)
 
 
 class NumericalReasoningQuestions(QuestionGenerator):
