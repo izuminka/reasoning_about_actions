@@ -1128,7 +1128,7 @@ class Goldminer(BaseDomain):
             # return f'robot is not at location {place}'
 
         elif fluent.startswith('bomb_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'bomb is at location {place}',
                 f'bomb is present at location {place}',
@@ -1136,7 +1136,7 @@ class Goldminer(BaseDomain):
             ])
             # return f'bomb is at location {obj1}'
         elif fluent.startswith('-bomb_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'bomb is not at location {place}',
                 f'bomb is not present at location {place}',
@@ -1145,7 +1145,7 @@ class Goldminer(BaseDomain):
             # return f'bomb is not at location {obj1}'
 
         elif fluent.startswith('laser_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'laser is at location {place}',
                 f'laser is present at location {place}',
@@ -1153,7 +1153,7 @@ class Goldminer(BaseDomain):
             ])
             # return f'laser is at location {obj1}'
         elif fluent.startswith('-laser_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'laser is not at location {place}',
                 f'laser is not present at location {place}',
@@ -1162,7 +1162,7 @@ class Goldminer(BaseDomain):
             # return f'laser is not at location {obj1}'
 
         elif fluent.startswith('soft_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'soft rock is at location {place}',
                 f'soft rock is present at location {place}',
@@ -1170,7 +1170,7 @@ class Goldminer(BaseDomain):
             ])
             # return f'soft rock is at location {obj1}'
         elif fluent.startswith('-soft_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'soft rock is not at location {place}',
                 f'soft rock is not present at location {place}',
@@ -1179,7 +1179,7 @@ class Goldminer(BaseDomain):
             # return f'soft rock is not at location {obj1}'
 
         elif fluent.startswith('hard_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'hard rock is at location {place}',
                 f'hard rock is present at location {place}',
@@ -1187,7 +1187,7 @@ class Goldminer(BaseDomain):
             ])
             # return f'hard rock is at location {obj1}'
         elif fluent.startswith('-hard_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'hard rock is not at location {place}',
                 f'hard rock is not present at location {place}',
@@ -1196,7 +1196,7 @@ class Goldminer(BaseDomain):
             # return f'hard rock is not at location {obj1}'
 
         elif fluent.startswith('gold_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'gold is at location {place}',
                 f'gold is present at location {place}',
@@ -1204,7 +1204,7 @@ class Goldminer(BaseDomain):
             ])
             # return f'gold is at location {obj1}'
         elif fluent.startswith('-gold_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return random.choice([
                 f'gold is not at location {place}',
                 f'gold is not present at location {place}',
