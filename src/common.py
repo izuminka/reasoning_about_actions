@@ -30,6 +30,7 @@ OUT_OBJ_QUESTION_NAME = 'question_name'
 OUT_OBJ_QUESTION = 'question'
 OUT_OBJ_ANSWER_TYPE = 'answer_type'
 OUT_OBJ_ANSWER = 'answer' # ground truth answer
+OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
 
 # OUTPUT ANSWER TYPES
 FREE_ANSWER = 'free_answer'

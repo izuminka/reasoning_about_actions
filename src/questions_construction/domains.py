@@ -93,7 +93,7 @@ class BaseDomain:
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
-    DERIVED_FLUENTS = ['clear(', 'handempty']
+    DERIVED_FLUENTS = ['clear(', 'handempty','-clear(','-handempty(']
     DOMAIN_DESC_WITHOUT_RAM = (
         'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
         'By picking up that block, it makes that block not present on the table and not clear. '
