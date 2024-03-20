@@ -70,25 +70,25 @@ class BaseDomain:
 
     def fluent_to_natural_language(self, fluent, is_hallucinated=False):
         if not is_hallucinated:
-            nl_fluent = self.fluent_to_natural_language_helper(fluent)
+            nl_fluent_list = self.fluent_to_natural_language_helper(fluent)
         else:
-            nl_fluent = self.fluent_to_hallucinated_natural_language_helper(fluent)
+            nl_fluent_list = self.fluent_to_hallucinated_natural_language_helper(fluent)
 
         if self.is_random_sub:
-            nl_fluent = self.replace_substrings(nl_fluent, self.SUBSTRINGS_TO_RAND)
+            nl_fluent_list = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_fluent_list]
         
-        return random.choice(nl_fluent)
+        return random.choice(nl_fluent_list)
 
     def action_to_natural_language(self, action, is_hallucinated=False):
         if not is_hallucinated:
             nl_action_list = self.action_to_natural_language_helper(action)
         else:
-            nl_action = self.action_to_hallucinated_natural_language_helper(action)
+            nl_action_list = self.action_to_hallucinated_natural_language_helper(action)
 
         if self.is_random_sub:
-            nl_action = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_action]
+            nl_action_list = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_action_list]
         
-        return random.choice(nl_action)
+        return random.choice(nl_action_list)
 
 
 class Blocksworld(BaseDomain):
