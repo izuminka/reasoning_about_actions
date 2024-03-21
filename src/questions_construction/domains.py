@@ -1071,7 +1071,7 @@ class Goldminer(BaseDomain):
         'gold': 'gbxztwroqz',
         'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
         'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
-        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf',
+        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf', 'detonated': 'vputhhsycf',
         'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl', 'found': 'qwyadblmhl',
         'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc', 'moved': 'zdmlakgkqc',
         'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse', 'picked up': 'wlcfexwxse',
@@ -1099,14 +1099,14 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('bomb_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'bomb is at location {place}',
                 f'bomb is present at location {place}',
                 f'bomb is located at {place}'
             ]
         elif fluent.startswith('-bomb_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'bomb is not at location {place}',
                 f'bomb is not present at location {place}',
@@ -1114,14 +1114,14 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('laser_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'laser is at location {place}',
                 f'laser is present at location {place}',
                 f'laser is located at {place}'
             ]
         elif fluent.startswith('-laser_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'laser is not at location {place}',
                 f'laser is not present at location {place}',
@@ -1129,14 +1129,14 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('soft_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'soft rock is at location {place}',
                 f'soft rock is present at location {place}',
                 f'soft rock is located at {place}'
             ]
         elif fluent.startswith('-soft_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'soft rock is not at location {place}',
                 f'soft rock is not present at location {place}',
@@ -1144,14 +1144,14 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('hard_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'hard rock is at location {place}',
                 f'hard rock is present at location {place}',
                 f'hard rock is located at {place}'
             ]
         elif fluent.startswith('-hard_rock_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'hard rock is not at location {place}',
                 f'hard rock is not present at location {place}',
@@ -1159,14 +1159,14 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('gold_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'gold is at location {place}',
                 f'gold is present at location {place}',
                 f'gold is located at {place}'
             ]
         elif fluent.startswith('-gold_at('):
-            obj1 = self.extract_single_variable(fluent)
+            place = self.extract_single_variable(fluent)
             return [
                 f'gold is not at location {place}',
                 f'gold is not present at location {place}',

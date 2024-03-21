@@ -51,9 +51,13 @@ class TestDomains(unittest.TestCase):
         obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
         res = self.bd.replace_substrings(text, obj_dict)
         print(res)
-        expected = ('Ovyuecllio a qbyyxzqvdh is only possible if that qbyyxzqvdh is ormkfgqwve, on the zewwtdxhfs, and the egpbpdtalq is yqttlkcqqj. '
-                    'Wxqdwukszo the first qbyyxzqvdh from the second causes first qbyyxzqvdh to be casqqrrojp a qbyyxzqvdh is said to be ormkfgqwve if it is not being casqqrrojp and there are no qbyyxzqvdhs that are on top of it. '
-                    'The egpbpdtalq is said to be yqttlkcqqj if and only if it is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can only be at one place at a time.')
+        expected = ('Ovyuecllio a qbyyxzqvdh is only possible if that qbyyxzqvdh is clear, on the '
+                    'zewwtdxhfs, and the egpbpdtalq is empty. Wxqdwukszo the first qbyyxzqvdh '
+                    'from the second causes first qbyyxzqvdh to be casqqrrojp a qbyyxzqvdh is '
+                    'said to be clear if it is not being casqqrrojp and there are no qbyyxzqvdhs '
+                    'that are on top of it. The egpbpdtalq is said to be empty if and only if it '
+                    'is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can only be at one place at '
+                    'a time.')
         self.assertEqual(expected, res)
 
     def test_domains_init(self):
@@ -63,6 +67,18 @@ class TestDomains(unittest.TestCase):
                     domain_class = dom(is_random_sub, is_ramifications)
                     print(domain_class.domain_description)
                     self.assertTrue(domain_class)
+
+    def test_blocksworld_fluents_actions(self):
+        dom = ALL_DOMAIN_CLASSES[0]
+        for is_random_sub in [True, False]:
+            for is_ramifications in [True, False]:
+                domain_class = dom(is_random_sub, is_ramifications)
+                for is_hallucinated in [True, False]:
+                    res = domain_class.fluent_to_natural_language('clear(b1)', is_hallucinated)
+                    print(res)
+                    self.assertTrue(res)
+                    res = domain_class.action_to_natural_language('stack(b1,b2)', is_hallucinated)
+                    self.assertTrue(res)
 
 
 
