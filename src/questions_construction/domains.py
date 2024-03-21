@@ -70,25 +70,25 @@ class BaseDomain:
 
     def fluent_to_natural_language(self, fluent, is_hallucinated=False):
         if not is_hallucinated:
-            nl_fluent = self.fluent_to_natural_language_helper(fluent)
+            nl_fluent_list = self.fluent_to_natural_language_helper(fluent)
         else:
-            nl_fluent = self.fluent_to_hallucinated_natural_language_helper(fluent)
+            nl_fluent_list = self.fluent_to_hallucinated_natural_language_helper(fluent)
 
         if self.is_random_sub:
-            return self.replace_substrings(nl_fluent, self.SUBSTRINGS_TO_RAND)
-        else:
-            return nl_fluent
+            nl_fluent_list = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_fluent_list]
+        
+        return random.choice(nl_fluent_list)
 
     def action_to_natural_language(self, action, is_hallucinated=False):
         if not is_hallucinated:
-            nl_action = self.action_to_natural_language_helper(action)
+            nl_action_list = self.action_to_natural_language_helper(action)
         else:
-            nl_action = self.action_to_hallucinated_natural_language_helper(action)
+            nl_action_list = self.action_to_hallucinated_natural_language_helper(action)
 
         if self.is_random_sub:
-            return self.replace_substrings(nl_action, self.SUBSTRINGS_TO_RAND)
-        else:
-            return nl_action
+            nl_action_list = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_action_list]
+        
+        return random.choice(nl_action_list)
 
 
 class Blocksworld(BaseDomain):
@@ -138,78 +138,68 @@ class Blocksworld(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b1} is on block {b2}',
                 f'block {b1} is on top of block {b2}',
                 f'block {b1} is placed on top of block {b2}'
-            ])
-            # return f'block {b1} is on block {b2}'
+            ]
         elif fluent.startswith('-on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b1} is not on block {b2}',
                 f'block {b1} is not on top of block {b2}',
                 f'block {b1} is not placed on top of block {b2}'
-            ])
-            # return f'block {b1} is not on block {b2}'
+            ]
 
         elif fluent.startswith('clear('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is clear'
-            ])
-            # return f'block {b} is clear'
+            ]
         elif fluent.startswith('-clear('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is not clear'
-            ])
-            # return f'block {b} is not clear'
+            ]
 
         elif fluent.startswith('ontable('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is on the table',
                 f'block {b} is located at the table'
-            ])
-            # return f'block {b} is on the table'
+            ]
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is not on the table',
                 f'block {b} is not located at the table'
-            ])
-            # return f'block {b} is not on the table'
+            ]
 
         elif fluent.startswith('holding('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is being held',
                 f'the hand is holding the block {b}',
                 f'block {b} is being held by the hand'
-            ])
-            # return f'block {b} is being held'
+            ]
         elif fluent.startswith('-holding('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is not being held',
                 f'the hand is not holding the block {b}',
                 f'block {b} is not being held by the hand'
-            ])
-            # return f'block {b} is not being held'
+            ]
 
         elif fluent.startswith('handempty'):
-            return random.choice([
+            return [
                 'hand is empty',
                 'hand is not holding anything'
-            ])
-            # return f'hand is empty'
+            ]
         elif fluent.startswith('-handempty'):
-            return random.choice([
+            return [
                 f'hand is not empty',
                 f'hand is holding some block'
-            ])
-            # return f'hand is not empty'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -217,35 +207,31 @@ class Blocksworld(BaseDomain):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'block {block_name} is picked up',
                 f'block {block_name} is picked up by the hand',
                 f'block {block_name} is picked up from the table'
-            ])
-            # return f'block {block_name} is picked up'
+            ]
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'block {block_name} is put down',
                 f'block {block_name} is put down on the table',
                 f'the hand puts down the block {block_name}'
-            ])
-            # return f'block {block_name} is put down'
+            ]
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'block {b1} is unstacked from block {b2}',
                 f'block {b1} is unstacked from top of block {b2}',
                 f'from top of block {b2}, block {b1} is unstacked'
-            ])
-            # return f'block {b1} is unstacked from block {b2}'
+            ]
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'block {b1} is stacked on top of block {b2}',
                 f'on top of block {b2}, block {b1} is stacked'
-            ])
-            # return f'block {b1} is stacked on top block {b2}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -253,117 +239,111 @@ class Blocksworld(BaseDomain):
         # under
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b1} is under block {b2}',
                 f'block {b1} is positioned under block {b2}'
-            ])
-            # return f'block {b1} is under block {b2}'
+            ]
         elif fluent.startswith('-on('):
             b1, b2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b1} is not under block {b2}',
                 f'block {b1} is not positioned under block {b2}'
-            ])
-            # return f'block {b1} is not under block {b2}'
+            ]
 
         # lost
         elif fluent.startswith('clear('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is lost',
                 f'block {b} has become lost'
-            ])
-            # return f'block {b} is lost'
+            ]
         elif fluent.startswith('-clear('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is not lost',
                 f'block {b} has not been lost'
-            ])
-            # return f'block {b} is not lost'
+            ]
 
         # thrown
         elif fluent.startswith('holding('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is being thrown',
                 f'block {b} has been thrown'
-            ])
-            # return f'block {b} is being thrown'
+            ]
         elif fluent.startswith('-holding('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is not being thrown',
                 f'block {b} has not been thrown'
-            ])
-            # return f'block {b} is not being thrown'
+            ]
 
         # under table
         elif fluent.startswith('ontable('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is under the table',
                 f'block {b} is positioned under the table'
-            ])
-            # return f'block {b} is under the table'
+            ]
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'block {b} is not under the table',
                 f'block {b} is not positioned under the table'
-            ])
-            # return f'block {b} is not under the table'
+            ]
 
         # hand broken
         elif fluent.startswith('handempty'):
-            return random.choice([
+            return [
                 f'hand is broken',
                 f'hand is now broken'
-            ])
-            # return f'hand is broken'
+            ]
         elif fluent.startswith('-handempty'):
-            return random.choice([
+            return [
                 f'hand is not broken',
                 f'hand is not broken anymore'
-            ])
-            # return f'hand is not broken'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        
+        # lift
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'block {block_name} is lifted',
                 f'block {block_name} is lifted by the hand',
                 f'the hand lifts the block {block_name}'
-            ])
-            # return f'block {block_name} is lifted'  # lift
+            ]
+        
+        # lower
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'block {block_name} is lowered',
                 f'block {block_name} is lowered by the hand',
                 f'block {block_name} is lowered to the table'
-            ])
-            # return f'block {block_name} is lowered'  # lower
+            ]
+        
+        # remove
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'block {b1} is removed from block {b2}',
                 f'block {b1} is removed from top of block {b2}'
                 f'from top of block {b2}, block {b1} is removed'
-            ])
-            # return f'block {b1} is removed from from block {b2}'  # remove
+            ]
+        
+        # crashed
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'block {b1} is crashed from block {b2}'
                 f'block {b1} is crashed from top of block {b2}',
                 f'from top of block {b2}, block {b1} is crashed'
-            ])
-            # return f'block {b1} is crashed from block {b2}'  # crashed
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -423,114 +403,105 @@ class Depots(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, place = self.extract_multi_variable(fluent)
-            if (obj.startswith('truck') or obj.startswith('crate')
-                    or obj.startswith('hoist') or obj.startswith('pallet')):
-                return random.choice([
+            if (obj.startswith('truck') or 
+                obj.startswith('crate') or 
+                obj.startswith('hoist') or 
+                obj.startswith('pallet')):
+                return [
                     f'{obj} is at {place}',
                     f'{obj} is located at {place}',
                     f'{place} is where {obj} is located',
                     f'{obj} can be found located at {place}'
-                ])
-                # return f'{obj} is at {place}'
+                ]
             else:
                 raise Exception('fluent is not defined')
-
         elif fluent.startswith('-at('):
             obj, place = self.extract_multi_variable(fluent)
-            if (obj.startswith('truck') or obj.startswith('crate')
-                    or obj.startswith('hoist') or obj.startswith('pallet')):
-                return random.choice([
+            if (obj.startswith('truck') or 
+                obj.startswith('crate') or 
+                obj.startswith('hoist') or 
+                obj.startswith('pallet')):
+                return [
                     f'{obj} is not at {place}',
                     f'{obj} is not located at {place}',
                     f'{place} is where {obj} is not located',
                     f'{obj} cannot be found located at {place}'
-                ])
-                # return f'{obj} is not at {place}'
+                ]
             else:
                 raise Exception('fluent is not defined')
 
         elif fluent.startswith('on('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is on {obj2}',
                 f'{obj2} has {obj1} on it',
                 f'{obj1} is on top of {obj2}'
-            ])
-            # return f'{obj1} is on {obj2}'
+            ]
         elif fluent.startswith('-on('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is not on {obj2}',
                 f'{obj2} does not have {obj1} on it',
                 f'{obj1} is not on top of {obj2}'
-            ])
-            # return f'{obj1} is not on {obj2}'
+            ]
 
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is in {obj2}',
                 f'{obj2} contains {obj1}',
                 f'{obj1} is inside {obj2}'
-            ])
-            # return f'{obj1} is in {obj2}'
+            ]
         elif fluent.startswith('-in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is not in {obj2}',
                 f'{obj2} does not contain {obj1}',
                 f'{obj1} is not inside {obj2}'
-            ])
-            # return f'{obj1} is not in {obj2}'
+            ]
 
         elif fluent.startswith('lifting('):
             hoist, crate = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{hoist} is lifting {crate}',
                 f'{hoist} is raising {crate}',
                 f'{hoist} is elevating {crate}'
-            ])
-            # return f'{hoist} is lifting {crate}'
+            ]
         elif fluent.startswith('-lifting('):
             hoist, crate = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{hoist} is not lifting {crate}',
                 f'{hoist} is not raising {crate}',
                 f'{hoist} is not elevating {crate}'
-            ])
-            # return f'{hoist} is not lifting {crate}'
+            ]
 
         elif fluent.startswith('available('):
             hoist = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{hoist} is available',
                 f'{hoist} is accessible',
                 f'{hoist} is available for work'
-            ])
-            # return f'{hoist} is available'
+            ]
         elif fluent.startswith('-available('):
             hoist = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{hoist} is not available',
                 f'{hoist} is not accessible',
                 f'{hoist} is not available for work'
-            ])
-            # return f'{hoist} is not available'
+            ]
 
         elif fluent.startswith('clear('):
             surface = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{surface} is clear',
                 f'{surface} is clear of any crates'
-            ])
-            # return f'{surface} is clear'
+            ]
         elif fluent.startswith('-clear('):
             surface = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{surface} is not clear',
                 f'{surface} is not clear of any crates'
-            ])
-            # return f'{surface} is not clear'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -538,44 +509,39 @@ class Depots(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('drive('):
             truck, distributor1, distributor2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{truck} is driven from {distributor1} to {distributor2}',
                 f'{truck} is driven to {distributor2} from {distributor1}',
                 f'from {distributor1}, {truck} is driven to {distributor2}'
-            ])
-            # return f'{truck} is driven from {distributor1} to {distributor2}'
+            ]
         elif action.startswith('lift('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{hoist} lifts {crate} from {surface} at {place}',
                 f'{crate} is lifted from {surface} at {place} by {hoist}',
                 f'at {place}, {hoist} lifts {crate} off {surface}'
-            ])
-            # return f'{hoist} lifts {crate} from {surface} at {place}'
+            ]
         elif action.startswith('drop('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{hoist} drops {crate} on {surface} at {place}',
                 f'{crate} is dropped on {surface} at {place} by {hoist}',
                 f'at {place}, {hoist} drops {crate} on {surface}'
-            ])
-            # return f'{hoist} drops {crate} on {surface} at {place}'
+            ]
         elif action.startswith('load('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{crate} is loaded by {hoist} into {truck} at {place}',
                 f'{hoist} loads {crate} into {truck} at {place}',
                 f'at {place}, {hoist} loads {crate} into {truck}'
-            ])
-            # return f'{crate} is loaded by {hoist} into {truck} at {place}'
+            ]
         elif action.startswith('unload('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{crate} is unloaded by {hoist} from {truck} at {place}',
                 f'{hoist} unloads {crate} from {truck} at {place}',
                 f'at {place}, {hoist} unloads {crate} from {truck}'
-            ])
-            # return f'{crate} is unloaded by {hoist} from {truck} at {place}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -584,100 +550,118 @@ class Depots(BaseDomain):
         for prefix_asp, prefix_nl in [('-', 'not '), ('', '')]:
             if fluent.startswith(f'{prefix_asp}at('):
                 obj, place = self.extract_multi_variable(fluent)
+                # maintained
                 if obj.startswith('truck'):
-                    return random.choice([
+                    return [
                         f'{obj} is {prefix_nl}maintained at {place}',
                         f'at {place}, {obj} is {prefix_nl}is maintained'
-                    ])
-                    # return f'{obj} is {prefix_nl} maintained at {place}'  # maintained
+                    ]
+                # stranded
                 elif obj.startswith('crate'):
-                    return random.choice([
+                    return [
                         f'{obj} is {prefix_nl}stranded at {place}',
                         f'at {place}, {obj} is {prefix_nl}stranded'
-                    ])
-                    # return f'{obj} is {prefix_nl} stranded at {place}'  # stranded
+                    ]
+                # near
                 elif obj.startswith('hoist'):
-                    return random.choice([
+                    return [
                         f'{obj} is {prefix_nl}near {place}',
                         f'{obj} is {prefix_nl}located near {place}'
-                    ])
-                    # return f'{obj} is {prefix_nl} near {place}'  # near
-                elif obj.startswith('pallet'):  ############## On is a defined fluent in this domain
-                    return random.choice([
-                        f'{obj} is {prefix_nl}on top of {place}'
-                    ])
-                    # return f'{obj} is {prefix_nl} on top of {place}'  # on top of
+                    ]
+                # delivered (changed from 'on top of')
+                elif obj.startswith('pallet'):
+                    return [
+                        f'{obj} is {prefix_nl}delivered to {place}',
+                        f'{place} does {prefix_nl}recieve delivery of {obj}'
+                    ]
                 else:
                     raise Exception('fluent is not defined')
+            
             elif fluent.startswith(f'{prefix_asp}on('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
-                return random.choice([
+                # within
+                return [
                     f'{obj1} is {prefix_nl}within {obj2}',
-                    f'{obj1} does {prefix_nl}exists within {obj2}'
-                ])
-                # return f'{obj1} is {prefix_nl} within {obj2}'  # within
+                    f'{obj1} does {prefix_nl}exist within {obj2}'
+                ]
+            
             elif fluent.startswith(f'{prefix_asp}in('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
-                return random.choice([
+                # next to
+                return [
                     f'{obj1} is {prefix_nl}next to {obj2}',
                     f'{obj1} is {prefix_nl}situated next to {obj2}'
-                ])
-                # return f'{obj1} is {prefix_nl} next to {obj2}'  # next to
+                ]
+            
             elif fluent.startswith(f'{prefix_asp}lifting('):
                 hoist, crate = self.extract_multi_variable(fluent)
-                return random.choice([
+                # transporting
+                return [
                     f'{hoist} is {prefix_nl}transporting {crate}',
                     f'{crate} is {prefix_nl}being transported by {hoist}'
-                ])
-                # return f'{hoist} is {prefix_nl} transporting {crate}'  # transporting
-            elif fluent.startswith(f'{prefix_asp}available('):  ############### Free means the same thing as available
+                ]
+            
+            elif fluent.startswith(f'{prefix_asp}available('):
                 hoist = self.extract_single_variable(fluent)
-                return random.choice([
-                    f'{hoist} is {prefix_nl} free',
-                ])
-                # return f'{hoist} is {prefix_nl} free'  # free
-            elif fluent.startswith(f'{prefix_asp}clear('):  ############### Free means the same thing as clear
+                # malfunction (changed from 'free')
+                return [
+                    f'{hoist} is {prefix_nl}malfunctioning',
+                    f'{hoist} is {prefix_nl}experiencing a malfunciton'
+                ]
+            
+            elif fluent.startswith(f'{prefix_asp}clear('):
                 surface = self.extract_single_variable(fluent)
-                return random.choice([
-                    f'{surface} is {prefix_nl} free'
-                ])
-                # return f'{surface} is {prefix_nl} free'  # free
+                # expensive (changed from 'free')
+                return [
+                    f'{surface} is {prefix_nl}expensive',
+                    f'{surface} is {prefix_nl}valuable',
+                    f'{surface} is {prefix_nl}costly'
+                ]
         if flag:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+
+        # inspected
         if action.startswith('drive('):
             truck, distributor1, distributor2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{truck} is inspected at {distributor1} and at {distributor2}',
                 f'inspection of {truck} occurs at {distributor1} and {distributor2}'
-            ])
-            # return f'{truck} is inspected at {distributor1} and at {distributor2}'  # inspected
-        elif action.startswith('lift('):  ############### Lowered means the same thing as drop
+            ]
+        # breaks (changed from 'lowered')
+        elif action.startswith('lift('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return random.choice([
-                f'{crate} is lowered from {surface} with {hoist} from {place}'
-            ])
-            # return f'{crate} is lowered from {surface} with {hoist} from {place}'  # lowered
-        elif action.startswith('drop('):  ############### Released can mean the same thing as drop
+            return [
+                f'{crate} breaks {surface} at {place}',
+                f'at {place}, {surface} is broken by placing {crate}',
+                f'{surface} is broken at {place} by placing {crate}'
+            ]
+        # stuck (changed from 'released')
+        elif action.startswith('drop('):
             hoist, crate, surface, place = self.extract_multi_variable(action)
-            return random.choice([
-                f'{crate} is released to {surface} with {hoist} on {place}'
-            ])
-            # return f'{crate} is released to {surface} with {hoist} on {place}'  # released
-        elif action.startswith('load('):   ############### Transported can mean the same thing as Load
+            return [
+                f'{crate} is stuck on {hoist} at {place}',
+                f'at {place}, {crate} is stuck on {hoist}',
+                f'{hoist} has {crate} stuck at {place}'
+            ]
+        # packed (changed from 'transports')
+        elif action.startswith('load('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return random.choice([
-                f'{crate} is transported with {hoist} in {truck} from {place}'
-            ])
-            # return f'{crate} is transported with {hoist} in {truck} from {place}'  # transports
-        elif action.startswith('unload('):  ############### Maneuvered can mean the same thing as Unload
+            return [
+                f'{truck} is packed in {crate} by {hoist} at {place}',
+                f'{hoist} packs {truck} in {crate} at {place}',
+                f'at {place}, {hoist} packs {truck} in {crate}'
+            ]
+        # hoisted (changed from 'maneuvered')
+        elif action.startswith('unload('):
             hoist, crate, truck, place = self.extract_multi_variable(action)
-            return random.choice([
-                f'{crate} is maneuvered with {hoist} from {truck} from {place}'
-            ])
-            # return f'{crate} is maneuvered with {hoist} from {truck} from {place}'  # stacked
+            return [
+                f'{truck} is hoisted with {hoist} at {place}',
+                f'at {place}, {truck} is hoisted with {hoist}',
+                f'{hoist} is hoisting {truck} at {place}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -738,99 +722,91 @@ class Driverlog(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is at loaction {location}',
                 f'{obj} is present at location {location}',
                 f'{obj} is currently at location {location}'
-            ])
-            # return f'{obj} is at loaction {location}'
+            ]
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is not at location {location}',
                 f'{obj} is not present at location {location}',
                 f'{obj} is not currently at location {location}'
-            ])
-            # return f'{obj} is not at location {location}'
+            ]
+        
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is in {obj2}',
                 f'{obj1} is placed in {obj2}',
                 f'{obj1} is located in {obj2}'
-            ])
-            # return f'{obj1} is in {obj2}'
+            ]
         elif fluent.startswith('-in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is not in {obj2}',
                 f'{obj1} is not placed in {obj2}',
                 f'{obj1} is not located in {obj2}'
-            ])
-            # return f'{obj1} is not in {obj2}'
+            ]
+        
         elif fluent.startswith('driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is driving {obj2}',
                 f'{obj2} is being driven by {obj1}',
                 f'{obj1} is driving {obj2} currently'
-            ])
-            # return f'{obj1} is driving {obj2}'
+            ]
         elif fluent.startswith('-driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj1} is not driving {obj2}',
                 f'{obj2} is not being driven by {obj1}',
                 f'{obj1} is not driving {obj2} currently'
-            ])
-            # return f'{obj1} is not driving {obj2}'
+            ]
+        
         elif fluent.startswith('link('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'there is a link between location {obj1} and location {obj2}',
                 f'there exists a link between the locations {obj1} and {obj2}',
                 f'locations {obj1} and {obj2} have a link between them'
-            ])
-            # return f'there is a link between location {obj1} and location {obj2}'
+            ]
         elif fluent.startswith('-link('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'there is no link between location {obj1} and location {obj2}',
                 f'there doesn\'t exist a link between the locations {obj1} and {obj2}',
                 f'locations {obj1} and {obj2} does not have a link between them'
-            ])
-            # return f'there is no link between location {obj1} and location {obj2}'
+            ]
+        
         elif fluent.startswith('path('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'there is a path between location {obj1} and location {obj2}',
                 f'there exists a path between the locations {obj1} and {obj2}',
                 f'locations {obj1} and {obj2} have a path between them'
-            ])
-            # return f'there is a path between location {obj1} and location {obj2}'
+            ]
         elif fluent.startswith('-path('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'there is no path between location {obj1} and location {obj2}',
                 f'there doesn\'t exist a path between the locations {obj1} and {obj2}',
                 f'locations {obj1} and {obj2} does not have a path between them'
-            ])
-            # return f'there is no path between location {obj1} and location {obj2}'
+            ]
 
         elif fluent.startswith('empty('):
             obj = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is empty',
                 f'{obj} contains nothing'
-            ])
-            # return f'{obj} is empty'
+            ]
         elif fluent.startswith('-empty('):
             obj = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is not empty',
                 f'{obj} contains some package'
-            ])
-            # return f'{obj} is not empty'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -838,52 +814,46 @@ class Driverlog(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{package} is loaded in {truck} at location {location}',
                 f'{truck} is loaded with {package} at location {location}',
                 f'at location {location}, {package} is loaded in {truck}'
-            ])
-            # return f'{package} is loaded in {truck} at location {location}'
+            ]
         elif action.startswith('unload_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{package} is unloaded from {truck} at location {location}',
                 f'{truck} is unloaded with {package} at location {location}',
                 f'at location {location}, {package} is unloaded in {truck}'
-            ])
-            # return f'{package} is unload from {truck} at location {location}'
+            ]
         elif action.startswith('board_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} boards {truck} at location {location}',
                 f'{truck} is boarded by {driver} at location {location}',
                 f'at location {location}, {driver} boards {truck}'
-            ])
-            # return f'{driver} boards {truck} at location {location}'
+            ]
         elif action.startswith('disembark_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} disembarks from {truck} at location {location}',
                 f'at location {location}, {driver} disembarks from {truck}',
                 f'from {truck}, {driver} disembarks at location {location}'
-            ])
-            # return f'{driver} disembarks from {truck} at location {location}'
+            ]
         elif action.startswith('drive_truck('):
             truck, driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} drives {truck} from location {loc_from} to location {loc_to}',
                 f'{truck} is driven from location {loc_from} to {loc_to} by {driver}',
                 f'{driver} drives {truck} to location {loc_to} from location {loc_from}'
-            ])
-            # return f'{driver} drives {truck} from location {loc_from} to location {loc_to}'
+            ]
         elif action.startswith('walk('):
             driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} walks from location {loc_from} to location {loc_to}',
                 f'{driver} walks to location {loc_to} from location {loc_from}',
                 f'{driver} walks from location {loc_from} to {loc_to}'
-            ])
-            # return f'{driver} walks from location {loc_from} to location {loc_to}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -891,158 +861,161 @@ class Driverlog(BaseDomain):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
-                return random.choice([
+                # parked at
+                return [
                     f'{obj} is parked at location {location}',
                     f'at location {location}, {obj} is parked'
-                ])
-                # return f'{obj} is parked at location {location}'  # parked at
+                ]
             else:
-                return random.choice([
+                # near
+                return [
                     f'{obj} is near location {location}',
                     f'{obj} is located near location {location}'
-                ])
-                # return f'{obj} is near location {location}'  # near
+                ]
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('truck'):
-                return random.choice([
+                # parked at
+                return [
                     f'{obj} is not parked at location {location}',
                     f'at location {location}, {obj} is not parked'
-                ])
-                # return f'{obj} is not parked at location {location}'  # parked at
+                ]
             else:
-                return random.choice([
+                # near
+                return [
                     f'{obj} is not near location {location}',
                     f'{obj} is not located near location {location}'
-                ])
-                # return f'{obj} is not near location {location}'  # near
+                ]
 
+        # above (changed from 'placed')
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([ ################### placed is similar to original in
-                f'{obj1} is placed into {obj2}',
-            ])
-            # return f'{obj1} is placed into {obj2}'  # placed
+            return [
+                f'{obj1} is placed above {obj2}',
+                f'{obj1} is located above {obj2}',
+                f'{obj1} is above {obj2}'
+            ]
         elif fluent.startswith('-in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([ ################### placed is similar to original in
-                f'{obj1} is not placed into {obj2}',
-            ])
-            # return f'{obj1} is not placed into {obj2}'  # near
+            return [
+                f'{obj1} is not placed above {obj2}',
+                f'{obj1} is not located above {obj2}',
+                f'{obj1} is not above {obj2}'
+            ]
 
+        # sleeping (changed from "steering")
         elif fluent.startswith('driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([ ################# Steering can be same as driving
-                f'{obj1} is steering {obj2}'
-            ])
-            # return f'{obj1} is steering {obj2}'  # steering
+            return [
+                f'{obj1} is sleeping in {obj2}',
+                f'{obj1} is currently sleeping in {obj2}',
+                f'{obj1} is taking a nap in {obj2}'
+            ]
         elif fluent.startswith('-driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([ ################ Steering can be same as driving
-                f'{obj1} is not steering {obj2}'
-            ])
-            # return f'{obj1} is not steering {obj2}'
+            return [
+                f'{obj1} is not sleeping in {obj2}',
+                f'{obj1} is currently not sleeping in {obj2}',
+                f'{obj1} is not taking a nap in {obj2}'
+            ]
 
+        # neighbors
         elif fluent.startswith('link('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {obj1} neighbors location {obj2}',
                 f'locations {obj1} and {obj2} are neighbors',
                 f'location {obj1} and location {obj2} are neighbors'
-            ])
-            # return f'location {obj1} neighbors location {obj2}'  # neighbors
+            ]
         elif fluent.startswith('-link('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {obj1} does not neighbor location {obj2}',
                 f'locations {obj1} and {obj2} are not neightbors',
                 f'location {obj1} and location {obj2} are not neighbors'
-            ])
-            # return f'location {obj1} does not neighbor location {obj2}'
+            ]
 
+        # neighbors
         elif fluent.startswith('path('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {obj1} neighbors location {obj2}',
                 f'locations {obj1} and {obj2} are neighbors',
                 f'location {obj1} and location {obj2} are neighbors'
-            ])
-            # return f'location {obj1} neighbors location {obj2}'  # neighbors
+            ]
         elif fluent.startswith('-path('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {obj1} does not neighbor location {obj2}',
                 f'locations {obj1} and {obj2} are not neightbors',
                 f'location {obj1} and location {obj2} are not neighbors'
-            ])
-            # return f'location {obj1} does not neighbor location {obj2}'
+            ]
 
+        # overloaded
         elif fluent.startswith('empty('):
             obj = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is overloaded',
                 f'{obj} is overloaded with packages'
-            ])
-            # return f'{obj} is overloaded'  # overloaded
+            ]
         elif fluent.startswith('-empty('):
             obj = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is not overloaded',
                 f'{obj} is not overloaded with packages'
-            ])
-            # return f'{obj} is not overloaded'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # return
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{package} is returned at location {location}',
                 f'{package} is returned to lcoation {location}',
                 f'{package} is returned back to location {location}'
-            ])
-            # return f'{package} is returned at location {location}'  # return
+            ]
+        # deliver
         elif action.startswith('unload_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{package} is delivered at location {location}',
                 f'{package} is delivered to customer at location {location}'
-            ])
-            # return f'{package} is delivered at location {location}'  # deliver
+            ]
+        # inspect
         elif action.startswith('board_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} inspects {truck} at location {location}',
                 f'{truck} is inspected by {driver} at location {location}',
                 f'at location {location}, {driver} inspects {truck}'
-            ])
-            # return f'{driver} inspects {truck} at location {location}'  # inspect
+            ]
+        # repairs
         elif action.startswith('disembark_truck('):
             driver, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} repairs {truck} at location {location}',
                 f'{truck} is repaired by {driver} at location {location}',
                 f'at location {location}, {driver} repairs {truck}'
-            ])
-            # return f'{driver} repairs {truck} at location {location}'  # repairs
+            ]
+        # checks
         elif action.startswith('drive_truck('):
             truck, driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} checks {truck} at location {loc_from} and location {loc_to}',
                 f'{truck} is checked by {driver} at locations {loc_from} and {loc_to}',
                 f'checking of {truck} is conducted at locations {loc_from} and {loc_to} by {driver}'
-            ])
-            # return f'{driver} checks {truck} at location {loc_from} and location {loc_to}'  # checks
+            ]
+        # rests
         elif action.startswith('walk('):
             driver, loc_from, loc_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{driver} rests at location {loc_from} and at location {loc_to}',
                 f'at locations {loc_from} and {loc_to}, {driver} takes a rest',
                 f'{driver} rests at locations {loc_from} and {loc_to}'
-            ])
-            # return f'{driver} rests at location {loc_from} and at location {loc_to}'  # rests
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -1112,191 +1085,167 @@ class Goldminer(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('robot_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'robot is at location {place}',
                 f'robot is present at location {place}',
                 f'robot is located at {place}'
-            ])
-            # return f'robot is at location {place}'
+            ]
         elif fluent.startswith('-robot_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'robot is not at location {place}',
                 f'robot is not present at location {place}',
                 f'robot is not located at {place}'
-            ])
-            # return f'robot is not at location {place}'
+            ]
 
         elif fluent.startswith('bomb_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'bomb is at location {place}',
                 f'bomb is present at location {place}',
                 f'bomb is located at {place}'
-            ])
-            # return f'bomb is at location {obj1}'
+            ]
         elif fluent.startswith('-bomb_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'bomb is not at location {place}',
                 f'bomb is not present at location {place}',
                 f'bomb is not located at {place}'
-            ])
-            # return f'bomb is not at location {obj1}'
+            ]
 
         elif fluent.startswith('laser_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'laser is at location {place}',
                 f'laser is present at location {place}',
                 f'laser is located at {place}'
-            ])
-            # return f'laser is at location {obj1}'
+            ]
         elif fluent.startswith('-laser_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'laser is not at location {place}',
                 f'laser is not present at location {place}',
                 f'laser is not located at {place}'
-            ])
-            # return f'laser is not at location {obj1}'
+            ]
 
         elif fluent.startswith('soft_rock_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'soft rock is at location {place}',
                 f'soft rock is present at location {place}',
                 f'soft rock is located at {place}'
-            ])
-            # return f'soft rock is at location {obj1}'
+            ]
         elif fluent.startswith('-soft_rock_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'soft rock is not at location {place}',
                 f'soft rock is not present at location {place}',
                 f'soft rock is not located at {place}'
-            ])
-            # return f'soft rock is not at location {obj1}'
+            ]
 
         elif fluent.startswith('hard_rock_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'hard rock is at location {place}',
                 f'hard rock is present at location {place}',
                 f'hard rock is located at {place}'
-            ])
-            # return f'hard rock is at location {obj1}'
+            ]
         elif fluent.startswith('-hard_rock_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'hard rock is not at location {place}',
                 f'hard rock is not present at location {place}',
                 f'hard rock is not located at {place}'
-            ])
-            # return f'hard rock is not at location {obj1}'
+            ]
 
         elif fluent.startswith('gold_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'gold is at location {place}',
                 f'gold is present at location {place}',
                 f'gold is located at {place}'
-            ])
-            # return f'gold is at location {obj1}'
+            ]
         elif fluent.startswith('-gold_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'gold is not at location {place}',
                 f'gold is not present at location {place}',
                 f'gold is not located at {place}'
-            ])
-            # return f'gold is not at location {obj1}'
+            ]
 
         elif fluent.startswith('connected('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'there is a connection between location {obj1} and location {obj2}',
                 f'location {obj1} and location {obj2} are connected',
                 f'locations {obj1} and {obj2} are connected'
-            ])
-            # return f'there is a connection between location {obj1} and location {obj2}'
+            ]
         elif fluent.startswith('-connected('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'there is no connection between location {obj1} and location {obj2}',
                 f'location {obj1} and location {obj2} are not connected',
                 f'locations {obj1} and {obj2} are not connected'
-            ])
-            # return f'there is no connection between location {obj1} and location {obj2}'
+            ]
 
         elif fluent.startswith('arm_empty'):
-            return random.choice([
+            return [
                 f"robot's arm is empty",
                 f'arm of robot is empty',
                 f'robot\'s arm contains nothing'
-            ])
-            # return f"robot's arm is empty"
+            ]
         elif fluent.startswith('-arm_empty'):
-            return random.choice([
+            return [
                 f"robot's arm is not empty",
                 f'arm of robot is not empty',
                 f'robot\'s arm contains something'
-            ])
-            # return f"robot's arm is not empty"
+            ]
 
         elif fluent.startswith('holds_bomb'):
-            return random.choice([
+            return [
                 f'robot holds a bomb',
                 f'bomb is held by robot'
-            ])
-            # return f'robot holds a bomb'
+            ]
         elif fluent.startswith('-holds_bomb'):
-            return random.choice([
+            return [
                 f'robot does not hold a bomb',
                 f'bomb is not held by robot'
-            ])
-            # return f'robot does not hold a bomb'
+            ]
 
         elif fluent.startswith('holds_laser'):
-            return random.choice([
+            return [
                 f'robot holds laser',
                 f'laser is held by robot'
-            ])
-            # return f'robot holds laser'
+            ]
         elif fluent.startswith('-holds_laser'):
-            return random.choice([
+            return [
                 f'robot does not hold laser',
                 f'laser is not held by robot'
-            ])
-            # return f'robot does not hold laser'
+            ]
 
         elif fluent.startswith('holds_gold'):
-            return random.choice([
+            return [
                 f'robot holds gold',
                 f'gold is held by robot'
-            ])
-            # return f'robot holds gold'
+            ]
         elif fluent.startswith('-holds_gold'):
-            return random.choice([
+            return [
                 f'robot does not hold gold',
                 f'gold is not held by robot'
-            ])
-            # return f'robot does not hold gold'
+            ]
 
         elif fluent.startswith('clear('):
             location = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location} is clear',
                 f'location {location} contains nothing'
-            ])
-            # return f'location {location} is clear'
+            ]
         elif fluent.startswith('-clear('):
             location = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location} is not clear',
                 f'location {location} has something'
-            ])
-            # return f'location {location} is not clear'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -1304,273 +1253,300 @@ class Goldminer(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             location1, location2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'robot moves from location {location1} to location {location2}',
-                f'robot moves from locations {location1} to {location2}'
-            ])
-            # return f'robot moves from location {location1} to location {location2}'
+                f'robot moves from locations {location1} to {location2}',
+                f'robot moves to location {location2} from location {location1}'
+            ]
         elif action.startswith('pickup_laser('):
             location = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'laser is picked up at location {location}',
-                f'at location {location}, laser is picked up'
-            ])
-            # return f'laser is picked up at location {location}'
+                f'at location {location}, laser is picked up',
+                f'robot picks up laser at location {location}'
+            ]
         elif action.startswith('pickup_bomb('):
             location = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'bomb is picked up at location {location}',
-                f'at location {location}, bomb is picked up'
-            ])
-            # return f'bomb is picked up at location {location}'
+                f'at location {location}, bomb is picked up',
+                f'robot picks up bomb at location {location}'
+            ]
         elif action.startswith('putdown_laser('):
             location = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'robot puts down laser at location {location}',
-                f'at location {location}, robot puts down the laser'
-            ])
-            # return f'robot puts down laser at location {location}'
+                f'at location {location}, robot puts down the laser',
+                f'laser is put down at location {location}'
+            ]
         elif action.startswith('detonate_bomb('):
             location1, location2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'bomb is detontaed at location {location2} from location {location1}',
-                f'from location {location1}, bomb is detonated at location {location2}'
-            ])
-            # return f'bomb is detontaed at location {location2} from location {location1}'
+                f'from location {location1}, bomb is detonated at location {location2}',
+                f'robot detonates bomb at location {location2} from location {location1}'
+            ]
         elif action.startswith('fire_laser('):
             location1, location2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'laser is fired at location {location2} from location {location1}',
-                f'from location {location1}, laser is fired at location {location2}'
-            ])
-            # return f'laser is fired at location {location2} from location {location1}'
+                f'from location {location1}, laser is fired at location {location2}',
+                f'robot fires laser at location {location2} from location {location1}'
+            ]
         elif action.startswith('pick_gold('):
             location = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'gold is picked up at location {location}',
-                f'at location {location}, gold is picked up'
-            ])
-            # return f'gold is picked up at location {location}'
+                f'at location {location}, gold is picked up',
+                f'robot picks up gold at location {location}'
+            ]
         else:
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        # communicates
         if fluent.startswith('robot_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
-                f'robot communicates at location {place}',
-                f'at location {place}, robot communicates'
-            ])
-            # return f'robot communicates at location {place}'  # communicates
+            return [
+                f'robot communicates to location {place}',
+                f'at location {place}, robot communicates',
+                f'robot is communicating at location {place}'
+            ]
         elif fluent.startswith('-robot_at('):
             place = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'robot does not communicates at location {place}',
-                f'at location {place}, the robot does not communicates'
-            ])
-            # return f'robot does not communicates at location {place}'  # communicates
+                f'at location {place}, the robot does not communicates',
+                f'robot is not communicating at location {place}'
+            ]
 
-        elif fluent.startswith('bomb_at('): ######################## Detonated is a valid action
+        # defused (changed from 'detonated')
+        elif fluent.startswith('bomb_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
-                f'bomb is detonated at location {obj1}'
-            ])
-            # return f'bomb is detonated at location {obj1}'  # detonated
-        elif fluent.startswith('-bomb_at('): ######################## Detonated is a valid action
+            return [
+                f'bomb is defused at location {obj1}',
+                f'at location {obj1}, bomb is defused',
+                f'robot defuses bomb at location {obj1}'
+            ]
+        elif fluent.startswith('-bomb_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
-                f'bomb is not detonated at location {obj1}'
-            ])
-            # return f'bomb is not detonated at location {obj1}'
+            return [
+                f'bomb is not defused at location {obj1}',
+                f'at location {obj1}, bomb is not defused',
+                f'robot does not defuse bomb at location {obj1}'
+            ]
 
+        # gear
         elif fluent.startswith('laser_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'gear is at location {obj1}',
-                f'gear is present at location {obj1}'
-            ])
-            # return f'gear is at location {obj1}'  # gear
+                f'gear is present at location {obj1}',
+                f'gear is currently at location {obj1}'
+            ]
         elif fluent.startswith('-laser_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'gear is not at location {obj1}',
-                f'gear is not present at location {obj1}'
-            ])
-            # return f'gear is not at location {obj1}'
+                f'gear is not present at location {obj1}',
+                f'gear is not currently at location {obj1}'
+            ]
 
+        # sand
         elif fluent.startswith('soft_rock_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'sand is at location {obj1}',
-                f'sand is present at location {obj1}'
-            ])
-            # return f'sand is at location {obj1}'  # sand
+                f'sand is present at location {obj1}',
+                f'sand is currently at location {obj1}'
+            ]
         elif fluent.startswith('-soft_rock_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'sand is not at location {obj1}',
-                f'sand is not present at location {obj1}'
-            ])
-            # return f'sand is not at location {obj1}'
+                f'sand is not present at location {obj1}',
+                f'sand is not currently at location {obj1}'
+            ]
 
+        # granite
         elif fluent.startswith('hard_rock_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'granite is at location {obj1}',
-                f'granite is present at location {obj1}'
-            ])
-            # return f'granite is at location {obj1}'  # granite
+                f'granite is present at location {obj1}',
+                f'granite is currently at location {obj1}'
+            ]
         elif fluent.startswith('-hard_rock_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'granite is not at location {obj1}',
-                f'granite is not present at location {obj1}'
-            ])
-            # return f'granite is not at location {obj1}'  # granite
+                f'granite is not present at location {obj1}',
+                f'granite is not currently at location {obj1}'
+            ]
 
+        # treasure
         elif fluent.startswith('gold_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'treasure is at location {obj1}',
-                f'treasure is present at location {obj1}'
-            ])
-            # return f'treasure is at location {obj1}'  # treasure
+                f'treasure is present at location {obj1}',
+                f'treasure is currently at location {obj1}'
+            ]
         elif fluent.startswith('-gold_at('):
             obj1 = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'treasure is not at location {obj1}',
-                f'treasure is not present at lcoation {obj1}'
-            ])
-            # return f'treasure is not at location {obj1}'
+                f'treasure is not present at lcoation {obj1}',
+                f'treasure is not currently at location {obj1}'
+            ]
 
-        elif fluent.startswith('connected('): ########################## neighbors means connected
+        # bigger (changed from "neighbors")
+        elif fluent.startswith('connected('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'location {obj1} neighbors location {obj2}'
-            ])
-            # return f'location {obj1} neighbors location {obj2}'  # neighbors
-        elif fluent.startswith('-connected('): ########################## neighbors means connected
+            return [
+                f'location {obj1} is bigger than location {obj2}',
+                f'location {obj1} is larger than location {obj2}',
+                f'location {obj2} is smaller than location {obj1}'
+            ]
+        elif fluent.startswith('-connected('):
             obj1, obj2 = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'location {obj1} does not neighbor location {obj2}'
-            ])
-            # return f'location {obj1} does not neighbor location {obj2}'
+            return [
+                f'location {obj1} is not bigger than location {obj2}',
+                f'location {obj1} is not larger than location {obj2}',
+                f'location {obj2} is not smaller than location {obj1}'
+            ]
 
-        elif fluent.startswith('arm_empty'): ################################ gripper and arm is very similar
-            return random.choice([
-                f"robot's gripper is empty"
-            ])
-            # return f"robot's gripper is empty"  # gripper
-        elif fluent.startswith('-arm_empty'): ################################ gripper and arm is very similar
-            return random.choice([
-                f"robot's gripper is not empty"
-            ])
-            # return f"robot's gripper is not empty"
+        # recharging (changed from "gripper")
+        elif fluent.startswith('arm_empty'):
+            return [
+                f"robot is recharging",
+                f'robot is currently recharging',
+                f'robot is in the process of recharging'
+            ]
+        elif fluent.startswith('-arm_empty'):
+            return [
+                f"robot is not recharging",
+                f'robot is currently not recharging',
+                f'robot is not in the process of recharging'
+            ]
 
-        elif fluent.startswith('holds_bomb'): ################################ explosive and bomb is very similar
-            return random.choice([
-                f'robot holds an explosive'
-            ])
-            # return f'robot holds an explosive'  # explosive
-        elif fluent.startswith('-holds_bomb'): ################################ explosive and bomb is very similar
-            return random.choice([
-                f'robot does not hold an explosive'
-            ])
-            # return f'robot does not hold an explosive'
+        # solar-panel (changed from "explosive")
+        elif fluent.startswith('holds_bomb'):
+            return [
+                f'robot deploys its solar-panels',
+                f'robot is deploying its solar-panels',
+                f'solar-panels are being deployed by robot'
+            ]
+        elif fluent.startswith('-holds_bomb'):
+            return [
+                f'robot does not deploy its solar-panels',
+                f'robot is not deploying its solar-panels',
+                f'solar-panels are not being deployed by robot'
+            ]
 
+        # tools
         elif fluent.startswith('holds_laser'):
-            return random.choice([
+            return [
                 f'robot holds tools',
-                f'tools are being held by robot'
-            ])
-            # return f'robot holds tools'  # tools
+                f'tools are being held by robot',
+                f'robot is currently holding tools'
+            ]
         elif fluent.startswith('-holds_laser'):
-            return random.choice([
+            return [
                 f'robot does not hold tools',
-                f'robot is not holding any tools'
-            ])
-            # return f'robot does not hold tools'
+                f'robot is not holding any tools',
+                f'robot is currently not holding any tools'
+            ]
 
+        # reward
         elif fluent.startswith('holds_gold'):
-            return random.choice([
+            return [
                 f'robot holds reward',
-                f'reward is being held by robot'
-            ])
-            # return f'robot holds reward'  # reward
+                f'reward is being held by robot',
+                f'robot is currently holding reward'
+            ]
         elif fluent.startswith('-holds_gold'):
-            return random.choice([
+            return [
                 f'robot does not hold reward',
-                f'reward is not being held by robot'
-            ])
-            # return f'robot does not hold reward'
+                f'reward is not being held by robot',
+                f'robot is currently not holding reward'
+            ]
 
-        elif fluent.startswith('clear('): ################################# Not Occupied means Clear
+        # spikes (changed from "not occupied")
+        elif fluent.startswith('clear('):
             location = self.extract_single_variable(fluent)
-            return random.choice([
-                f'location {location} is not occupied'
-            ])
-            # return f'location {location} is not occupied'  # not occupied
-        elif fluent.startswith('-clear('): ################################# Not Occupied means Clear
+            return [
+                f'location {location} contains spikes',
+                f'spikes are present at location {location}',
+                f'location {location} is spiked'
+            ]
+        elif fluent.startswith('-clear('):
             location = self.extract_single_variable(fluent)
-            return random.choice([
-                f'location {location} is occupied'
-            ])
-            # return f'location {location} is occupied'
+            return [
+                f'location {location} does not contain spikes',
+                f'spikes are not present at location {location}',
+                f'location {location} is not spiked'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # rolls
         if action.startswith('move('):
             location1, location2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'robot rolls from location {location1} to location {location2}',
                 f'robot rolls from locations {location1} to {location2}',
                 f'from location {location1}, robot rolls to location {location2}'
-            ])
-            # return f'robot rolls from location {location1} to location {location2}'  # rolls
+            ]
+        # ready to fire
         elif action.startswith('pickup_laser('):
             laser = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'laser {laser} is ready to fire',
-                f'laser {laser} is prepared for firing'
-            ])
-            # return f'laser {laser} is ready to fire'  # ready to fire
+                f'laser {laser} is prepared for firing',
+                f'laser {laser} is ready to be fired'
+            ]
+        # set up
         elif action.startswith('pickup_bomb('):
             bomb = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'bomb {bomb} is set up',
-                f'bomb {bomb} is set up for use'
-            ])
-            # return f'bomb {bomb} is set up'  # set up
+                f'bomb {bomb} is set up for use',
+                f'bomb {bomb} is set up for detonation'
+            ]
+        # disposed of
         elif action.startswith('putdown_laser('):
             laser = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'laser {laser} is disposed of',
-                f'laser {laser} is disposed of by robot'
-            ])
-            # return f'laser {laser} is disposed of'  # disposed of
+                f'laser {laser} is disposed of by robot',
+                f'robot disposes of laser {laser}'
+            ]
+        # malfunctions
         elif action.startswith('detonate_bomb('):
             bomb = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'bomb {bomb} malfunctions',
                 f'bomb {bomb} malfunctioned during detonation'
-            ])
-            # return f'bomb {bomb} is malfunctions'  # malfunctions
+            ]
+        # missing
         elif action.startswith('fire_laser('):
             laser = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'laser {laser} is missing',
-                f'laser {laser} is reported missing'
-            ])
-            # return f'laser {laser} is missing'  # missing
+                f'laser {laser} is reported missing',
+                f'laser {laser} is lost'
+            ]
+        # melted
         elif action.startswith('pick_gold('):
             location = self.extract_single_variable(action)
-            return random.choice([
+            return [
                 f'gold is melted at location {location}',
-                f'at location {location}, gold is melted'
-            ])
-            # return f'gold is picked up at location {location}'
+                f'at location {location}, gold is melted',
+                f'robot melts gold at location {location}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -1616,67 +1592,63 @@ class Grippers(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is at {room}',
-                f'{robot} is present in {room}'
-            ])
-            # return f'{robot} is at {room}'
+                f'{robot} is present in {room}',
+                f'{robot} is located at {room}'
+            ]
         elif fluent.startswith('-at_robby('):
             robot, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is not at {room}',
-                f'{robot} is not present in {room}'
-            ])
-            # return f'{robot} is not at {room}'
+                f'{robot} is not present in {room}',
+                f'{robot} is not located at {room}'
+            ]
 
         elif fluent.startswith('at('):
             obj, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is at {room}',
-                f'{obj} is located in {room}'
-            ])
-            # return f'{obj} is at {room}'
+                f'{obj} is located at {room}',
+                f'{obj} is present at {room}'
+            ]
         elif fluent.startswith('-at('):
             obj, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is not at {room}',
-                f'{obj} is not located in {room}'
-            ])
-            # return f'{obj} is not at {room}'
+                f'{obj} is not located at {room}',
+                f'{obj} is not present at {room}'
+            ]
 
         elif fluent.startswith('free('):
             robot, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f"{gripper} of {robot} is free",
                 f'{robot}\'s {gripper} is free',
                 f'{robot}\'s {gripper} is available'
-            ])
-            # return f"{gripper} of {robot} is free"
+            ]
         elif fluent.startswith('-free('):
             robot, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f"{gripper} of {robot} is not free",
                 f'{robot}\'s {gripper} is not free',
                 f'{robot}\'s {gripper} is not available'
-            ])
-            # return f"{gripper} of {robot} is not free"
+            ]
 
         elif fluent.startswith('carry('):
             robot, obj, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is carrying {obj} with {gripper}',
                 f'{obj} is being carried by {robot}\'s {gripper}',
                 f'{gripper} of {robot} is carrying {obj}'
-            ])
-            # return f'{robot} is carrying {obj} with {gripper}'
+            ]
         elif fluent.startswith('-carry('):
             robot, obj, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is not carrying {obj} with {gripper}',
                 f'{obj} is not being carried by {robot}\'s {gripper}',
                 f'{gripper} of {robot} is not carrying {obj}'
-            ])
-            # return f'{robot} is not carrying {obj} with {gripper}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -1684,119 +1656,117 @@ class Grippers(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('pick('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{obj} is picked from {room} with {gripper} by {robot}',
                 f'from {room}, {robot}\'s {gripper} picks up {obj}',
                 f'{gripper} of {robot} picks up {obj} in {room}'
-            ])
-            # return f'{obj} is picked from {room} with {gripper} by {robot}'
+            ]
         elif action.startswith('move('):
             robot, room_from, room_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{robot} moves from {room_from} to {room_to}',
-                f'{robot} moves to {room_to} from {room_from}'
-            ])
-            # return f'{robot} moves from {room_from} to {room_to}'
+                f'{robot} moves to {room_to} from {room_from}',
+                f'from {room_from}, {robot} moves to {room_to}'
+            ]
         elif action.startswith('drop('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{obj} is dropped in {room} with {gripper} by {robot}',
                 f'in {room}, {robot}\'s {gripper} drops {obj}',
                 f'{gripper} of {robot} drops {obj} in {room}'
-            ])
-            # return f'{obj} is dropped in {room} with {gripper} by {robot}'
+            ]
         else:
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        # engaged
         if fluent.startswith('at_robby('):
             robot, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is engaged in {room}',
-                f'in {room}, {robot} is engaged'
-            ])
-            # return f'{robot} is engaged in {room}'  # is engaged
+                f'in {room}, {robot} is engaged',
+                f'{robot} is currently engaged in {room}'
+            ]
         elif fluent.startswith('-at_robby('):
             robot, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is not engaged in {room}',
-                f'in {room}, {robot} isn\'t engaged'
-            ])
-            # return f'{robot} is not engaged in {room}'
+                f'in {room}, {robot} isn\'t engaged',
+                f'{robot} is not currently engaged in {room}'
+            ]
 
+        # transported to
         elif fluent.startswith('at('):
             obj, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is transported to {room}',
                 f'{obj} is moved to {room}'
-            ])
-            # return f'{obj} is transported to {room}'  # transported to
+            ]
         elif fluent.startswith('-at('):
             obj, room = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{obj} is not transported to {room}',
                 f'{obj} isn\'t moved to {room}'
-            ])
-            # return f'{obj} is not transported to {room}'
-
+            ]
+        
+        # broken
         elif fluent.startswith('free('):
             robot, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f"{gripper} of {robot} is broken",
                 f'{robot}\'s {gripper} is broken'
-            ])
-            # return f"{gripper} of {robot} is broken"
+            ]
         elif fluent.startswith('-free('):
             robot, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f"{gripper} of {robot} is not broken",
                 f'{robot}\'s {gripper} is not broken'
-            ])
-            # return f"{gripper} of {robot} is not broken"
-
+            ]
+        
+        # loading
         elif fluent.startswith('carry('):
             robot, obj, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is loading {obj} with {gripper}',
                 f'{obj} is loaded using {robot}\'s {gripper}',
                 f'{robot} is using {gripper} to load {obj}'
-            ])
-            # return f'{robot} is loading {obj} with {gripper}'  # loading
+            ]
         elif fluent.startswith('-carry('):
             robot, obj, gripper = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'{robot} is not loading {obj} with {gripper}',
                 f'{obj} is not loaded using {robot}\'s {gripper}',
                 f'{robot} is not using {gripper} to load {obj}'
-            ])
-            # return f'{robot} is not loading {obj} with {gripper}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # inspected
         if action.startswith('pick('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{obj} is inspected in {room} with {gripper} by {robot}',
                 f'in {room}, {obj} is inspected using {robot}\'s {gripper}',
                 f'{gripper} of {robot} inspects the {obj} in {room}'
-            ])
-            # return f'{obj} is inspected in {room} with {gripper} by {robot}'  # inspected
+            ]
+        # checks
         elif action.startswith('move('):
             robot, room_from, room_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'{robot} checks {room_from} and then checks {room_to}',
                 f'{robot} checks {room_from} and {room_to}',
                 f'{room_from} and {room_to} are checked by {robot}'
-            ])
-            # return f'{robot} checks {room_from} and then checks {room_to}'  # checks
-        elif action.startswith('drop('): ###################################### Collected is similar to Pick
+            ]
+        # destroyed (changed from "collected")
+        elif action.startswith('drop('):
             robot, obj, room, gripper = self.extract_multi_variable(action)
-            return random.choice([
-                f'{obj} is collected in {room} with {gripper} by {robot}'
-            ])
-            # return f'{obj} is collected in {room} with {gripper} by {robot}'  # collected
+            return [
+                f'{obj} is destroyed in {room} with {gripper} by {robot}',
+                f'in {room}, {obj} is destroyed using {robot}\'s {gripper}',
+                f'{gripper} of {robot} destroys {obj} in {room}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -1854,52 +1824,48 @@ class Logistics(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('in_city('):
             airport, city = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'airport {airport} is in city {city}',
                 f'airport {airport} is located in city {city}',
                 f'city {city} contains airport {airport}'
-            ])
-            # return f'airport {airport} is in city {city}'
+            ]
         elif fluent.startswith('-in_city('):
             airport, city = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'airport {airport} is not in city {city}'
                 f'airport {airport} is not located in city {city}',
                 f'city {city} does not contain airport {airport}'
-            ])
-            # return f'airport {airport} is not in city {city}'
+            ]
+        
         elif fluent.startswith('at('):
             physical_object, airport = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'object {physical_object} is at airport {airport}',
                 f'object {physical_object} is located at airport {airport}',
                 f'at airport {airport}, object {physical_object} is located'
-            ])
-            # return f'object {physical_object} is at airport {airport}'
+            ]
         elif fluent.startswith('-at('):
             physical_object, airport = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'object {physical_object} is not at airport {airport}',
                 f'object {physical_object} is not located at airport {airport}',
                 f'at airport {airport}, object {physical_object} is not located'
-            ])
-            # return f'object {physical_object} is not at airport {airport}'
+            ]
+        
         elif fluent.startswith('in('):
             package, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'package {package} is in vehicle {vehicle}',
                 f'package {package} is present in vehicle {vehicle}',
                 f'package {package} is located in vehicle {vehicle}'
-            ])
-            # return f'package {package} is in vehicle {vehicle}'
+            ]
         elif fluent.startswith('-in('):
             package, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'package {package} is not in vehicle {vehicle}',
                 f'package {package} is not present in vehicle {vehicle}',
                 f'package {package} is not located in vehicle {vehicle}'
-            ])
-            # return f'package {package} is not in vehicle {vehicle}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -1907,145 +1873,140 @@ class Logistics(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('load_truck('):
             package, truck, airport = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} is loaded in truck {truck} at airport {airport}',
                 f'at airport {airport}, package {package} is loaded in truck {truck}',
                 f'truck {truck} is loaded with package {package} at airport {airport}'
-            ])
-            # return f'package {package} is loaded in truck {truck} at airport {airport}'
+            ]
         elif action.startswith('unload_truck('):
             package, truck, airport = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} is unloaded from truck {truck} at airport {airport}',
                 f'at airport {airport}, package {package} is unloaded from truck {truck}',
                 f'from truck {truck} package {package} is unloaded at airport {airport}'
-            ])
-            # return f'package {package} is unloaded from truck {truck} at airport {airport}'
+            ]
         elif action.startswith('load_airplane('):
             package, airplane, airport = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} is loaded into airplane {airplane} at airport {airport}',
                 f'at airport {airport}, package {package} is loaded in airplane {airplane}',
                 f'airplane {airplane} is loaded with package {package} at airport {airport}'
-            ])
-            # return f'package {package} is loaded into airplane {airplane} at airport {airport}'
+            ]
         elif action.startswith('unload_airplane('):
             package, airplane, airport = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} is unloaded from airplane {airplane} at airport {airport}',
                 f'at airport {airport}, package {package} is unloaded from airplane {airplane}',
                 f'from airplane {airplane} package {package} is unloaded at airport {airport}'
-            ])
-            # return f'package {package} is unloaded from airplane {airplane} at airport {airport}'
+            ]
         elif action.startswith('drive_truck('):
             truck, loc_from, loc_to, city = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'truck {truck} is driven from airport {loc_from} to airport {loc_to} in city {city}',
                 f'truck {truck} is driven to airport {loc_to} from airport {loc_from} in city {city}',
                 f'in city {city}, truck is driven from airports {loc_from} to {loc_to}',
-            ])
-            # return f'truck {truck} is driven from airport {loc_from} to airport {loc_to} in city {city}'
+            ]
         elif action.startswith('fly_airplane('):
             airplane, airport_from, airport_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'airplane {airplane} is flown from airport {airport_from} to airport {airport_to}',
                 f'airplane {airplane} is flown to airport {airport_to} from airport {airport_from}',
                 f'airplane {airplane} flys from airports {airport_from} to {airport_to}'
-            ])
-            # return f'airplane {airplane} is flown from airport {airport_from} to airport {airport_to}'
+            ]
         else:
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language(self, fluent):
-        if fluent.startswith('in_city('): ######################### Outside can be derived from In
+        # capital (changed from "outside") 
+        if fluent.startswith('in_city('):
             place, city = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'place {place} is outside the city {city}'
-            ])
-            # return f'place {place} is outside the city {city}'  # outside
-        elif fluent.startswith('-in_city('): ######################### Outside can be derived from In
+            return [
+                f'place {place} is the capital the city {city}',
+                f'city {city}\'s capital is place {place}'
+            ]
+        elif fluent.startswith('-in_city('):
             place, city = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'place {place} is not outside the city {city}'
-            ])
-            # return f'place {place} is not outside the city {city}'
+            return [
+                f'place {place} is not the capital the city {city}',
+                f'city {city}\'s capital is not place {place}'
+            ]
 
+        # scanned
         elif fluent.startswith('at('):
             physical_object, place = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'object {physical_object} is scanned at place {place}',
                 f'at place {place}, object {physical_object} is scanned'
-            ])
-            # return f'object {physical_object} is scanned at place {place}'  # scanned
+            ]
         elif fluent.startswith('-at('):
             physical_object, place = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'object {physical_object} is not scanned at place {place}',
                 f'at place {place}, object {physical_object} is not scanned'
-            ])
-            # return f'object {physical_object} is not scanned at place {place}'
+            ]
 
-        elif fluent.startswith('in('): ################################### Transported means same as In
+        # heavy (changed from "transported")
+        elif fluent.startswith('in('):
             package, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'package {package} is transported in vehicle {vehicle}'
-            ])
-            # return f'package {package} is transported in vehicle {vehicle}'  # transported
-        elif fluent.startswith('-in('): ################################### Transported means same as In
+            return [
+                f'package {package} is heavy for vehicle {vehicle}',
+                f'package {package} exceeds the weight limit for vehicle {vehicle}'
+            ]
+        elif fluent.startswith('-in('):
             package, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'package {package} is not transported in vehicle {vehicle}'
-            ])  
-            # return f'package {package} is not transported in vehicle {vehicle}'
+            return [
+                f'package {package} is not heavy for vehicle {vehicle}',
+                f'package {package} does not exceed the weight limit for vehicle {vehicle}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # inspected
         if action.startswith('load_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} in truck {truck} is inspected at location {location}',
                 f'at location {location}, package {package} is inspected in truck {truck}',
                 f'inspection of package {package} takes place in truck {truck} at location {location}'
-            ])
-            # return f'package {package} in truck {truck} is inspected at location {location}'  # inspected
+            ]
+        # stuck
         elif action.startswith('unload_truck('):
             package, truck, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} in truck {truck} is stuck at location {location}',
                 f'at location {location}, package {package} in truck {truck} is stuck'
-            ])
-            # return f'package {package} in truck {truck} is stuck at location {location}'  # stuck
+            ]
+        # inspected
         elif action.startswith('load_airplane('):
             package, airplane, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} from the airplane {airplane} is inspected at location {location}',
                 f'at location {location}, package {package} is inspected in airplane {airplane}',
                 f'inspection of package {package} takes place in airplane {airplane} at location {location}'
-            ])
-            # return f'package {package} from the airplane {airplane} is inspected at location {location}'  # inspected
+            ]
+        # lost
         elif action.startswith('unload_airplane('):
             package, airplane, location = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'package {package} unloaded from airplane {airplane} is lost at location {location}',
                 f'at location {location}, package {package} is lost from airplane {airplane}'
-            ])
-            # return f'package {package} unloaded from airplane {airplane} is lost at location {location}'  # lost
+            ]
+        # inspected, refueled
         elif action.startswith('drive_truck('):
             truck, loc_from, loc_to, city = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'truck {truck} is inspected at {loc_from} and refueled at {loc_to} in city {city}',
                 f'in city {city}, truck {truck} is inspected at {loc_from} and refueled at {loc_to}'
-            ])
-            # return f'truck {truck} is inspected at {loc_from} and refueled at {loc_to} in city {city}'  # inspected, refueled
+            ]
+        # refueled
         elif action.startswith('fly_airplane('):
             airplane, airport_from, airport_to = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'airplane {airplane} is refueled at {airport_from} and at airport {airport_to}',
                 f'at airports {airport_from} and {airport_to}, airplane {airplane} is refueled'
-            ])
-            # return f'airplane {airplane} is refueled at {airport_from} and at airport {airport_to}'  # refueled
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -2090,94 +2051,86 @@ class Miconic(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} enters at floor {floor}',
                 f'passenger {passenger} boards at floor {floor}',
                 f'passenger {passenger} boards on level {floor}'
-            ])
-            # return f'passenger {passenger} enters at floor {floor}'
+            ]
         elif fluent.startswith('-origin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} does not enter at floor {floor}',
                 f'passenger {passenger} does not boards at floor {floor}',
                 f'passenger {passenger} does not boards on level {floor}'
-            ])
-            # return f'passenger {passenger} does not enter at floor {floor}'
+            ]
+        
         elif fluent.startswith('destin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'destination of passenger {passenger} is floor {floor}',
                 f'floor {floor} is the destination of the passenger {passenger}',
                 f'destination of passenger {passenger} is level {floor}'
-            ])
-            # return f'destination of passenger {passenger} is floor {floor}'
+            ]
         elif fluent.startswith('-destin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'destination of passenger {passenger} is not floor {floor}',
                 f'floor {floor} is not the destination of passenger {passenger}',
                 f'destination of passenger {passenger} is not level {floor}',
-            ])
-            # return f'destination of passenger {passenger} is not floor {floor}'
+            ]
+        
         elif fluent.startswith('above('):
             floor1, floor2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'floor {floor2} is above floor {floor1}',
                 f'floor {floor2} is located above floor {floor1}',
                 f'floor {floor1} is below floor {floor2}'
-            ])
-            # return f'floor {floor2} is above floor {floor1}'
+            ]
         elif fluent.startswith('-above('):
             floor1, floor2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'floor {floor2} is not above floor {floor1}',
                 f'floor {floor2} is not located above floor {floor1}',
                 f'floor {floor1} is not below floor {floor2}'
-            ])
-            # return f'floor {floor2} is not above floor {floor1}'
+            ]
         elif fluent.startswith('boarded('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} is boarded',
                 f'passenger {passenger} has boarded the lift'
-            ])
-            # return f'passenger {passenger} is boarded'
+            ]
         elif fluent.startswith('-boarded('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} is not boarded',
                 f'passenger {passenger} has not boarded the lift'
-            ])
-            # return f'passenger {passenger} is not boarded'
+            ]
+        
         elif fluent.startswith('served('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} is served',
                 f'passenger {passenger} is attended to'
-            ])
-            # return f'passenger {passenger} is served'
+            ]
         elif fluent.startswith('-served('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} is not served',
                 f'passenger {passenger} is not attended to'
-            ])
-            # return f'passenger {passenger} is not served'
+            ]
+        
         elif fluent.startswith('lift_at('):
             floor = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'lift is at floor {floor}',
                 f'lift is positioned at level {floor}'
-            ])
-            # return f'lift is at floor {floor}'
+            ]
         elif fluent.startswith('-lift_at('):
             floor = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'lift is not at floor {floor}',
                 f'lift is not positioned at level {floor}'
-            ])
-            # return f'lift is not at floor {floor}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -2185,162 +2138,167 @@ class Miconic(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             floor, passenger = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'passenger {passenger} boards at floor {floor}',
                 f'passenger {passenger} boards at level {floor}',
                 f'at floor {floor}, passenger {passenger} boards the lift'
-            ])
-            # return f'passenger {passenger} boards at floor {floor}'
+            ]
         elif action.startswith('depart('):
             floor, passenger = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'passenger {passenger} departs at floor {floor}',
                 f'passenger {passenger} departs at level {floor}',
                 f'at floor {floor}, passenger {passenger} departs the lift'
-            ])
-            # return f'passenger {passenger} departs at floor {floor}'
+            ]
         elif action.startswith('up('):
             floor1, floor2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'the elevator goes up from floor {floor1} to floor {floor2}',
                 f'the lift goes up to floor {floor2} from floor {floor1}',
                 f'elevator goes from level {floor1} up to level {floor2}'
-            ])
-            # return f'the elevator goes up from floor {floor1} to floor {floor2}'
+            ]
         elif action.startswith('down('):
             floor1, floor2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'the elevator goes down from floor {floor1} to floor {floor2}',
                 f'the lift goes down to floor {floor2} from floor {floor1}',
                 f'elevator goes from level {floor1} down to level {floor2}'
-            ])
-            # return f'the elevator goes down from floor {floor1} to floor {floor2}'
+            ]
         else:
             raise Exception('action is not defined')
 
 
     def fluent_to_hallucinated_natural_language(self, fluent):
-        if fluent.startswith('origin('): ############################# Origin means same as Wait in this domain
+        # stairs (changed from "wait")
+        if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'passenger {passenger} waits at floor {floor}'
-            ])
-            # return f'passenger {passenger} waits at floor {floor}'  # waits
-        elif fluent.startswith('-origin('): ############################# Origin means same as Wait in this domain
+            return [
+                f'passenger {passenger} takes the stais at floor {floor}',
+                f'passenger {passenger} takes the stairs at level {floor}',
+                f'at floor {floor}, passenger {passenger} takes the stairs'
+            ]
+        elif fluent.startswith('-origin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'passenger {passenger} does not wait at floor {floor}'
-            ])
-            # return f'passenger {passenger} does not wait at floor {floor}'
+            return [
+                f'passenger {passenger} does not take the stairs at floor {floor}',
+                f'passenger {passenger} does not take the stairs at level {floor}',
+                f'at floor {floor}, passenger {passenger} does not take the stairs'
+            ]
 
+        # evacuates
         elif fluent.startswith('destin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} evacuates at floor {floor}',
                 f'passenger {passenger} evacuates the lift at floor {floor}',
                 f'at level {floor}, passenger {passenger} evacuates the elevator'
-            ])
-            # return f'passenger {passenger} evacuates at floor {floor}'  # evacuates
+            ]
         elif fluent.startswith('-destin('):
             passenger, floor = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} does not evacuate at floor {floor}',
                 f'passenger {passenger} does not evacuate the lift at floor {floor}',
                 f'at level {floor}, passenger {passenger} does not evacuate the elevator'
-            ])
-            # return f'passenger {passenger} does not evacuates at floor {floor}'
+            ]
 
+        # cleaner
         elif fluent.startswith('above('):
             floor1, floor2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'floor {floor2} is cleaner than floor {floor1}',
-                f'level {floor2} is more clean than level {floor1}'
-            ])
-            # return f'floor {floor2} is cleaner than floor {floor1}'  # cleaner
+                f'level {floor2} is more clean than level {floor1}',
+                f'floor {floor1} is dirtier than floor {floor2}',
+            ]
         elif fluent.startswith('-above('):
             floor1, floor2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'floor {floor2} is not cleaner than floor {floor1}',
-                f'level {floor2} is less clean than level {floor1}'
-            ])
-            # return f'floor {floor2} is not cleaner than floor {floor1}'
+                f'level {floor2} is less clean than level {floor1}',
+                f'floor {floor1} is not dirtier than floor {floor2}',
+            ]
 
+        # walks
         elif fluent.startswith('boarded('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} walks',
-                f'passenger {passenger} take a walk'
-            ])
-            # return f'passenger {passenger} walks'  # walks
+                f'passenger {passenger} takes a walk',
+                f'passenger {passenger} walks around'
+            ]
         elif fluent.startswith('-boarded('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} does not walk'
-                f'passenger {passenger} does not take a walk'
-            ])
-            # return f'passenger {passenger} does not walk'
+                f'passenger {passenger} does not take a walk',
+                f'passenger {passenger} does not walk around'
+            ]
 
+        # rides
         elif fluent.startswith('served('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} rides',
                 f'passenger {passenger} takes a ride'
-            ])
-            # return f'passenger {passenger} rides'  # rides
+            ]
         elif fluent.startswith('-served('):
             passenger = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'passenger {passenger} does not ride',
                 f'passenger {passenger} does not take a ride'
-            ])
-            # return f'passenger {passenger} is not ride'
-
+            ]
+        
+        # stuck
         elif fluent.startswith('lift_at('):
             floor = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'lift is stuck at floor {floor}',
                 f'elevator is stuck at level {floor}',
                 f'at floor {floor}, elevator is stuck'
-            ])
-            # return f'lift is stuck at floor {floor}'  # stuck
+            ]
         elif fluent.startswith('-lift_at('):
             floor = self.extract_single_variable(fluent)
-            return random.choice([
+            return [
                 f'lift is not stuck at floor {floor}',
                 f'elevator is not stuck at level {floor}',
                 f'at floor {floor}, elevator is not stuck'
-            ])
-            # return f'lift is not stuck at floor {floor}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
-        if action.startswith('board('): ############################# Origin means same as Wait in this domain
+        # lives (changed from "wait")
+        if action.startswith('board('):
             floor, passenger = self.extract_multi_variable(action)
-            return random.choice([
-                f'passenger {passenger} waits at floor {floor}'
-            ])
-            # return f'passenger {passenger} waits at floor {floor}'  # waits
-        elif action.startswith('depart('): ############################# Walks-out is same as Depart
+            return [
+                f'passenger {passenger} lives at floor {floor}',
+                f'passenger {passenger} lives at level {floor}',
+                f'at floor {floor}, passenger {passenger} lives'
+            ]
+        # shouting (changed from "walks out")
+        elif action.startswith('depart('):
             floor, passenger = self.extract_multi_variable(action)
-            return random.choice([
-                f'passenger {passenger} walks out at floor {floor}'
-            ])
-            # return f'passenger {passenger} walks out at floor {floor}'  # walks out
+            return [
+                f'passenger {passenger} shouts at floor {floor}',
+                f'passenger {passenger} shouts at level {floor}',
+                f'at floor {floor}, passenger {passenger} shouts'
+            ]
+        # stuck
         elif action.startswith('up('):
             floor1, floor2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'the elevator is stuck between floor {floor1} and floor {floor2}',
-                f'lift is trapped between levels {floor1} and {floor2}'
-            ])
-            # return f'the elevator is stuck between floor {floor1} and floor {floor2}'  # stuck
-        elif action.startswith('down('): ################################################# Navigates can mean down (or up)
+                f'lift is trapped between levels {floor1} and {floor2}',
+                f'elevator is stuck between level {floor1} and level {floor2}'
+            ]
+        # windows (changed from "navigate")
+        elif action.startswith('down('):
             floor1, floor2 = self.extract_multi_variable(action)
-            return random.choice([
-                f'the elevator navigates from floor {floor1} to floor {floor2}',
-            ])
-            # return f'the elevator navigates from floor {floor1} to floor {floor2}'  # navigates
+            return [
+                f'floors {floor1} and {floor2} have windows',
+                f'levels {floor1} and {floor2} have windows',
+                f'windows are present at floors {floor1} and {floor2}'
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -2384,130 +2342,115 @@ class Mystery(BaseDomain):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
-                return random.choice([
+                return [
                     f'vehicle {obj} is at location {location}',
                     f'vehicle {obj} is present at location {location}',
                     f'vehicle {obj} is situated at location {location}'
-                ])
-                # return f'vehicle {obj} is at location {location}'
+                ]
             else:
-                return random.choice([
+                return [
                     f'cargo {obj} is at location {location}',
                     f'cargo {obj} is present at location {location}',
                     f'cargo {obj} is situated at location {location}'
-                ])
-                # return f'cargo {obj} is at location {location}'
+                ]
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
-                return random.choice([
+                return [
                     f'vehicle {obj} is not at location {location}',
                     f'vehicle {obj} is not present at location {location}',
                     f'vehicle {obj} is not situated at location {location}'
-                ])
-                # return f'vehicle {obj} is not at location {location}'
+                ]
             else:
-                return random.choice([
+                return [
                     f'cargo {obj} is not at location {location}'
                     f'cargo {obj} is not present at location {location}',
                     f'cargo {obj} is not situated at location {location}'
-                ])
-                # return f'cargo {obj} is not at location {location}'
+                ]
+        
         elif fluent.startswith('conn('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location1} is connected to location {location2}',
                 f'there is a connection between locations {location1} and {location2}',
                 f'location {location1} and location {location2} are connected'
-            ])
-            # return f'location {location1} is connected to location {location2}'
+            ]
         elif fluent.startswith('-conn('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location1} is not connected to location {location2}',
                 f'there is no connection between locations {location1} and {location2}',
                 f'location {location1} and location {location2} are not connected'
-            ])
-            # return f'location {location1} is not connected to location {location2}'
+            ]
 
         elif fluent.startswith('has_fuel('):
             location, fuel = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location} has fuel {fuel}',
                 f'location {location} has a fuel-level of {fuel}',
                 f'fuel {fuel} exists in location {location}'
-            ])
-            # return f'location {location} has fuel {fuel}'
+            ]
         elif fluent.startswith('-has_fuel('):
             location, fuel = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location} does not have fuel {fuel}',
                 f'location {location} does not have a fuel-level of {fuel}',
                 f'fuel {fuel} does not exists in location {location}'
-            ])
-            # return f'location {location} does not have fuel {fuel}'
+            ]
 
         elif fluent.startswith('fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'fuel level {f1} neighbours fuel level {f2}',
                 f'fuel-levels {f1} and {f2} are neighbors'
-            ])
-            # return f'fuel level {f1} neighbours fuel level {f2}'
+            ]
         elif fluent.startswith('-fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'fuel level {f1} does not neighbour fuel level {f2}',
                 f'fuel-levels {f1} and {f2} are not neighbors'
-            ])
-            # return f'fuel level {f1} does not neighbour fuel level {f2}'
+            ]
 
         elif fluent.startswith('in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'cargo {cargo} is in vehicle {vehicle}',
                 f'cargo {cargo} is located in vehicle {vehicle}',
                 f'vehicle {vehicle} contains cargo {cargo}'
-            ])
-            # return f'cargo {cargo} is in vehicle {vehicle}'
+            ]
         elif fluent.startswith('-in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'cargo {cargo} is not in vehicle {vehicle}',
                 f'cargo {cargo} is not located in vehicle {vehicle}',
                 f'vehicle {vehicle} does not contain cargo {cargo}'
-            ])
-            # return f'cargo {cargo} is not in vehicle {vehicle}'
+            ]
 
         elif fluent.startswith('has_space('):
             vehicle, space = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'vehicle {vehicle} has space {space}',
                 f'vehicle {vehicle} contains space {space}'
-            ])
-            # return f'vehicle {vehicle} has space {space}'
+            ]
         elif fluent.startswith('-has_space('):
             vehicle, space = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'vehicle {vehicle} does not have space {space}',
                 f'vehicle {vehicle} does not contain space {space}'
-            ])
-            # return f'vehicle {vehicle} does not have space {space}'
+            ]
 
         elif fluent.startswith('space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'space {s1} neighbours space {s2}',
                 f'spaces {s1} and {s2} are neighbors'
-            ])
-            # return f'space {s1} neighbours space {s2}'
+            ]
         elif fluent.startswith('-space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'space {s1} does not neighbour space {s2}',
                 f'spaces {s1} and {s2} are not neighbors'
-            ])
-            # return f'space {s1} does not neighbour space {s2}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
@@ -2515,175 +2458,173 @@ class Mystery(BaseDomain):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'vehicle {vehicle} moves to location {location2} from location {location1} that has fuel level {fuel_level1} and {fuel_level2}',
                 f'vehicle {vehicle} moves from location {location1} which has fuel-levels {fuel_level1} and {fuel_level2} to location {location2}'
-            ])
-            # return f'vehicle {vehicle} moves to location {location2} from location {location1} that has fuel level {fuel_level1} and {fuel_level2}'
+            ]
         elif action.startswith('load('):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'cargo {cargo} is loaded in vehicle {vehicle} with space {space1} and space {space2} at location {location}',
                 f'at location {location}, cargo {cargo} is loaded in vehicle {vehicle} with spaces {space1} and {space2}'
-            ])
-            # return f'cargo {cargo} is loaded in vehicle {vehicle} with space {space1} and space {space2} at location {location}'
+            ]
         elif action.startswith('unload('):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'cargo {cargo} is unloaded from vehicle {vehicle} with space {space1} and space {space2} at location {location}',
                 f'at location {location}, cargo {cargo} is unloaded from vehicle {vehicle} with spaces {space1} and {space2}'
-            ])
-            # return f'cargo {cargo} is unloaded from vehicle {vehicle} with space {space1} and space {space2} at location {location}'
+            ]
         else:
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
+            # maintained
             if obj.startswith('vehicle'):
-                return random.choice([
+                return [
                     f'vehicle {obj} is being maintained at location {location}',
                     f'at location {location}, vehicle {obj} is maintained',
                     f'maintenance of vehicle {obj} occurs at location {location}'
-                ])
-                # return f'vehicle {obj} is being maintained at location {location}'  # maintained
+                ]
+            # inspected
             else:
-                return random.choice([
+                return [
                     f'cargo {obj} is inspected at location {location}',
                     f'at location {location}, cargo {obj} is inspected',
                     f'inspection of cargo {obj} occurs at location {location}'
-                ])
-                # return f'cargo {obj} is inspected at location {location}'  # inspected
+                ]
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
+            # maintained
             if obj.startswith('vehicle'):
-                return random.choice([
+                return [
                     f'vehicle {obj} is not being maintained at location {location}',
                     f'at location {location}, vehicle {obj} is not maintained',
                     f'maintenance of vehicle {obj} does not occur at location {location}'
-                ])
-                # return f'vehicle {obj} is not being maintained at location {location}'  # maintained
+                ]
+            # inspected
             else:
-                return random.choice([
+                return [
                     f'cargo {obj} is not inspected at location {location}',
                     f'at location {location}, cargo {obj} is not inspected',
                     f'inspection of cargo {obj} does not occur at location {location}'
-                ])
-                # return f'cargo {obj} is not inspected at location {location}'  # inspected
+                ]
+        
+        # far
         elif fluent.startswith('conn('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location1} is far from location {location2}',
                 f'location {location1} and location {location2} are far from each other',
                 f'locations {location1} and {location2} are far from each other'
-            ])
-            # return f'location {location1} is far from location {location2}'  # far
+            ]
         elif fluent.startswith('-conn('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location1} is not far from location {location2}',
                 f'location {location1} and location {location2} are not far from each other',
                 f'locations {location1} and {location2} are not far from each other'
-            ])
-            # return f'location {location1} is not far from location {location2}'
+            ]
 
+        # sells
         elif fluent.startswith('has_fuel('):
             location, fuel = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location} sells fuel {fuel}',
                 f'fuel {fuel} is sold at location {location}'
-            ])
-            # return f'location {location} sells fuel {fuel}'  # sells
+            ]
         elif fluent.startswith('-has_fuel('):
             location, fuel = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'location {location} does not sell fuel {fuel}',
                 f'fuel {fuel} is not sold at location {location}'
-            ])
-            # return f'location {location} does not sell fuel {fuel}'
+            ]
 
-        elif fluent.startswith('fuel_neighbor('): ###################################### Fuels are used as locations
+        # gas station (changed from "secure")
+        elif fluent.startswith('fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'location {f1} and location {f2} are secure',
-            ])
-            # return f'location {f1} and location {f2} are secure'  # secure
-        elif fluent.startswith('-fuel_neighbor('): ###################################### Fuels are used as locations
+            return [
+                f'gas station increases the fuel-level from {f2} to {f1}',
+                f'fuel-level at gas station is increased from {f2} to {f1}',
+                f'fuel-level at gas station is raised from {f2} to {f1}'
+            ]
+        elif fluent.startswith('-fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
-            return random.choice([
-                f'location {f1} and location {f2} are not secure'
-            ])
-            # return f'location {f1} and location {f2} are not secure'
+            return [
+                f'gas station does not increase the fuel-level from {f2} to {f1}',
+                f'fuel-level at gas station is not increased from {f2} to {f1}',
+                f'fuel-level at gas station is not raised from {f2} to {f1}'
+            ]
 
+        # not secured
         elif fluent.startswith('in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'cargo {cargo} is secured in vehicle {vehicle}',
                 f'vehicle {vehicle} has cargo {cargo} secured'
-            ])
-            # return f'cargo {cargo} is secured in vehicle {vehicle}'  # not secured
+            ]
         elif fluent.startswith('-in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'cargo {cargo} is not secured in vehicle {vehicle}',
                 f'vehicle {vehicle} does not have cargo {cargo} secured'
-            ])
-            # return f'cargo {cargo} is not secured in vehicle {vehicle}'
+            ]
 
+        # parks in
         elif fluent.startswith('has_space('):
             vehicle, space = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'vehicle {vehicle} parks in space {space}',
                 f'space {space} has vehicle {vehicle} parked in'
-            ])
-            # return f'vehicle {vehicle} parks in space {space}'  # parks in
+            ]
         elif fluent.startswith('-has_space('):
             vehicle, space = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'vehicle {vehicle} does not parks in space {space}',
                 f'space {space} does not have vehicle {vehicle} parked in'
-            ])
-            # return f'vehicle {vehicle} does not parks in space {space}'
+            ]
 
+        # same city
         elif fluent.startswith('space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'space {s1} is in the same city as space {s2}',
                 f'spaces {s1} and {s2} are in the same city'
-            ])
-            # return f'space {s1} is in the same city as space {s2}'  # is the same city as
+            ]
         elif fluent.startswith('-space_neighbor('):
             s1, s2 = self.extract_multi_variable(fluent)
-            return random.choice([
+            return [
                 f'space {s1} is not in the same city as space {s2}',
                 f'spaces {s1} and {s2} are not in the same city'
-            ])
-            # return f'space {s1} is not in the same city as space {s2}'
+            ]
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # pulled over
         if action.startswith('move('):
             vehicle, location1, location2, fuel_level1, fuel_level2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'vehicle {vehicle} gets pulled over at {location1}',
                 f'at location {location1}, vehicle {vehicle} is pulled over'
-            ])
-            # return f'vehicle {vehicle} gets pulled over at {location1}'  # gets pulled over
-        elif action.startswith('load('): ################################# Transported has a similar meaning to Load
+            ]
+        # breaks (changed from "transported")
+        elif action.startswith('load('):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-            return random.choice([
-                f'cargo {cargo} is transported into vehicle {vehicle} at location {location} with space {space1} to space {space2}'
-            ])
-            # return f'cargo {cargo} is transported into vehicle {vehicle} at location {location} with space {space1} to space {space2}'  # transported
+            return [
+                f'cargo {cargo} present in vehicle {vehicle} breaks at location {location}',
+                f'at location {location}, cargo {cargo} in vehicle {vehicle} breaks',
+                f'cargo {cargo} breaks at location {location} in vehicle {vehicle}'
+            ]
+        # inspected
         elif action.startswith('unload('):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
-            return random.choice([
+            return [
                 f'cargo {cargo} and vehicle {vehicle} are inspected at location {location}',
                 f'at location {location}, inspection of cargo {cargo} and vehicle {vehicle} is performed'
-            ])
-            # return f'cargo {cargo} and vehicle {vehicle} are inspected at location {location}'  # inspected
+            ]
         else:
             raise Exception('action is not defined')
 
@@ -2709,64 +2650,121 @@ class Npuzzle(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             tile, position = self.extract_multi_variable(fluent)
-            return f'tile {tile} is at position {position}'
+            return [
+                f'tile {tile} is at position {position}',
+                f'tile {tile} is located at position {position}',
+                f'tile {tile} is present in the position {position}'
+            ]
         elif fluent.startswith('-at('):
             tile, position = self.extract_multi_variable(fluent)
-            return f'tile {tile} is not at position {position}'
+            return [
+                f'tile {tile} is not at position {position}',
+                f'tile {tile} is not located at position {position}',
+                f'tile {tile} is not present in the position {position}'
+            ]
+        
         elif fluent.startswith('neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
-            return f'position {position1} is a neighbor of position {position2}'
+            return [
+                f'position {position1} is a neighbor of position {position2}',
+                f'position {position1} and position {position2} are neighbors',
+                f'positions {position1} and {position2} are neighbors'
+            ]
         elif fluent.startswith('-neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
-            return f'position {position1} is not a neighbor of position {position2}'
+            return [
+                f'position {position1} is not a neighbor of position {position2}',
+                f'position {position1} and position {position2} are not neighbors',
+                f'positions {position1} and {position2} are not neighbors'
+            ]
+        
         elif fluent.startswith('empty('):
             position = self.extract_single_variable(fluent)
-            return f'position {position} is empty'
+            return [
+                f'position {position} is empty',
+                f'position {position} does not contain any tile'
+            ]
         elif fluent.startswith('-empty('):
             position = self.extract_single_variable(fluent)
-            return f'position {position} is not empty'
+            return [
+                f'position {position} is not empty',
+                f'position {position} contains a tile'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
-            return f'tile {tile} is moved from position {source} to position {destination}'
+            return [
+                f'tile {tile} is moved from position {source} to position {destination}',
+                f'tile {tile} is moved to position {destination} from postion {source}',
+                f'tile {tile} is moved from position {source} to {destination}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        # stuck
         if fluent.startswith('at('):
             tile, position = self.extract_multi_variable(fluent)
-            return f'tile {tile} is stuck at position {position}'  # stuck
+            return [
+                f'tile {tile} is stuck at position {position}',
+                f'tile {tile} is trapped at position {position}',
+                f'at position {position}, tile {tile} is stuck'
+            ]
         elif fluent.startswith('-at('):
             tile, position = self.extract_multi_variable(fluent)
-            return f'tile {tile} is not stuck at position {position}'
-
+            return [
+                f'tile {tile} is not stuck at position {position}',
+                f'tile {tile} is not trapped at position {position}',
+                f'at position {position}, tile {tile} is not stuck'
+            ]
+        
+        # color (changed from "far from")
         elif fluent.startswith('neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
-            return f'position {position1} is far from of position {position2}'  # far from
+            return [
+                f'positions {position1} and {position2} are of the same color',
+                f'position {position1} and position {position2} are of the same color',
+                f'color of positions {position1} and {position2} is same'
+            ]
         elif fluent.startswith('-neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
-            return f'position {position1} is not far from position {position2}'
+            return [
+                f'positions {position1} and {position2} are not of the same color',
+                f'position {position1} and position {position2} are not of the same color',
+                f'color of positions {position1} and {position2} is not same'
+            ]
 
-        elif fluent.startswith('empty('):
+        elif fluent.startswith('empty('): ################################## Exists is implicitly defined in initial conditions
             position = self.extract_single_variable(fluent)
-            return f'position {position} exists'  # does not exist
-        elif fluent.startswith('-empty('):
+            return [
+                f'position {position} exists'
+            ]
+            # return f'position {position} exists'  # does not exist
+        elif fluent.startswith('-empty('): ################################## Exists is implicitly defined in initial conditions
             position = self.extract_single_variable(fluent)
-            return f'position {position} does not exist'
+            return [
+                f'position {position} does not exist'
+            ]
+            # return f'position {position} does not exist'
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
-            return f'tile {tile} is slid diagonally from position {source} to position {destination}'  # slides diagonally
+            return [
+                f'tile {tile} is slid diagonally from position {source} to position {destination}',
+                f'tile {tile} slid diagonally from positions {source} to {destination}',
+                f'from position {source} to position {destination}, tile {tile} is slid diagonally'
+            ]
+            # return f'tile {tile} is slid diagonally from position {source} to position {destination}'  # slides diagonally
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 class Satellite(BaseDomain):
@@ -2818,153 +2816,326 @@ class Satellite(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
-            return f'{instrument} is on board {satellite}'
+            return [
+                f'{instrument} is on board {satellite}',
+                f'{satellite} carries {instrument} on board',
+                f'{satellite} has {instrument} on board'
+            ]
         elif fluent.startswith('-on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
-            return f'{instrument} is not on board {satellite}'
+            return [
+                f'{instrument} is not on board {satellite}',
+                f'{satellite} does not carry {instrument} on board',
+                f'{satellite} does not have {instrument} on board'
+            ]
+        
         elif fluent.startswith('supports('):
             instrument, mode = self.extract_multi_variable(fluent)
-            return f'{instrument} supports {mode}'
+            return [
+                f'{instrument} supports {mode}',
+                f'{mode} is supported by {instrument}',
+                f'{mode} is compatible with {instrument}'
+            ]
         elif fluent.startswith('-supports('):
             instrument, mode = self.extract_multi_variable(fluent)
-            return f'{instrument} does not support {mode}'
+            return [
+                f'{instrument} does not support {mode}',
+                f'{mode} is not supported by {instrument}',
+                f'{mode} is not compatible with {instrument}'
+            ]
+        
         elif fluent.startswith('pointing('):
             satellite, direction = self.extract_multi_variable(fluent)
-            return f'{satellite} is pointing to {direction}'
+            return [
+                f'{satellite} is pointing to {direction}',
+                f'{satellite} is aimed towards {direction}',
+                f'{direction} is where {satellite} is pointed'
+            ]
         elif fluent.startswith('-pointing('):
             satellite, direction = self.extract_multi_variable(fluent)
-            return f'{satellite} is not pointing to {direction}'
+            return [
+                f'{satellite} is not pointing to {direction}',
+                f'{satellite} is not aimed towards {direction}',
+                f'{direction} is not where {satellite} is pointed'
+            ]
+        
         elif fluent.startswith('power_avail('):
             satellite = self.extract_single_variable(fluent)
-            return f'{satellite} has power available'
-        elif fluent.startswith('-power_avail('):
+            return [
+                f'{satellite} has power available',
+                f'power is available for {satellite}',
+                f'{satellite} has power'
+            ]
+        elif fluent.startswith('-power_avail('):    
             satellite = self.extract_single_variable(fluent)
-            return f'{satellite} does not have power available'
+            return [
+                f'{satellite} does not have power available',
+                f'power is not available for {satellite}',
+                f'{satellite} does not have power'
+            ]
+        
         elif fluent.startswith('power_on('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is powered on'
+            return [
+                f'{instrument} is powered on',
+                f'{instrument} is switched on',
+                f'{instrument} is turned on'
+            ]
         elif fluent.startswith('-power_on('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is not powered on'
+            return [
+                f'{instrument} is not powered on',
+                f'{instrument} is not switched on',
+                f'{instrument} is not turned on'
+            ]
+        
         elif fluent.startswith('calibrated('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is calibrated'
+            return [
+                f'{instrument} is calibrated',
+                f'calibration of {instrument} is complete'
+            ]
         elif fluent.startswith('-calibrated('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is not calibrated'
+            return [
+                f'{instrument} is not calibrated',
+                f'calibration of {instrument} is incomplete'
+            ]
+        
         elif fluent.startswith('have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'there is an image of {direction} in {mode}'
+            return [
+                f'there is an image of {direction} in {mode}',
+                f'image of {direction} exists in {mode}'
+            ]
         elif fluent.startswith('-have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'there is no image of direction {direction} in {mode}'
+            return [
+                f'there is no image of direction {direction} in {mode}',
+                f'image of {direction} does not exist in {mode}'
+            ]
+        
         elif fluent.startswith('calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
-            return f'{instrument} is calibrated for {direction}'
+            return [
+                f'{instrument} is calibrated for {direction}',
+                f'calibration of {instrument} for {direction} is complete',
+                f'for {direction}, {instrument} is calibrated'
+            ]
         elif fluent.startswith('-calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
-            return f'{instrument} is not calibrated for {direction}'
+            return [
+                f'{instrument} is not calibrated for {direction}',
+                f'calibration of {instrument} for {direction} is incomplete',
+                f'for {direction}, {instrument} is not calibrated'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('turn_to('):
             satellite, new_dir, old_dir = self.extract_multi_variable(action)
-            return f'{satellite} turns to {new_dir} from {old_dir}'
+            return [
+                f'{satellite} turns to {new_dir} from {old_dir}',
+                f'{satellite} turns from {old_dir} to {new_dir}',
+                f'from {old_dir}, {satellite} turns to {new_dir}'
+            ]
         elif action.startswith('switch_on('):
             instrument, satellite = self.extract_multi_variable(action)
-            return f'{instrument} on {satellite} is switched on'
+            return [
+                f'{instrument} on {satellite} is switched on',
+                f'{instrument} that is on {satellite} is turned on',
+                f'on {satellite}, {instrument} is switched on'
+            ]
         elif action.startswith('switch_off('):
             instrument, satellite = self.extract_multi_variable(action)
-            return f'{instrument} on {satellite} is switched off'
+            return [
+                f'{instrument} on {satellite} is switched off',
+                f'{instrument} that is on {satellite} is turned off',
+                f'on {satellite}, {instrument} is switched off'
+            ]
         elif action.startswith('calibrate('):
             satellite, instrument, direction = self.extract_multi_variable(action)
-            return f'{instrument} is calibrated on {satellite} to {direction}'
+            return [
+                f'{instrument} is calibrated on {satellite} to {direction}',
+                f'{instrument} that is on {satellite} is calibrated to {direction}',
+                f'calibration of {instrument} which is on {satellite} to {direction} is complete'
+            ]
         elif action.startswith('take_image('):
             satellite, direction, instrument, mode = self.extract_multi_variable(action)
-            return f'image of {direction} is taken with {instrument} on {satellite} in {mode}'
+            return [
+                f'image of {direction} is taken with {instrument} on {satellite} in {mode}',
+                f'{instrument} which is on {satellite} takes an image of {direction} in {mode}',
+                f'{satellite}\'s {instrument} takes an image of {direction} in {mode}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        # out of order
         if fluent.startswith('on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
-            return f'{instrument} is out of order on {satellite}'  # out of order
+            return [
+                f'{instrument} is out of order on {satellite}',
+                f'{satellite}\'s {instrument} is out of order',
+                f'{instrument} which is on {satellite} is out of order'
+            ]
         elif fluent.startswith('-on_board('):
             instrument, satellite = self.extract_multi_variable(fluent)
-            return f'{instrument} is not out of order on {satellite}'
+            return [
+                f'{instrument} is not out of order on {satellite}',
+                f'{satellite}\'s {instrument} is not out of order',
+                f'{instrument} which is on {satellite} is not out of order'
+            ]
 
+        # discovers (changed from "lacks")
         elif fluent.startswith('supports('):
             instrument, mode = self.extract_multi_variable(fluent)
-            return f'{instrument} lacks mode {mode}'  # lacks
+            return [
+                f'{instrument} discovers {mode}',
+                f'{mode} is discovered by {instrument}'
+            ]
         elif fluent.startswith('-supports('):
             instrument, mode = self.extract_multi_variable(fluent)
-            return f'{instrument} does not lack mode {mode}'
+            return [
+                f'{instrument} does not discover {mode}',
+                f'{mode} is not discovered by {instrument}'
+            ]
 
+        # moving
         elif fluent.startswith('pointing('):
             satellite, direction = self.extract_multi_variable(fluent)
-            return f'{satellite} is moving to {direction}'  # moving
+            return [
+                f'{satellite} is moving to {direction}',
+                f'{satellite} starts moving to {direction}'
+            ]
         elif fluent.startswith('-pointing('):
             satellite, direction = self.extract_multi_variable(fluent)
-            return f'{satellite} is not moving to {direction}'
+            return [
+                f'{satellite} is not moving to {direction}',
+                f'{satellite} does not start moving to {direction}'
+            ]
 
+        # orbiting
         elif fluent.startswith('power_avail('):
             satellite = self.extract_single_variable(fluent)
-            return f'{satellite} is orbiting'  # is orbiting
+            return [
+                f'{satellite} is orbiting',
+                f'{satellite} starts orbiting'
+            ]
         elif fluent.startswith('-power_avail('):
             satellite = self.extract_single_variable(fluent)
-            return f'{satellite} is not orbiting'
+            return [
+                f'{satellite} is not orbiting',
+                f'{satellite} stops orbiting'
+            ]
 
+        # not functioning
         elif fluent.startswith('power_on('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is functioning'  # not functioning
+            return [
+                f'{instrument} is functioning',
+                f'{instrument} is functioning properly',
+                f'{instrument} is not malfunctioning'
+            ]
         elif fluent.startswith('-power_on('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is not functioning'
+            return [
+                f'{instrument} is not functioning',
+                f'{instrument} is not functioning properly',
+                f'{instrument} is malfunctioning'
+            ]
 
+        # color (changed from "broken")
         elif fluent.startswith('calibrated('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is broken'  # is broken
+            return [
+                f'color of {instrument} is changed',
+                f'color of {instrument} is modified'
+            ]
         elif fluent.startswith('-calibrated('):
             instrument = self.extract_single_variable(fluent)
-            return f'{instrument} is not broken'
+            return [
+                f'color of {instrument} is not changed',
+                f'color of {instrument} is not modified'
+            ]
 
+        # block (changed from "inspecting")
         elif fluent.startswith('have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'the instrument is inspecting {direction}'  # inspecting
+            return [
+                f'{direction} is blocking {mode}',
+                f'{mode} is blocked by {direction}',
+                f'{direction} blocks {mode}'
+            ]
         elif fluent.startswith('-have_image('):
             direction, mode = self.extract_multi_variable(fluent)
-            return f'the instrument is not inspecting {direction}'
+            return [
+                f'{direction} is not blocking {mode}',
+                f'{mode} is not blocked by {direction}',
+                f'{direction} does not block {mode}'
+            ]
 
+        # maintenance
         elif fluent.startswith('calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
-            return f'{instrument} needs maintenance'  # needs maintenance
+            return [
+                f'{instrument} needs maintenance',
+                f'maintenance of {instrument} is required',
+                f'{instrument} is in need of maintenance'
+            ]
         elif fluent.startswith('-calibration_target('):
             instrument, direction = self.extract_multi_variable(fluent)
-            return f'{instrument} is not need maintenance'
+            return [
+                f'{instrument} does not need maintenance',
+                f'maintenance of {instrument} is not required',
+                f'{instrument} is not in need of maintenance'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # spins (changed from "pointed")
         if action.startswith('turn_to('):
             satellite, new_dir, old_dir = self.extract_multi_variable(action)
-            return f'{satellite} cannot be pointed towards {new_dir}'  # cannot be pointed towards
+            return [
+                f'{satellite} spins to {new_dir} from {old_dir}',
+                f'{satellite} spins from {old_dir} to {new_dir}',
+                f'from {old_dir}, {satellite} spins to {new_dir}'
+            ]
+        # fixed
         elif action.startswith('switch_on('):
             instrument, satellite = self.extract_multi_variable(action)
-            return f'{instrument} is being fixed'  # being fixed
+            return [
+                f'{instrument} is being fixed',
+                f'{instrument} is currently being fixed'
+            ]
+        # dead
         elif action.startswith('switch_off('):
             instrument, satellite = self.extract_multi_variable(action)
-            return f'{instrument} is dead'  # dead
+            return [
+                f'{instrument} is dead',
+                f'{instrument} ceased to function'
+            ]
+        # transmit information
         elif action.startswith('calibrate('):
             satellite, instrument, direction = self.extract_multi_variable(action)
-            return f'{satellite} transmits the information to {instrument}'  # transmits information
+            return [
+                f'{satellite} transmits the information to {instrument}',
+                f'information is transmitted to {instrument} from {satellite}',
+                f'transmittion of information is done from {satellite} to {instrument}'
+            ]
+        # crashes (changed from "scanned")
         elif action.startswith('take_image('):
             satellite, direction, instrument, mode = self.extract_multi_variable(action)
-            return f'{direction} is scanned with {instrument} on {satellite} with a calibrated camera'  # scanned calibrated camera
+            return [
+                f'{satellite} crashes while taking image in {direction}',
+                f'{satellite} crashes while capturing image in {direction}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 class Spanner(BaseDomain):
@@ -3005,124 +3176,274 @@ class Spanner(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
-            return f"{obj} is at {location}"
+            return [
+                f"{obj} is at {location}",
+                f'{obj} is located at {location}',
+                f'{obj} is currently at {location}'
+            ]
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
-            return f"{obj} is not at {location}"
+            return [
+                f"{obj} is not at {location}",
+                f'{obj} is not located at {location}',
+                f'{obj} is not currently at {location}'
+            ]
+        
         elif fluent.startswith('carrying('):
             man, spanner = self.extract_multi_variable(fluent)
-            return f"{man} is carrying {spanner}"
+            return [
+                f"{man} is carrying {spanner}",
+                f'{spanner} is carried by {man}',
+            ]
         elif fluent.startswith('-carrying('):
             man, spanner = self.extract_multi_variable(fluent)
-            return f'{man} is not carrying {spanner}'
+            return [
+                f"{man} is not carrying {spanner}",
+                f'{spanner} is not carried by {man}',
+            ]
+        
         elif fluent.startswith('useable('):
             spanner = self.extract_single_variable(fluent)
-            return f"{spanner} is usable"
+            return [
+                f"{spanner} is usable",
+                f'{spanner} can be used',
+                f'{spanner} is functional'
+            ]
         elif fluent.startswith('-useable('):
             spanner = self.extract_single_variable(fluent)
-            return f"{spanner} is not usable"
+            return [
+                f"{spanner} is not usable",
+                f'{spanner} can\'t be used',
+                f'{spanner} is not functional'
+            ]
+        
         elif fluent.startswith('tightened('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is tightened"
+            return [
+                f"{nut} is tightened",
+                f'tightening of {nut} is complete'
+            ]
         elif fluent.startswith('-tightened('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is not tightened"
+            return [
+                f"{nut} is not tightened",
+                f'tightening of {nut} is incomplete'
+            ]
+        
         elif fluent.startswith('loose('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is loose"
+            return [
+                f"{nut} is loose",
+                f'{nut} is not secured'
+            ]
         elif fluent.startswith('-loose('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is not loose"
+            return [
+                f"{nut} is not loose",
+                f'{nut} is secured'
+            ]
+        
         elif fluent.startswith('link('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return f"{location1} is linked to {location2}"
+            return [
+                f"{location1} is linked to {location2}",
+                f'{location1} and {location2} are linked',
+                f'a link between {location1} and {location2} exists'
+            ]
         elif fluent.startswith('-link('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return f"{location1} is not linked to {location2}"
+            return [
+                f"{location1} is not linked to {location2}",
+                f'{location1} and {location2} are not linked',
+                f'a link between {location1} and {location2} does not exist'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('walk'):
             start, end, man = self.extract_multi_variable(action)
-            return f"{man} walks from {start} to {end}"
+            return [
+                f"{man} walks from {start} to {end}",
+                f'{man} walks to {end} from {start}',
+                f'from {start} to {end}, {man} walks'
+            ]
         elif action.startswith('pick_up_spanner('):
             loc, spanner, man = self.extract_multi_variable(action)
-            return f"{man} picks up {spanner} from {loc}"
+            return [
+                f"{man} picks up {spanner} from {loc}",
+                f'from {loc}, {man} picks up {spanner}',
+                f'{spanner} is picked up by {man} from {loc}'
+            ]
         elif action.startswith('tighten_nut('):
             loc, spanner, man, nut = self.extract_multi_variable(action)
-            return f"{man} tightens {nut} with {spanner} at {loc}"
+            return [
+                f"{man} tightens {nut} with {spanner} at {loc}",
+                f'{nut} is tightened by {man} using {spanner} at {loc}',
+                f'at {loc}, {man} uses {spanner} to tighten {nut}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, location = self.extract_multi_variable(fluent)
+            # sleeping
             if obj.startswith('man'):
-                return f"{obj} is sleeping"  # sleeping
+                return [
+                    f"{obj} is sleeping",
+                    f'{obj} is currently sleeping',
+                    f'{obj} is napping'
+                ]
+            # sells (changed from "screwed")
             elif obj.startswith('nut'):
-                return f"{obj} is screwed"  # screwed
+                return [
+                    f'{obj} is sold at {location}',
+                    f'{obj} is currently sold at {location}',
+                    f'{obj} is sold at store at {location}'
+                ]
+            # at the store
             else:
-                return f"{obj} is at the store"  # is at the store
+                return [
+                    f"{obj} is at the store",
+                    f'{obj} is currently at the store',
+                    f'{obj} is at the store currently'
+                ]
         elif fluent.startswith('-at('):
             obj, location = self.extract_multi_variable(fluent)
+            # sleeping
             if obj.startswith('man'):
-                return f"{obj} is not sleeping"  # not sleeping
+                return [
+                    f"{obj} is not sleeping",
+                    f'{obj} is currently not sleeping',
+                    f'{obj} is not napping'
+                ]
+            # sells (changed from "screwed")
             elif obj.startswith('nut'):
-                return f"{obj} is not screwed"  # not screwed
+                return [
+                    f'{obj} is not sold at {location}',
+                    f'{obj} is currently not sold at {location}',
+                    f'{obj} is not sold at store at {location}'
+                ]
+            # at the store
             else:
-                return f"{obj} is not at the store"  # is not at the store
+                return [
+                    f"{obj} is not at the store",
+                    f'{obj} is currently not at the store',
+                    f'{obj} is not at the store currently'
+                ]
+        
+        # working
         elif fluent.startswith('carrying('):
             man, spanner = self.extract_multi_variable(fluent)
-            return f"{spanner} is working"  # working
+            return [
+                f"{spanner} is working",
+                f'{spanner} is in working condition',
+                f'{spanner} is useable'
+            ]
         elif fluent.startswith('-carrying('):
             man, spanner = self.extract_multi_variable(fluent)
-            return f'{man} is not working'
+            return [
+                f'{man} is not working',
+                f'{man} is idlying around',
+                f'{man} isn\'t working'
+            ]
 
+        # needed
         elif fluent.startswith('useable('):
             spanner = self.extract_single_variable(fluent)
-            return f"{spanner} is not needed"  # not needed
+            return [
+                f"{spanner} is not needed",
+                f'{spanner} is unnecessary',
+                f'{spanner} is not wanted'
+            ]
         elif fluent.startswith('-useable('):
             spanner = self.extract_single_variable(fluent)
-            return f"{spanner} is needed"  # needed
+            return [
+                f"{spanner} is needed",
+                f'{spanner} is necessary',
+                f'{spanner} is wanted'
+            ]
 
+        # lost
         elif fluent.startswith('tightened('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is lost"  # lost
+            return [
+                f"{nut} is lost",
+                f'{nut} has gone missing',
+                f'{nut} is not found'
+            ]
         elif fluent.startswith('-tightened('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is not lost"
+            return [
+                f"{nut} is not lost",
+                f'{nut} hasn\'t gone missing',
+                f'{nut} is found'
+            ]
 
+        # small
         elif fluent.startswith('loose('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is too small"
+            return [
+                f"{nut} is too small",
+                f'{nut} is insufficiently sized',
+                f'{nut} is not big enough'
+            ]
         elif fluent.startswith('-loose('):
             nut = self.extract_single_variable(fluent)
-            return f"{nut} is not too small"
+            return [
+                f"{nut} is not too small",
+                f'{nut} is suffiiently sized',
+                f'{nut} is big enough'
+            ]
 
+        # far away
         elif fluent.startswith('link('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return f"{location1} is far away from {location2}"
+            return [
+                f"{location1} is far away from {location2}",
+                f'{location1} and {location2} are far away from each other',
+                f'distance between {location1} and {location2} is big'
+            ]
         elif fluent.startswith('-link('):
             location1, location2 = self.extract_multi_variable(fluent)
-            return f"{location1} is not far away from {location2}"
+            return [
+                f"{location1} is not far away from {location2}",
+                f'{location1} and {location2} are not far away from each other',
+                f'distance between {location1} and {location2} is not big'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # eats, sleeps
         if action.startswith('walk'):
             start, end, man = self.extract_multi_variable(action)
-            return f"{man} eats at {start} and sleeps at {end}"  # eats, sleeps
+            return [
+                f"{man} eats at {start} and sleeps at {end}",
+                f'{man} sleeps at {end} and eats at {start}',
+                f'{man} eats and sleep at {start} and {end} respectively'
+            ]
+        # loses
         elif action.startswith('pick_up_spanner('):
             loc, spanner, man = self.extract_multi_variable(action)
-            return f"{man} loses {spanner} at {loc}"  # loses
+            return [
+                f"{man} loses {spanner} at {loc}",
+                f'at {loc}, {man} loses {spanner}',
+                f'{spanner} is lost by {man} at {loc}'
+            ]
+        # forgets
         elif action.startswith('tighten_nut('):
             loc, spanner, man, nut = self.extract_multi_variable(action)
-            return f"{man} forgets {spanner} at {loc}"  # forgets
+            return [
+                f"{man} forgets {spanner} at {loc}",
+                f'at {loc}, {man} forgets {spanner}',
+                f'{spanner} is forgotten by {man} at {loc}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 class Zenotravel(BaseDomain):
@@ -3178,112 +3499,231 @@ class Zenotravel(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, city = self.extract_multi_variable(fluent)
-            if obj.startswith('person'):
-                return f"{obj} is at {city}"
-            else:
-                return f"{obj} is at {city}"
+            return [
+                f"{obj} is at {city}",
+                f'{obj} is located at {city}',
+                f'{obj} is present at {city}'
+            ]
         elif fluent.startswith('-at('):
             obj, city = self.extract_multi_variable(fluent)
-            if obj.startswith('person'):
-                return f"{obj} is not at {city}"
-            else:
-                return f"{obj} is not at {city}"
+            return [
+                f"{obj} is not at {city}",
+                f'{obj} is not located at {city}',
+                f'{obj} is not present at {city}'
+            ]
         elif fluent.startswith('in('):
             person, aircraft = self.extract_multi_variable(fluent)
-            return f"{person} is in {aircraft}"
+            return [
+                f"{person} is in {aircraft}",
+                f'{person} is present in {aircraft}',
+                f'{person} is located in {aircraft}'
+            ]
         elif fluent.startswith('-in('):
             person, aircraft = self.extract_multi_variable(fluent)
-            return f"{person} is not in {aircraft}"
+            return [
+                f"{person} is not in {aircraft}",
+                f'{person} is not  present in {aircraft}',
+                f'{person} is not located in {aircraft}'
+            ]
         elif fluent.startswith('fuel_level('):
             aircraft, flevel = self.extract_multi_variable(fluent)
-            return f"{aircraft} has fuel level {flevel}"
+            return [
+                f"{aircraft} has fuel level {flevel}",
+                f'{aircraft}\'s current fuel-level is {flevel}',
+                f'{aircraft} possesses a fuel level of {flevel}'
+            ]
         elif fluent.startswith('-fuel_level('):
             aircraft, flevel = self.extract_multi_variable(fluent)
-            return f"{aircraft} does not have fuel level {flevel}"
+            return [
+                f"{aircraft} does not have fuel level {flevel}",
+                f'{aircraft}\'s current fuel-level is not {flevel}',
+                f'{aircraft} doesn\'t possesses a fuel level of {flevel}'
+            ]
         elif fluent.startswith('next('):
             fuel1, fuel2 = self.extract_multi_variable(fluent)
-            return f"fuel level {fuel2} is next to fuel level {fuel1}"
+            return [
+                f"fuel level {fuel2} is next to fuel level {fuel1}",
+                f'fuel-levels {fuel2} and {fuel1} are next to each other',
+                f'fuel level {fuel2} is next to {fuel1}'
+            ]
         elif fluent.startswith('-next('):
             fuel1, fuel2 = self.extract_multi_variable(fluent)
-            return f"fuel level {fuel2} is not next to fuel level {fuel1}"
+            return [
+                f"fuel level {fuel2} is not next to fuel level {fuel1}",
+                f'fuel-levels {fuel2} and {fuel1} are not next to each other',
+                f'fuel level {fuel2} is not next to {fuel1}'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)
-            return f"{person} boards {aircraft} at {city}"
+            return [
+                f"{person} boards {aircraft} at {city}",
+                f'{aircraft} is boarded by {person} at {city}',
+                f'at {city}, {person} boards {aircraft}'
+            ]
         elif action.startswith('debark('):
             person, aircraft, city = self.extract_multi_variable(action)
-            return f"{person} departs {aircraft} at {city}"
+            return [
+                f"{person} debarks {aircraft} at {city}",
+                f'{aircraft} is debarked by {person} at {city}',
+                f'at {city}, {person} debarks {aircraft}'
+            ]
         elif action.startswith('fly('):
             aircraft, city1, city2, fleve1, flevel2 = self.extract_multi_variable(action)
-            return f"{aircraft} flies from {city1} to {city2} with fuel level {fleve1} to {flevel2}"
+            return [
+                f"{aircraft} flies from {city1} to {city2} with fuel level {fleve1} to {flevel2}",
+                f'{aircraft} with fuel-levels {fleve1} to {flevel2} flies from {city1} to {city2}',
+                f'from {city1}, {aircraft} flies to {city2} with fuel level {flevel1} to {flevel2}'
+            ]
         elif action.startswith('zoom('):
             aircraft, city1, city2, fleve1, flevel2, flevel3 = self.extract_multi_variable(action)
-            return f"{aircraft} zooms from {city1} to {city2} with fuel level {fleve1} to {flevel3}"
+            return [
+                f"{aircraft} zooms from {city1} to {city2} with fuel level {fleve1} to {flevel3}",
+                f'{aircraft} with fuel-levels {fleve1} to {flevel3} zooms from {city1} to {city2}',
+                f'from {city1}, {aircraft} zooms to {city2} with fuel level {flevel1} to {flevel3}',
+                f"{aircraft} zooms from {city1} to {city2} and the fuel level drops from {fleve1} to {flevel3}"
+            ]
         elif action.startswith('refuel('):
             aircraft, city, flevel1, flevel2 = self.extract_multi_variable(action)
-            return f"{aircraft} gets refueled at {city} with fuel level {flevel1} to {flevel2}"
+            return [
+                f"{aircraft} gets refueled at {city} with fuel level {flevel1} to {flevel2}",
+                f'at {city}, {aircraft} gets refueled with fuel levels {fleve1} to {flevel2}',
+                f'{aircraft} with fuel-levels {flevel1} and {flevel2} gets refueled at {city}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
             obj, city = self.extract_multi_variable(fluent)
+            # explores
             if obj.startswith('person'):
-                return f"{obj} explores {city}"  # explores
+                return [
+                    f"{obj} explores {city}",
+                    f'{city} is explored by {obj}',
+                    f'{obj} is currently explorng {city}'
+                ]
+            # maintained
             else:
-                return f"{obj} is maintained"  # is maintained
+                return [
+                    f"{obj} is maintained",
+                    f'{obj} is maintained up-to-date',
+                    f'maintenance of {obj} is done'
+                ]
         elif fluent.startswith('-at('):
             obj, city = self.extract_multi_variable(fluent)
+            # explores
             if obj.startswith('person'):
-                return f"{obj} is not explore {city}"
+                return [
+                    f"{obj} does not explore {city}",
+                    f'{city} is not explored by {obj}',
+                    f'{obj} is currently not explorng {city}'
+                ]
+            # maintained
             else:
-                return f"{obj} is not maintained"
+                return [
+                    f"{obj} is not maintained",
+                    f'{obj} is not maintained up-to-date',
+                    f'maintenance of {obj} is not done'
+                ]
+        
+        # jumps (changed from "boarding")
         elif fluent.startswith('in('):
             person, aircraft = self.extract_multi_variable(fluent)
-            return f"{person} is boarding {aircraft}"  # boarding
+            return [
+                f'{person} jumps from {aircraft}',
+                f'{person} jumps out of {aircraft}',
+                f'{person} jumps out from {aircraft}'
+            ]
         elif fluent.startswith('-in('):
             person, aircraft = self.extract_multi_variable(fluent)
-            return f"{person} is not boarding {aircraft}"
+            return [
+                f'{person} does not jump from {aircraft}',
+                f'{person} does not jump out of {aircraft}',
+                f'{person} does not jump out from {aircraft}'
+            ]
 
+        # leak
         elif fluent.startswith('fuel_level('):
             aircraft, flevel = self.extract_multi_variable(fluent)
-            return f"{aircraft} has a fuel leak"  # leak
+            return [
+                f"{aircraft} has a fuel leak",
+                f'a fuel leak in {aircraft} is present',
+                f'fuel is leaking from {aircraft}'
+            ]
         elif fluent.startswith('-fuel_level('):
             aircraft, flevel = self.extract_multi_variable(fluent)
-            return f"{aircraft} does not have a fuel leak"
+            return [
+                f"{aircraft} does not have a fuel leak",
+                f'a fuel leak in {aircraft} is not present',
+                f'fuel is not leaking from {aircraft}'
+            ]
 
+        # interchangeable (changed from "smaller than")
         elif fluent.startswith('next('):
             fuel1, fuel2 = self.extract_multi_variable(fluent)
-            return f"the fuel level {fuel2} is smaller than {fuel1}"  # smaller than
+            return [
+                f'{fuel1} and {fuel2} are interchangeable',
+                f'{fuel1} can be replaced by {fuel2}',
+                f'{fuel1} and {fuel2} are exchangeable',
+            ]
         elif fluent.startswith('-next('):
             fuel1, fuel2 = self.extract_multi_variable(fluent)
-            return f"the fuel level {fuel2} is not is smaller than fuel level {fuel1}"
+            return [
+                f'{fuel1} and {fuel2} are not interchangeable',
+                f'{fuel1} cannot be replaced by {fuel2}',
+                f'{fuel1} and {fuel2} are not exchangeable',
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # changes
         if action.startswith('board('):
             person, aircraft, city = self.extract_multi_variable(action)
-            return f"{person} changes {aircraft} at {city}"  # changes
+            return [
+                f"{person} changes {aircraft} at {city}",
+                f'at {city}, {person} changes {aircraft}',
+                f'{aircraft} is changed by {person} at {city}'
+            ]
+        # forgets
         elif action.startswith('debark('):
             person, aircraft, city = self.extract_multi_variable(action)
-            return f"{person} forgets to board {aircraft} at {city}"  # forgets
+            return [
+                f"{person} forgets to board {aircraft} at {city}",
+                f'at {city}, {person} forgets to board {aircraft}',
+            ]
+        # maintenance
         elif action.startswith('fly('):
             aircraft, city1, city2, fleve1, flevel2 = self.extract_multi_variable(action)
-            return f"{aircraft} is in {city1} then flies for maintenance to {city2}"  # maintenance
+            return [
+                f"{aircraft} is in {city1} then flies for maintenance to {city2}",
+                f'{aircraft} flies to {city2} for maintenance from {city1}',
+                f'from {city1}, {aircraft} flies from {city1} to {city2} for maintenance'
+            ]
+        # crashes (changed from "consumes")
         elif action.startswith('zoom('):
             aircraft, city1, city2, fleve1, flevel2, flevel3 = self.extract_multi_variable(action)
-            return f"{aircraft} consumes the fuel level {fleve1} and {flevel3}"  # consumes
+            return [
+                f'{aircraft} flies from {city1} and crashes at {city2}',
+                f'{aircraft} crashes at {city2} after flying from {city1}',
+                f'{aircraft} crashes at {city2} after flying from {city1}'
+            ]
+        # bombing (changed from "maintain and refuel")
         elif action.startswith('refuel('):
             aircraft, city, flevel1, flevel2 = self.extract_multi_variable(action)
-            return f"{aircraft} goes for maitnance at location {city} and refueled with fuel {flevel1}"  # maintained and refueled
+            return [
+                f'{aircraft} goes for bombing at {city} and with fuel levels {flevel1} and {flevel2}',
+                f'{aircraft} bombs at {city} with fuel levels {flevel1} and {flevel2}',
+                f'at {city}, {aircraft} bombs with fuel levels {flevel1} and {flevel2}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 class Visitall(BaseDomain):
@@ -3308,72 +3748,150 @@ class Visitall(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('at_robot('):
             place = self.extract_single_variable(fluent)
-            return f"robot is at {place}"
+            return [
+                f"robot is at {place}",
+                f'robot is located at {place}',
+                f'robot is placed at {place}'
+            ]
         elif fluent.startswith('-at_robot('):
             place = self.extract_single_variable(fluent)
-            return f"robot is not at {place}"
+            return [
+                f"robot is not at {place}",
+                f'robot is not located at {place}',
+                f'robot is not placed at {place}'
+            ]
+        
         elif fluent.startswith('connected('):
             place1, place2 = self.extract_multi_variable(fluent)
-            return f"{place1} is connected to {place2}"
+            return [
+                f"{place1} is connected to {place2}",
+                f'{place1} and {place2} are connected',
+                f'there is a connection between {place1} and {place2}'
+            ]
         elif fluent.startswith('-connected('):
             place1, place2 = self.extract_multi_variable(fluent)
-            return f"{place1} is not connected to {place2}"
+            return [
+                f"{place1} is not connected to {place2}",
+                f'{place1} and {place2} are not connected',
+                f'there is no connection between {place1} and {place2}'
+            ]
+        
         elif fluent.startswith('visited('):
             place = self.extract_single_variable(fluent)
-            return f"{place} is visited"
+            return [
+                f"{place} is visited",
+                f'{place} is marked as visited'
+            ]
         elif fluent.startswith('-visited('):
             place = self.extract_single_variable(fluent)
-            return f"{place} is not visited"
+            return [
+                f"{place} is not visited",
+                f'{place} is not marked as visited'
+            ]
+        
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
-            return f"moves from {place1} to {place2}"
+            return [
+                f"moves from {place1} to {place2}",
+                f'robot moves from {place1} to {place2}',
+                f'from {place1}, the robot moves to {place2}',
+                f'moves to {place2} from {place1}',
+                f'robot moves from {place1} to {place2}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
+        # stuck
         if fluent.startswith('at_robot('):
             place = self.extract_multi_variable(fluent)
-            return f"robot is stuck at {place}"  # stuck
+            return [
+                f"robot is stuck at {place}",
+                f'robot is trapped at {place}',
+                f'at {place}, the robot is stuck'
+            ]
         elif fluent.startswith('-at_robot('):
             place = self.extract_multi_variable(fluent)
-            return f"robot is not stuck at {place}"
+            return [
+                f"robot is not stuck at {place}",
+                f'robot is not trapped at {place}',
+                f'at {place}, the robot is not stuck'
+            ]
 
+        # far from
         elif fluent.startswith('connected('):
             place1, place2 = self.extract_multi_variable(fluent)
-            return f"{place1} is far from to {place2}"  # far from
+            return [
+                f"{place1} is far from to {place2}",
+                f'{place1} and {place2} are far from each other',
+                f'{place1} is distant from {place2}'
+            ]
         elif fluent.startswith('-connected('):
             place1, place2 = self.extract_multi_variable(fluent)
-            return f"{place1} is not far from to {place2}"
+            return [
+                f"{place1} is not far from to {place2}",
+                f'{place1} and {place2} are not far from each other',
+                f'{place1} is not distant from {place2}'
+            ]
 
+        # observed
         elif fluent.startswith('visited('):
             place = self.extract_single_variable(fluent)
-            return f"{place} is observed"  # observed
+            return [
+                f"{place} is observed",
+                f'{place} is being observed',
+                f'observation of {place} is taken'
+            ]
         elif fluent.startswith('-visited('):
             place = self.extract_single_variable(fluent)
-            return f"{place} is not observed"
-
+            return [
+                f"{place} is not observed",
+                f'{place} is not being observed',
+                f'observation of {place} is not taken'
+            ]
         else:
-            raise 'fluent is not defined'
+            raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # jump
         if action.startswith('move('):
             place1, place2 = self.extract_multi_variable(action)
-            return f"jump from {place1} to {place2}"  # jump
+            return [
+                f"jumps from {place1} to {place2}",
+                f'robot jumps from {place1} to {place2}',
+                f'from {place1}, the robot jumps to {place2}',
+                f'jumps to {place2} from {place1}',
+                f'robot jumps from {place1} to {place2}'
+            ]
         else:
-            raise 'action is not defined'
+            raise Exception('action is not defined')
 
 
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
                       Satellite, Spanner, Visitall, Zenotravel]
 
 if __name__ == '__main__':
-    dom = Blocksworld(is_random_sub=False, is_ramifications=True)
-    print(dom.domain_description)
-    dom = Blocksworld(is_random_sub=True, is_ramifications=True)
-    print(dom.domain_description)
+    # dom = Blocksworld(is_random_sub=False, is_ramifications=True)
+    # print(dom.domain_description)
+    # dom = Blocksworld(is_random_sub=True, is_ramifications=True)
+    # print(dom.domain_description)
+
+    domain = Visitall(is_random_sub=True, is_ramifications=True)
+    print(domain.action_to_natural_language('move(p1,p2)'))
+    print(domain.action_to_natural_language('move(p1,p2)'))
+    print(domain.action_to_natural_language('move(p1,p2)'))
+
+    # domain = Visitall(is_random_sub=True, is_ramifications=False)
+    # print(domain.fluent_to_natural_language('at_robot(p)'))
+    # print(domain.fluent_to_natural_language('at_robot(p)'))
+    # print(domain.fluent_to_natural_language('at_robot(p)'))
+    # print(domain.fluent_to_natural_language('at_robot(p)'))
+
+    # domain = Depots(is_random_sub=False, is_ramifications=False)
+    # print(domain.fluent_to_natural_language('-clear(box2)', is_hallucinated=True))
