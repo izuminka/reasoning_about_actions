@@ -94,6 +94,7 @@ class BaseDomain:
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
     DERIVED_FLUENTS = ['clear(', 'handempty','-clear(','-handempty(']
+    PERSISTENT_FLUENTS = ['holding(', 'on(', '-holding(', '-on(']
     DOMAIN_DESC_WITHOUT_RAM = (
         'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
         'By picking up that block, it makes that block not present on the table and not clear. '
@@ -382,7 +383,8 @@ class Depots(BaseDomain):
         "A truck can be only at one location. "
         "A crate can only be at one location. "
         "A crate can only be on top of one surface. ")
-    DERIVED_FLUENTS = ['clear(', 'available(']
+    DERIVED_FLUENTS = ['clear(', 'available(','-clear(','-available(']
+    PERSISTENT_FLUENTS = ['at(', 'on(', 'in(', 'lifting(', '-at(', '-on(', '-in(', '-lifting(']
 
     SUBSTRINGS_TO_RAND = {
         'surface': 'fshxjwxean', 'surfaces': 'fshxjwxean',
@@ -697,8 +699,8 @@ class Driverlog(BaseDomain):
         "A driver is driving the truck if and only if the driver is not at a location "
         "An object can only be at one location. "
         "A driver can only be at one location.")
-    DERIVED_FLUENTS = ['empty']
-
+    DERIVED_FLUENTS = ['empty','-empty']
+    PERSISTENT_FLUENTS = ['at(', 'in(', 'driving(', '-at(', '-in(', '-driving(']
     SUBSTRINGS_TO_RAND = {
         'truck': 'zkkizjecwh', 'trucks': 'zkkizjecwh',
         'object': 'omkfkvxwrg', 'objects': 'omkfkvxwrg',
@@ -1062,7 +1064,8 @@ class Goldminer(BaseDomain):
         "The place is clear if and only if it does not contain any soft rock, gold, or hard rock. "
         "The robot is holding a laser if and only if the laser is not at a location. ")
 
-    DERIVED_FLUENTS = ['arm_empty', 'clear(']
+    DERIVED_FLUENTS = ['arm_empty', 'clear(','-clear(','-arm_empty']
+    PERSISTENT_FLUENTS = ['robot_at(','gold_at(','-robot_at(','-gold_at(']
     SUBSTRINGS_TO_RAND = {
         'robot': 'oiycijmjmo',
         'laser': 'jaakaxcemj',
@@ -1553,7 +1556,8 @@ class Goldminer(BaseDomain):
 
 class Grippers(BaseDomain):
     DOMAIN_NAME = 'grippers'
-    DERIVED_FLUENTS = ['free']
+    DERIVED_FLUENTS = ['free','-free']
+    PERSISTENT_FLUENTS = ['at_robby(','-at_robby(','at(','-at(']
     DOMAIN_DESC_WITHOUT_RAM = (
         'A robot can move from a specified room if it is in that room. '
         'Moving the robot causes it to be not in the said room but in the destination room. '
@@ -1804,6 +1808,7 @@ class Logistics(BaseDomain):
         "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
         "A truck can only be at one location at a time. A plane can only be in one location at a time.")
     DERIVED_FLUENTS = []  # kept this empty because no derived fluents for this domain
+    PERSISTENT_FLUENTS = ['at(', '-at(', 'in(', '-in(', 'in_city(', '-in_city(']
     SUBSTRINGS_TO_RAND = {
         'package': 'tnzistccqp', 'packages': 'tnzistccqp',
         'truck': 'pvcuetihtl', 'trucks': 'pvcuetihtl',
@@ -2032,7 +2037,8 @@ class Miconic(BaseDomain):
 
         "A lift can only be on one floor at a time. "
         "If the passenger is served, then the passenger is not boarded.")
-    DERIVED_FLUENTS = []  # TODO double check
+    DERIVED_FLUENTS = ['served','-served']  # TODO double check
+    PERSISTENT_FLUENTS = ['origin(','-origin(','destin(','-destin(','-lift_at(','lift_at(']
     SUBSTRINGS_TO_RAND = {
         # 'up': 'lfapuhgnsn',
         # 'down': 'mmphaaxcri',
@@ -2329,6 +2335,7 @@ class Mystery(BaseDomain):
         "The location's fuel level is unique. "
         "The vehicle's amount of space is unique. ")
     DERIVED_FLUENTS = []  # TODO double check
+    PERSISTENT_FLUENTS = ['at(','-at(','fuel_neighbor(','-fuel_neighbor(','in','-in','space_neighbor','-space_neighbor','has_fuel','-has_fuel','has_space','-has_space']
     SUBSTRINGS_TO_RAND = {
         'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
         'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
@@ -2796,7 +2803,8 @@ class Satellite(BaseDomain):
 
         "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
         "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
-    DERIVED_FLUENTS = ['power_avail(']
+    DERIVED_FLUENTS = ['power_avail(','-power_avail(']
+    PERSISTENT_FLUENTS = ['on_board(','-on_board(','pointing(','-pointing(']
     SUBSTRINGS_TO_RAND = {
         'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
         'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
