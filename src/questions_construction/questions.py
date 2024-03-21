@@ -51,7 +51,7 @@ OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
 
 PLAN_LENGTHS = [1, 5, 10, 15, 19]
-QUESTION_MULTIPLICITY = 4
+QUESTION_MULTIPLICITY = 2
 
 # from nltk.stem import WordNetLemmatizer
 # from nltk.corpus import wordnet

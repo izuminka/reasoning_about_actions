@@ -1916,7 +1916,7 @@ class Logistics(BaseDomain):
         else:
             raise Exception('action is not defined')
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # capital (changed from "outside") 
         if fluent.startswith('in_city('):
             place, city = self.extract_multi_variable(fluent)
@@ -2168,7 +2168,7 @@ class Miconic(BaseDomain):
             raise Exception('action is not defined')
 
 
-    def fluent_to_hallucinated_natural_language(self, fluent):
+    def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # stairs (changed from "wait")
         if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
@@ -3573,25 +3573,25 @@ class Zenotravel(BaseDomain):
                 f'at {city}, {person} debarks {aircraft}'
             ]
         elif action.startswith('fly('):
-            aircraft, city1, city2, fleve1, flevel2 = self.extract_multi_variable(action)
+            aircraft, city1, city2, flevel1, flevel2 = self.extract_multi_variable(action)
             return [
-                f"{aircraft} flies from {city1} to {city2} with fuel level {fleve1} to {flevel2}",
-                f'{aircraft} with fuel-levels {fleve1} to {flevel2} flies from {city1} to {city2}',
+                f"{aircraft} flies from {city1} to {city2} with fuel level {flevel1} to {flevel2}",
+                f'{aircraft} with fuel-levels {flevel1} to {flevel2} flies from {city1} to {city2}',
                 f'from {city1}, {aircraft} flies to {city2} with fuel level {flevel1} to {flevel2}'
             ]
         elif action.startswith('zoom('):
-            aircraft, city1, city2, fleve1, flevel2, flevel3 = self.extract_multi_variable(action)
+            aircraft, city1, city2, flevel1, flevel2, flevel3 = self.extract_multi_variable(action)
             return [
-                f"{aircraft} zooms from {city1} to {city2} with fuel level {fleve1} to {flevel3}",
-                f'{aircraft} with fuel-levels {fleve1} to {flevel3} zooms from {city1} to {city2}',
+                f"{aircraft} zooms from {city1} to {city2} with fuel level {flevel1} to {flevel3}",
+                f'{aircraft} with fuel-levels {flevel1} to {flevel3} zooms from {city1} to {city2}',
                 f'from {city1}, {aircraft} zooms to {city2} with fuel level {flevel1} to {flevel3}',
-                f"{aircraft} zooms from {city1} to {city2} and the fuel level drops from {fleve1} to {flevel3}"
+                f"{aircraft} zooms from {city1} to {city2} and the fuel level drops from {flevel1} to {flevel3}"
             ]
         elif action.startswith('refuel('):
             aircraft, city, flevel1, flevel2 = self.extract_multi_variable(action)
             return [
                 f"{aircraft} gets refueled at {city} with fuel level {flevel1} to {flevel2}",
-                f'at {city}, {aircraft} gets refueled with fuel levels {fleve1} to {flevel2}',
+                f'at {city}, {aircraft} gets refueled with fuel levels {flevel1} to {flevel2}',
                 f'{aircraft} with fuel-levels {flevel1} and {flevel2} gets refueled at {city}'
             ]
         else:

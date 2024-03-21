@@ -11,6 +11,19 @@ QUESTION_CLASSES = [ObjectTrackingQuestions,
 QUESTION_CATEGORIES = [q_class.question_category() for q_class in QUESTION_CLASSES]
 
 
+def ramifications_keyword(is_ramifications):
+    if is_ramifications:
+        return WITH_RAMIFICATIONS
+    else:
+        return WITHOUT_RAMIFICATIONS
+
+
+def random_sub_keyword(is_random_sub):
+    if is_random_sub:
+        return WITH_RANDOM_SUB
+    else:
+        return WITHOUT_RANDOM_SUB
+
 class AllQuestions:
     def __init__(self, jsonl_instance, domain_class, instance_id, question_multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):
         self.jsonl_instance = jsonl_instance
@@ -44,31 +57,20 @@ class AllQuestions:
 
 
 if __name__ == '__main__':
-    # domain = Zenotravel()
-    # i = 1
-    # instance_name = f'Instance_{i}'
-    # jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-    # all_questions = AllQuestions(jsonl_instance, domain, instance_name)
-    # all_questions.generate_all_questions()
-    # all_questions.save_questions()
-
-    # for domain_class in ALL_DOMAIN_CLASSES:
-    #     domain = domain_class()
-    #     print(domain.DOMAIN_NAME)
-    #     i = 1
-    #     instance_name = f'Instance_{i}'
-    #     jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-    #     all_questions = AllQuestions(jsonl_instance, domain, instance_name)
-    #     all_questions.generate_all_questions()
-    #     all_questions.save_questions()
-
+    question_multiplicity = 1
+    is_random_sub = False
     for domain_class in ALL_DOMAIN_CLASSES:
-        domain = domain_class()
-        print(domain.DOMAIN_NAME)
-        for i in range(1, 11):
-            print(i)
-            instance_name = f'Instance_{i}'
-            jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-            all_questions = AllQuestions(jsonl_instance, domain, instance_name)#, question_multiplicity=multiplicity, plan_lengths=plan_lengths)
-            all_questions.generate_all_questions()
-            all_questions.save_questions()
+        for is_ramifications in [True, False]:
+            domain = domain_class(is_random_sub=is_random_sub, is_ramifications=is_ramifications)
+            # for i in range(1, 11):
+            for i in range(1, 2):
+                instance_name = f'Instance_{i}'
+                jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
+                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', ramifications_keyword(is_ramifications), random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
+                if os.path.exists(save_dir):
+                    continue
+
+                all_questions = AllQuestions(jsonl_instance, domain, instance_name, question_multiplicity=question_multiplicity)
+                all_questions.generate_all_questions()
+                all_questions.save_questions(save_dir)
+        print(domain.DOMAIN_NAME, 'done')
