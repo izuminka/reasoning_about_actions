@@ -122,18 +122,38 @@ class Blocksworld(BaseDomain):
         "The block can only be at one place at a time.")
 
     # FOR RANDOM SUBSTITUTIONS
-    OBJ_TYPE_TO_RAND = {'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs'}
-    ACTION_TO_RAND = {'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
-                      'put down': 'xskgihccqt', 'puts down': 'xskgihccqt', 'putting down': 'xskgihccqt',
-                      'stack': 'oscckwdtoh', 'stacks': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
-                      'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo',
-                      'unstacked': 'wxqdwukszo'}
-    FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
-                      # 'clear': 'ormkfgqwve',
-                       'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
-                      # 'empty': 'yqttlkcqqj',
-                      'hand': 'egpbpdtalq'}
-    SUBSTRINGS_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
+    OBJ_TYPE_TO_RAND = {
+        'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs',
+        'hand': 'egpbpdtalq',
+        'table': 'gcbwvwyvkv'
+    }
+    FLUENT_TO_RAND = {
+        'on':'wtuwjwbuja', 'on top of': 'wtuwjwbuja', 'placed on top': 'wtuwjwbuja',
+        'on the table': 'zewwtdxhfs', 'located on the table': 'zewwtdxhfs',
+        # 'clear': 'ormkfgqwve',
+        'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp', 'being held': 'casqqrrojp',
+        # 'empty': 'yqttlkcqqj'
+    }
+    ACTION_TO_RAND = {
+        'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
+        'put down': 'xskgihccqt', 'puts down': 'xskgihccqt', 'putting down': 'xskgihccqt',
+        'stack': 'oscckwdtoh', 'stacks': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
+        'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo', 'unstacked': 'wxqdwukszo'
+    }
+    HALLUCINATED_FLUENT_TO_RAND = {
+        'switched': 'pueupbojkz', 'swapped': 'pueupbojkz', 'exchanged': 'pueupbojkz',
+        'lost': 'xzeywfsucg', 'become lost': 'xzeywfsucg',
+        'being thrown': 'zjzqfzjvqz', 'been thrown': 'zjzqfzjvqz',
+        'under the table': 'iqvpbljrxy', 'positioned under the table': 'iqvpbljrxy',
+        'broken': 'jmqpdsymid', 'now broken': 'jmqpdsymid', 'broken anymore': 'jmqpdsymid',
+    }
+    HALLUCINATED_ACTION_TO_RAND = {
+        'crushed': 'qvyqxotjqc', 'crushes': 'qvyqxotjqc',
+        'glued': 'infnjzlsvf',
+        'placed inside': 'erhgolynpo', 'inserted inside': 'erhgolynpo', 'put inside': 'erhgolynpo',
+        'crashed': 'yqyqjvzjxw',
+    }
+    SUBSTRINGS_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND | HALLUCINATED_FLUENT_TO_RAND | HALLUCINATED_ACTION_TO_RAND
 
     def fluent_to_natural_language_helper(self, fluent):
         if fluent.startswith('on('):
@@ -166,13 +186,13 @@ class Blocksworld(BaseDomain):
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is on the table',
-                f'block {b} is located at the table'
+                f'block {b} is located on the table'
             ]
         elif fluent.startswith('-ontable('):
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not on the table',
-                f'block {b} is not located at the table'
+                f'block {b} is not located on the table'
             ]
 
         elif fluent.startswith('holding('):
@@ -236,18 +256,20 @@ class Blocksworld(BaseDomain):
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
-        # under
+        # switched (changed from "under")
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return [
-                f'block {b1} is under block {b2}',
-                f'block {b1} is positioned under block {b2}'
+                f'block {b1} is switched with block {b2}',
+                f'block {b1} is swapped with block {b2}',
+                f'block {b2} is exhanged with block {b1}'
             ]
         elif fluent.startswith('-on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return [
-                f'block {b1} is not under block {b2}',
-                f'block {b1} is not positioned under block {b2}'
+                f'block {b1} is not switched with block {b2}',
+                f'block {b1} is not swapped with block {b2}',
+                f'block {b2} is not exchanged with block {b1}'
             ]
 
         # lost
@@ -261,7 +283,7 @@ class Blocksworld(BaseDomain):
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not lost',
-                f'block {b} has not been lost'
+                f'block {b} has not become lost'
             ]
 
         # thrown
@@ -309,31 +331,31 @@ class Blocksworld(BaseDomain):
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         
-        # lift
+        # crush (changed from "lift")
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
             return [
-                f'block {block_name} is lifted',
-                f'block {block_name} is lifted by the hand',
-                f'the hand lifts the block {block_name}'
+                f'block {block_name} is crushed',
+                f'block {block_name} is crushed by the hand',
+                f'the hand crushes the block {block_name}'
             ]
         
-        # lower
+        # glue (changed from "lower")
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
             return [
-                f'block {block_name} is lowered',
-                f'block {block_name} is lowered by the hand',
-                f'block {block_name} is lowered to the table'
+                f'block {block_name} is glued',
+                f'block {block_name} is glued by the hand',
+                f'block {block_name} is glued to the table'
             ]
         
-        # remove
+        # inside (changed from "remove")
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
             return [
-                f'block {b1} is removed from block {b2}',
-                f'block {b1} is removed from top of block {b2}'
-                f'from top of block {b2}, block {b1} is removed'
+                f'block {b1} is placed inside block {b2}',
+                f'block {b1} is inserted inside block {b2}',
+                f'block {b1} is put inside block {b2}'
             ]
         
         # crashed
