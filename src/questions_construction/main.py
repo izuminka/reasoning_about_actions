@@ -11,13 +11,6 @@ QUESTION_CLASSES = [ObjectTrackingQuestions,
 QUESTION_CATEGORIES = [q_class.question_category() for q_class in QUESTION_CLASSES]
 
 
-def ramifications_keyword(is_ramifications):
-    if is_ramifications:
-        return WITH_RAMIFICATIONS
-    else:
-        return WITHOUT_RAMIFICATIONS
-
-
 def random_sub_keyword(is_random_sub):
     if is_random_sub:
         return WITH_RANDOM_SUB

@@ -2,22 +2,34 @@ import json
 from pathlib import Path
 from promping_stencils import *
 import sys
-
 sys.path.append('../../')
-from questions_construction.domains import *
+sys.path.append('../../../')
+from src.questions_construction.domains import *
+from src.common import *
 
 # pip install -q -U google-generativeai
 import google.generativeai as genai
-
 with open('gemini.api.key') as f:
     GEMINI_API_KEY = f.read()
 genai.configure(api_key=GEMINI_API_KEY)
 
 # pip install openai
 from openai import OpenAI
-
 OPENAI_API_KEY = ''
 client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+# PATHS
+PROMPTS_PATH = os.path.join(DATA_PATH, 'prompts')
+PROMPTS_PATH_WITHOUT_RAMIFICATIONS = os.path.join(PROMPTS_PATH, WITHOUT_RAMIFICATIONS)
+PROMPTS_PATH_WITH_RAMIFICATIONS = os.path.join(PROMPTS_PATH, WITH_RAMIFICATIONS)
+
+RESULTS_WITHOUT_RAMIFICATIONS = os.path.join(RESULTS_PATH, WITHOUT_RAMIFICATIONS)
+RESULTS_WITH_RAMIFICATIONS = os.path.join(RESULTS_PATH, WITH_RAMIFICATIONS)
+for path in [PROMPTS_PATH_WITHOUT_RAMIFICATIONS, PROMPTS_PATH_WITH_RAMIFICATIONS, RESULTS_WITHOUT_RAMIFICATIONS, RESULTS_WITH_RAMIFICATIONS]:
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 
 LLAMA_SYSTEM_PROMPT = '''You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.'''

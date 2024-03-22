@@ -80,3 +80,9 @@ def open_jsonl(path):
 def save_jsonl(data, save_path):
     with jsonlines.open(save_path, 'w') as w:
         w.write_all(data)
+
+def ramifications_keyword(is_ramifications):
+    if is_ramifications:
+        return WITH_RAMIFICATIONS
+    else:
+        return WITHOUT_RAMIFICATIONS
