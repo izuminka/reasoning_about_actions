@@ -176,10 +176,7 @@ class QuestionGenerationHelpers:
 
     def extract_fluents_types_for_state(self, fluents_given_plan, fluents_prefixes):
         "Extracts the base fluents for each time step"
-        fluents = []
-        for fluents_timestep in fluents_given_plan:
-            fluents.append(self.extract_fluents_based_on_prefix(fluents_timestep, fluents_prefixes))
-        return fluents
+        return [self.extract_fluents_based_on_prefix(fluents_timestep, fluents_prefixes) for fluents_timestep in fluents_given_plan]
 
     def extract_base_fluents_for_state(self, is_pos_fluent=True):
         "Extracts the base fluents for each time step"
@@ -208,9 +205,11 @@ class QuestionGenerationHelpers:
         elif fluent_type == DERIVED_FLUENTS:
             pos_fluents = self.derived_pos_fluents[plan_length]
             neg_fluents = self.derived_neg_fluents[plan_length]
-        else:
+        elif fluent_type == PERSISTENT_FLUENTS:
             pos_fluents = self.persistent_pos_fluents[plan_length]
             neg_fluents = self.persistent_neg_fluents[plan_length]
+        else:
+            raise ValueError(f'Undefined fluent type {fluent_type}')
         return pos_fluents, neg_fluents
 
     def get_random_inexecutable_sequence(self, plan_length):
