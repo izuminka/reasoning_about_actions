@@ -201,26 +201,6 @@ class QuestionGenerationHelpers:
         else:
             return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.PERSISTENT_NEG_FLUENTS)
 
-    def extract_base_fluents(self, fluent_list):
-        base_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.BASE_POS_FLUENTS)
-        base_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.BASE_NEG_FLUENTS)
-        return base_pos_fluents, base_neg_fluents
-
-    def extract_derived_fluents(self, fluent_list):
-        derived_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.DERIVED_POS_FLUENTS)
-        derived_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.DERIVED_NEG_FLUENTS)
-        return derived_pos_fluents, derived_neg_fluents
-
-    def extract_persistent_fluents(self, fluent_list):
-        persistent_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.PERSISTENT_POS_FLUENTS)
-        persistent_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.PERSISTENT_NEG_FLUENTS)
-        return persistent_pos_fluents, persistent_neg_fluents
-
-    def extract_static_fluents(self, fluent_list):
-        static_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.STATIC_POS_FLUENTS)
-        static_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.STATIC_NEG_FLUENTS)
-        return static_pos_fluents, static_neg_fluents
-
     def get_pos_neg_fluents_for_fluent_type(self, plan_length, fluent_type=DEFAULT_FLUENT):
         if fluent_type == DEFAULT_FLUENT:
             pos_fluents = self.base_pos_fluents[plan_length]
