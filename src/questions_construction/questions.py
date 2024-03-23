@@ -270,6 +270,14 @@ class QuestionGenerationHelpers:
         corrupted_actions[random_break_ind] = random_inxecutable_action
         return corrupted_actions, random_break_ind
 
+    def sequence_of_actions(self, plan_length, is_answer_true):
+        if not is_answer_true:
+            sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
+        else:
+            sequence_of_actions = self.given_plan_sequence[:plan_length]
+            random_break_ind = random.randint(0, plan_length - 1)
+        return sequence_of_actions, random_break_ind
+
 
 class QuestionGenerator(QuestionGenerationHelpers):
     digit_regex = '\d+'
@@ -701,14 +709,6 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_category():
         return 'action_executability'
 
-    def sequence_of_actions(self, plan_length, is_answer_true):
-        if not is_answer_true:
-            sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
-        else:
-            sequence_of_actions = self.given_plan_sequence[:plan_length]
-            random_break_ind = random.randint(0, plan_length - 1)
-        return sequence_of_actions, random_break_ind
-
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         sequence_of_actions, _random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
@@ -1103,5 +1103,22 @@ class CompositeQuestions(QuestionGenerator):
     def question_category():
         return 'composite_questions'
 
+    def nl_question_prefix_custom(self, nl_actions, is_planned=False):
+        if is_planned:
+            prefix = ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX
+        else:
+            prefix = ACTIONS_ARE_PERFORMED_PREFIX
+        return f"{prefix} {nl_actions} to reach the current state."
+
     def question_1(self, plan_length):
-        pass
+        is_answer_true = random.choice([True, False])
+        actions, random_break = self.sequence_of_actions(plan_length, is_answer_true)
+        nl_actions = self.nl_actions(actions)
+        is_planned = True
+        question = f"{self.nl_question_prefix_custom(nl_actions, is_planned)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? Return None is all are feasable"
+        if is_answer_true:
+            raise ValueError('Implement This')
+        else:
+            answer = 'None'
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_1.__name__, plan_length)
+
