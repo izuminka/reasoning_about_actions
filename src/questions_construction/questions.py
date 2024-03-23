@@ -56,7 +56,6 @@ STATIC_FLUENTS = 'STATIC_FLUENTS'
 STATIC_POS_FLUENTS = 'STATIC_POS_FLUENTS'
 STATIC_NEG_FLUENTS = 'STATIC_NEG_FLUENTS'
 
-
 PART_OF_THE_STATE = 'part of the state'
 MAX_TIMEOUT = 100
 
@@ -65,6 +64,7 @@ SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
 
 PLAN_LENGTHS = [1, 5, 10, 15, 19]
 QUESTION_MULTIPLICITY = 2
+
 
 # from nltk.stem import WordNetLemmatizer
 # from nltk.corpus import wordnet
@@ -164,123 +164,64 @@ class QuestionGenerationHelpers:
     def extract_inexecutable_actions(self):
         """extracts the inexecutable actions for each time step"""
         return self.extract_actions(is_executable=False)
-    
-    def extract_base_fluents_for_state(self,is_pos_fluent=True):
+
+    @staticmethod
+    def extract_fluents_based_on_prefix(fluent_list_for_state, fluents_prefixes):
+        fluents = []
+        for item in fluent_list_for_state:
+            for prefix in fluents_prefixes:
+                if item.startswith(prefix):
+                    fluents.append(item)
+        return fluents
+
+    def extract_fluents_types_for_state(self, fluents_given_plan, fluents_prefixes):
         "Extracts the base fluents for each time step"
-        base_fluents = []
-        if is_pos_fluent:            
-            for timestep in self.pos_fluents_given_plan:
-                base_fluents_for_timestep = []
-                for item in timestep:
-                    for prefix in self.domain_class.BASE_POS_FLUENTS:
-                        if item.startswith(prefix):
-                            base_fluents_for_timestep.append(item)
-                base_fluents.append(base_fluents_for_timestep)
+        fluents = []
+        for fluents_timestep in fluents_given_plan:
+            fluents.append(self.extract_fluents_based_on_prefix(fluents_timestep, fluents_prefixes))
+        return fluents
+
+    def extract_base_fluents_for_state(self, is_pos_fluent=True):
+        "Extracts the base fluents for each time step"
+        if is_pos_fluent:
+            return self.extract_fluents_types_for_state(self.pos_fluents_given_plan, self.domain_class.BASE_POS_FLUENTS)
         else:
-            for timestep in self.neg_fluents_given_plan:
-                base_fluents_for_timestep = []
-                for item in timestep:
-                    for prefix in self.domain_class.BASE_NEG_FLUENTS:
-                        if item.startswith(prefix):
-                            base_fluents_for_timestep.append(item)
-                base_fluents.append(base_fluents_for_timestep)
-        return base_fluents
-    
-    def extract_derived_fluents_for_state(self,is_pos_fluent=True):
+            return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.BASE_NEG_FLUENTS)
+
+    def extract_derived_fluents_for_state(self, is_pos_fluent=True):
         "Extracts the derived fluents for each time step"
-        derived_fluents = []
-        if is_pos_fluent:            
-            for timestep in self.pos_fluents_given_plan:
-                derived_fluents_for_timestep = []
-                for item in timestep:
-                    for prefix in self.domain_class.DERIVED_POS_FLUENTS:
-                        if item.startswith(prefix):
-                            derived_fluents_for_timestep.append(item)
-                derived_fluents.append(derived_fluents_for_timestep)
+        if is_pos_fluent:
+            return self.extract_fluents_types_for_state(self.pos_fluents_given_plan, self.domain_class.DERIVED_POS_FLUENTS)
         else:
-            for timestep in self.neg_fluents_given_plan:
-                derived_fluents_for_timestep = []
-                for item in timestep:
-                    for prefix in self.domain_class.DERIVED_NEG_FLUENTS:
-                        if item.startswith(prefix):
-                            derived_fluents_for_timestep.append(item)
-                derived_fluents.append(derived_fluents_for_timestep)
-        return derived_fluents
-    
-    def extract_persistent_fluents_for_state(self,is_pos_fluent=True):
-        persistent_fluents = []
-        if is_pos_fluent:            
-            for timestep in self.pos_fluents_given_plan:
-                persistent_fluents_for_timestep = []
-                for item in timestep:
-                    for prefix in self.domain_class.PERSISTENT_POS_FLUENTS:
-                        if item.startswith(prefix):
-                            persistent_fluents_for_timestep.append(item)
-                persistent_fluents.append(persistent_fluents_for_timestep)
+            return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.DERIVED_NEG_FLUENTS)
+
+    def extract_persistent_fluents_for_state(self, is_pos_fluent=True):
+        if is_pos_fluent:
+            return self.extract_fluents_types_for_state(self.pos_fluents_given_plan, self.domain_class.PERSISTENT_POS_FLUENTS)
         else:
-            for timestep in self.neg_fluents_given_plan:
-                persistent_fluents_for_timestep = []
-                for item in timestep:
-                    for prefix in self.domain_class.PERSISTENT_NEG_FLUENTS:
-                        if item.startswith(prefix):
-                            persistent_fluents_for_timestep.append(item)
-                persistent_fluents.append(persistent_fluents_for_timestep)
-        return persistent_fluents
-        
-    
+            return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.PERSISTENT_NEG_FLUENTS)
+
     def extract_base_fluents(self, fluent_list):
-        base_pos_fluents = []
-        base_neg_fluents = []
-        for item in fluent_list:
-            for prefix in self.domain_class.BASE_POS_FLUENTS:
-                if item.startswith(prefix):
-                    base_pos_fluents.append(item)
-        for item in fluent_list:
-            for prefix in self.domain_class.BASE_NEG_FLUENTS:
-                if item.startswith(prefix):
-                    base_neg_fluents.append(item)
+        base_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.BASE_POS_FLUENTS)
+        base_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.BASE_NEG_FLUENTS)
         return base_pos_fluents, base_neg_fluents
-    
+
     def extract_derived_fluents(self, fluent_list):
-        derived_pos_fluents = []
-        derived_neg_fluents = []
-        for item in fluent_list:
-            for prefix in self.domain_class.DERIVED_POS_FLUENTS:
-                if item.startswith(prefix):
-                    derived_pos_fluents.append(item)
-        for item in fluent_list:
-            for prefix in self.domain_class.DERIVED_NEG_FLUENTS:
-                if item.startswith(prefix):
-                    derived_neg_fluents.append(item)
+        derived_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.DERIVED_POS_FLUENTS)
+        derived_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.DERIVED_NEG_FLUENTS)
         return derived_pos_fluents, derived_neg_fluents
-    
+
     def extract_persistent_fluents(self, fluent_list):
-        persistent_pos_fluents = []
-        persistent_neg_fluents = []
-        for item in fluent_list:
-            for prefix in self.domain_class.PERSISTENT_POS_FLUENTS:
-                if item.startswith(prefix):
-                    persistent_pos_fluents.append(item)
-        for item in fluent_list:
-            for prefix in self.domain_class.PERSISTENT_NEG_FLUENTS:
-                if item.startswith(prefix):
-                    persistent_neg_fluents.append(item)
+        persistent_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.PERSISTENT_POS_FLUENTS)
+        persistent_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.PERSISTENT_NEG_FLUENTS)
         return persistent_pos_fluents, persistent_neg_fluents
-    
+
     def extract_static_fluents(self, fluent_list):
-        static_pos_fluents = []
-        static_neg_fluents = []
-        for item in fluent_list:
-            for prefix in self.domain_class.STATIC_POS_FLUENTS:
-                if item.startswith(prefix):
-                    static_pos_fluents.append(item)
-        for item in fluent_list:
-            for prefix in self.domain_class.STATIC_NEG_FLUENTS:
-                if item.startswith(prefix):
-                    static_neg_fluents.append(item)
+        static_pos_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.STATIC_POS_FLUENTS)
+        static_neg_fluents = self.extract_fluents_based_on_prefix(fluent_list, self.domain_class.STATIC_NEG_FLUENTS)
         return static_pos_fluents, static_neg_fluents
-    
-    def get_pos_neg_fluents_for_fluent_type(self,plan_length,fluent_type=DEFAULT_FLUENT):
+
+    def get_pos_neg_fluents_for_fluent_type(self, plan_length, fluent_type=DEFAULT_FLUENT):
         if fluent_type == DEFAULT_FLUENT:
             pos_fluents = self.base_pos_fluents[plan_length]
             neg_fluents = self.base_neg_fluents[plan_length]
@@ -318,9 +259,8 @@ class QuestionGenerationHelpers:
     def is_substring_within_parentheses(input_string, substring):
         pattern = re.compile(SUBSTRING_WITHIN_PARENTHESIS_REGEX.format(re.escape(substring)))
         return bool(pattern.search(input_string))
-    
-    
-    def fluents_for_obj(self, obj, plan_length, is_true_fluents=True,fluent_type=DEFAULT_FLUENT):
+
+    def fluents_for_obj(self, obj, plan_length, is_true_fluents=True, fluent_type=DEFAULT_FLUENT):
         fluents_for_object = []
         if fluent_type == DEFAULT_FLUENT:
             if is_true_fluents:
@@ -341,25 +281,24 @@ class QuestionGenerationHelpers:
             if self.is_substring_within_parentheses(fluent, obj):
                 fluents_for_object.append(fluent)
         return fluents_for_object
-    
+
     def pos_fluents_base_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True,fluent_type=DEFAULT_FLUENT)
-    
+        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DEFAULT_FLUENT)
+
     def neg_fluents_base_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False,fluent_type=DEFAULT_FLUENT)
-    
+        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DEFAULT_FLUENT)
+
     def pos_fluents_derived_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True,fluent_type=DERIVED_FLUENTS)
-    
+        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DERIVED_FLUENTS)
+
     def neg_fluents_derived_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False,fluent_type=DERIVED_FLUENTS)
-    
+        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DERIVED_FLUENTS)
+
     def pos_fluents_persistent_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True,fluent_type=PERSISTENT_FLUENTS)
-    
+        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=PERSISTENT_FLUENTS)
+
     def neg_fluents_persistent_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False,fluent_type=PERSISTENT_FLUENTS)
-    
+        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=PERSISTENT_FLUENTS)
 
     def object_type_by_object_name(self):
         by_object_name = {}
@@ -418,7 +357,6 @@ class QuestionGenerationHelpers:
 class QuestionGenerator(QuestionGenerationHelpers):
     digit_regex = '\d+'
     word_regex = '[a-zA-Z]+'
-    
 
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -543,9 +481,8 @@ class ObjectTrackingQuestions(QuestionGenerator):
     @staticmethod
     def select_fluents_with_vars(fluents):
         return [f for f in fluents if ObjectTrackingQuestions.is_variable_in_fluent(f)]
-    
-    
-    def get_fluent_type_for_object_tracking(self,obj,plan_length,fluent_type=DEFAULT_FLUENT):
+
+    def get_fluent_type_for_object_tracking(self, obj, plan_length, fluent_type=DEFAULT_FLUENT):
         if fluent_type == DEFAULT_FLUENT:
             pos_fluents = self.pos_fluents_base_for_object(obj, plan_length)
             neg_fluents = self.neg_fluents_base_for_object(obj, plan_length)
@@ -556,19 +493,19 @@ class ObjectTrackingQuestions(QuestionGenerator):
             pos_fluents = self.pos_fluents_persistent_for_object(obj, plan_length)
             neg_fluents = self.neg_fluents_persistent_for_object(obj, plan_length)
         return pos_fluents, neg_fluents
-    
-    
+
     def question_1_2_helper(self, plan_length, is_pos_fluent_question, is_answer_true, min_chosen_fluents=1,
-                            timeout=MAX_TIMEOUT,fluent_type=DEFAULT_FLUENT):
+                            timeout=MAX_TIMEOUT, fluent_type=DEFAULT_FLUENT):
         chosen_fluents = []
         while len(chosen_fluents) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
-            pos_fluents, neg_fluents = self.get_fluent_type_for_object_tracking(obj, plan_length,fluent_type)
+            pos_fluents, neg_fluents = self.get_fluent_type_for_object_tracking(obj, plan_length, fluent_type)
             # print(pos_fluents,neg_fluents)
             if not (len(pos_fluents) and len(neg_fluents)):
                 timeout -= 1
                 continue
-            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents,neg_fluents)
+            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents,
+                                                          neg_fluents)
             if min_chosen_fluents <= len(fluents):
                 num_samples = random.randint(min_chosen_fluents, len(fluents))
                 chosen_fluents = random.sample(fluents, num_samples)
@@ -579,48 +516,59 @@ class ObjectTrackingQuestions(QuestionGenerator):
         nl_fluents = self.nl_fluents(chosen_fluents)
         return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {nl_fluents}?"
 
-
     def question_1(self, plan_length):
         is_pos_fluent_question = True
         is_answer_true = random.choice([True, False])
         fluent_type = DEFAULT_FLUENT
-        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,fluent_type=fluent_type)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length,fluent_type)
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,
+                                            fluent_type=fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length,
+                                   fluent_type)
 
     def question_2(self, plan_length):
         is_pos_fluent_question = False
         is_answer_true = random.choice([True, False])
         fluent_type = DEFAULT_FLUENT
-        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,fluent_type=fluent_type)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length,fluent_type)
-    
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,
+                                            fluent_type=fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length,
+                                   fluent_type)
+
     def question_3(self, plan_length):
         is_pos_fluent_question = True
         is_answer_true = random.choice([True, False])
         fluent_type = DERIVED_FLUENTS
-        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,fluent_type=fluent_type)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_3.__name__, plan_length,fluent_type)
-    
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,
+                                            fluent_type=fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_3.__name__, plan_length,
+                                   fluent_type)
+
     def question_4(self, plan_length):
         is_pos_fluent_question = False
         is_answer_true = random.choice([True, False])
         fluent_type = DERIVED_FLUENTS
-        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,fluent_type=fluent_type)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_4.__name__, plan_length,fluent_type)
-    
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,
+                                            fluent_type=fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_4.__name__, plan_length,
+                                   fluent_type)
+
     def question_5(self, plan_length):
         is_pos_fluent_question = True
         is_answer_true = random.choice([True, False])
         fluent_type = PERSISTENT_FLUENTS
-        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,fluent_type=fluent_type)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_5.__name__, plan_length,fluent_type)
-    
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,
+                                            fluent_type=fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_5.__name__, plan_length,
+                                   fluent_type)
+
     def question_6(self, plan_length):
         is_pos_fluent_question = False
         is_answer_true = random.choice([True, False])
         fluent_type = PERSISTENT_FLUENTS
-        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,fluent_type=fluent_type)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_6.__name__, plan_length,fluent_type)
+        question = self.question_1_2_helper(plan_length, is_pos_fluent_question, is_answer_true,
+                                            fluent_type=fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_6.__name__, plan_length,
+                                   fluent_type)
 
     def question_7(self, plan_length):
         random_object_type = random.choice(list(self.objects_by_type.keys()))
@@ -631,11 +579,11 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
     def question_8(self, plan_length):
         random_object_type = random.choice(list(self.objects_by_type.keys()))
-        random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])))
+        random_objects = random.sample(self.objects_by_type[random_object_type],
+                                       random.randint(1, len(self.objects_by_type[random_object_type])))
         nl_random_objects = asp_to_nl(random_objects, lambda x: x)
         question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
         return self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_4.__name__, plan_length)
-
 
 
 class FluentTrackingQuestions(QuestionGenerator):
@@ -645,27 +593,26 @@ class FluentTrackingQuestions(QuestionGenerator):
     @staticmethod
     def question_category():
         return 'fluent_tracking'
-    
-    
-    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name,fluent_type=DEFAULT_FLUENT):
+
+    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name, fluent_type=DEFAULT_FLUENT):
         is_answer_true = random.choice([True, False])
-        pos_fluent, neg_fluent = self.get_pos_neg_fluents_for_fluent_type(plan_length,fluent_type)
+        pos_fluent, neg_fluent = self.get_pos_neg_fluents_for_fluent_type(plan_length, fluent_type)
         if len(pos_fluent) == 0 or len(neg_fluent) == 0:
             return None
         else:
             pos_fluent = random.choice(pos_fluent)
             neg_fluent = random.choice(neg_fluent)
-        fluent = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+        fluent = \
+        self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
-    
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
-    def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name,fluent_type=DEFAULT_FLUENT):
+    def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name, fluent_type=DEFAULT_FLUENT):
         is_answer_true = random.choice([True, False])
-        pos_fluent,neg_fluent = self.get_pos_neg_fluents_for_fluent_type(plan_length,fluent_type)
+        pos_fluent, neg_fluent = self.get_pos_neg_fluents_for_fluent_type(plan_length, fluent_type)
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluent, neg_fluent)
         question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
     def qa_5_6_helper(self, plan_length, is_pos_fluent_question, question_name, timeout=MAX_TIMEOUT):
         fluents = []
@@ -688,22 +635,22 @@ class FluentTrackingQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = DEFAULT_FLUENT
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_1.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_1.__name__, fluent_type)
 
     def question_2(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = DEFAULT_FLUENT
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_2.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_2.__name__, fluent_type)
 
     def question_3(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = DEFAULT_FLUENT
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_3.__name__,fluent_type)
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_3.__name__, fluent_type)
 
     def question_4(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = DEFAULT_FLUENT
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_4.__name__,fluent_type)
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_4.__name__, fluent_type)
 
     def question_5(self, plan_length):
         is_pos_fluent_question = True
@@ -712,49 +659,46 @@ class FluentTrackingQuestions(QuestionGenerator):
     def question_6(self, plan_length):
         is_pos_fluent_question = False
         return self.qa_5_6_helper(plan_length, is_pos_fluent_question, self.question_6.__name__)
-    
-    def question_7(self,plan_length):
+
+    def question_7(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_7.__name__,fluent_type)
-    
-    def question_8(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_7.__name__, fluent_type)
+
+    def question_8(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__,fluent_type)
-    
-    def question_9(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__, fluent_type)
+
+    def question_9(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = DERIVED_FLUENTS
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_9.__name__,fluent_type)
-    
-    def question_10(self,plan_length):
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_9.__name__, fluent_type)
+
+    def question_10(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = DERIVED_FLUENTS
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_10.__name__,fluent_type)
-    
-    def question_11(self,plan_length):
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_10.__name__, fluent_type)
+
+    def question_11(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_11.__name__,fluent_type)
-    
-    def question_12(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_11.__name__, fluent_type)
+
+    def question_12(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_12.__name__,fluent_type)
-    
-    def question_13(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_12.__name__, fluent_type)
+
+    def question_13(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_13.__name__,fluent_type)
-    
-    def question_14(self,plan_length):
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_13.__name__, fluent_type)
+
+    def question_14(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_14.__name__,fluent_type)
-    
-        
-        
+        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_14.__name__, fluent_type)
 
 
 class StateTrackingQuestions(QuestionGenerator):
@@ -764,16 +708,14 @@ class StateTrackingQuestions(QuestionGenerator):
     @staticmethod
     def question_category():
         return 'state_tracking'
-    
 
-
-    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name,fluent_type=DEFAULT_FLUENT):
+    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name, fluent_type=DEFAULT_FLUENT):
         is_answer_true = random.choice([True, False])
-        pos_fluent, neg_fluent = self.get_pos_neg_fluents_for_fluent_type(plan_length,fluent_type)
+        pos_fluent, neg_fluent = self.get_pos_neg_fluents_for_fluent_type(plan_length, fluent_type)
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluent, neg_fluent)
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} are all of the following properties: {nl_fluents}, correct? Respond with {TRUE_OR_FALSE}."
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
     def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name):
         if is_pos_fluent_question:
@@ -789,12 +731,12 @@ class StateTrackingQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = DEFAULT_FLUENT
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_1.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_1.__name__, fluent_type)
 
     def question_2(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = DEFAULT_FLUENT
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_2.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_2.__name__, fluent_type)
 
     def question_3(self, plan_length):
         is_pos_fluent_question = True
@@ -803,28 +745,26 @@ class StateTrackingQuestions(QuestionGenerator):
     def question_4(self, plan_length):
         is_pos_fluent_question = False
         return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_4.__name__)
-    
-    def question_5(self,plan_length):
+
+    def question_5(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_5.__name__,fluent_type)
-    
-    def question_6(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_5.__name__, fluent_type)
+
+    def question_6(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_6.__name__,fluent_type)
-    
-    def question_7(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_6.__name__, fluent_type)
+
+    def question_7(self, plan_length):
         is_pos_fluent_question = True
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_7.__name__,fluent_type)
-    
-    def question_8(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_7.__name__, fluent_type)
+
+    def question_8(self, plan_length):
         is_pos_fluent_question = False
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__,fluent_type)
-    
-    
+        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__, fluent_type)
 
 
 def corrupt_action_sequence(true_actions, inexecutable_actions_timestep, plan_length):
@@ -860,7 +800,8 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         if not is_answer_true:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length], self.inexecutable_actions, plan_length)
+            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
+                                                                            self.inexecutable_actions, plan_length)
         else:
             sequence_of_actions = self.given_plan_sequence[:plan_length]
             random_break_ind = random.randint(0, plan_length - 1)
@@ -908,24 +849,24 @@ class EffectsQuestions(QuestionGenerator):
             return f"{INITIAL_CONDITION_PREFIX},"
         else:
             return f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
-        
-    def derived_fluents(self,fluents_list):
+
+    def derived_fluents(self, fluents_list):
         derived_fluents = []
         for item in fluents_list:
             for prefix in self.domain_class.DERIVED_FLUENTS:
                 if item.startswith(prefix):
                     derived_fluents.append(item)
         return derived_fluents
-    
-    def persistent_fluents(self,fluents_list):
+
+    def persistent_fluents(self, fluents_list):
         persistent_fluents = []
         for item in fluents_list:
             for prefix in self.domain_class.PERSISTENT_FLUENTS:
                 if item.startswith(prefix):
                     persistent_fluents.append(item)
         return persistent_fluents
-    
-    def base_fluents(self,fluents_list):
+
+    def base_fluents(self, fluents_list):
         base_fluents = []
         for item in fluents_list:
             for prefix in self.domain_class.BASE_FLUENTS:
@@ -933,10 +874,12 @@ class EffectsQuestions(QuestionGenerator):
                     base_fluents.append(item)
         return base_fluents
 
-    def qa_1_2_helper(self, plan_length, is_answer_true, question_name,fluent_type=DEFAULT_FLUENT):
+    def qa_1_2_helper(self, plan_length, is_answer_true, question_name, fluent_type=DEFAULT_FLUENT):
         action = self.given_plan_sequence[plan_length]
-        fluents_current_state = set(self.pos_fluents_given_plan[plan_length]).union(set(self.neg_fluents_given_plan[plan_length]))
-        fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1]).union(set(self.neg_fluents_given_plan[plan_length + 1]))
+        fluents_current_state = set(self.pos_fluents_given_plan[plan_length]).union(
+            set(self.neg_fluents_given_plan[plan_length]))
+        fluents_next_state = set(self.pos_fluents_given_plan[plan_length + 1]).union(
+            set(self.neg_fluents_given_plan[plan_length + 1]))
         fluents_new_minus_old = fluents_next_state - fluents_current_state
         if is_answer_true:
             fluents = fluents_new_minus_old
@@ -946,18 +889,18 @@ class EffectsQuestions(QuestionGenerator):
             fluents = self.corrupted_not_corrupted_mix(list(fluents_new_minus_old), list(corrupted_fluents))
             fluents = random.sample(fluents, len(fluents_new_minus_old))
         fluents = list(fluents)
-        if fluent_type==DERIVED_FLUENTS:
+        if fluent_type == DERIVED_FLUENTS:
             fluents = self.derived_fluents(fluents)
-        elif fluent_type==PERSISTENT_FLUENTS:
+        elif fluent_type == PERSISTENT_FLUENTS:
             fluents = self.persistent_fluents(fluents)
         else:
             fluents = self.base_fluents(fluents)
         random.shuffle(fluents)
-        if len(fluents)==0:
+        if len(fluents) == 0:
             return None
         else:
             question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
     def qa_3_4_helper(self, plan_length, is_positive_fluents_question, question_name):
         action = self.given_plan_sequence[plan_length]
@@ -972,11 +915,11 @@ class EffectsQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         fluent_type = DEFAULT_FLUENT
-        return self.qa_1_2_helper(plan_length, True, self.question_1.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, True, self.question_1.__name__, fluent_type)
 
     def question_2(self, plan_length):
         fluent_type = DEFAULT_FLUENT
-        return self.qa_1_2_helper(plan_length, False, self.question_2.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, False, self.question_2.__name__, fluent_type)
 
     def question_3(self, plan_length):
         is_positive_fluents_question = True
@@ -985,24 +928,24 @@ class EffectsQuestions(QuestionGenerator):
     def question_4(self, plan_length):
         is_positive_fluents_question = False
         return self.qa_3_4_helper(plan_length, is_positive_fluents_question, self.question_4.__name__)
-    
-    def question_5(self,plan_length):
+
+    def question_5(self, plan_length):
         is_positive_fluents_question = True
         fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_positive_fluents_question, self.question_5.__name__,fluent_type)
-    
-    def question_6(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_positive_fluents_question, self.question_5.__name__, fluent_type)
+
+    def question_6(self, plan_length):
         is_positive_fluents_question = False
         fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_positive_fluents_question, self.question_6.__name__,fluent_type)
-    
-    def question_7(self,plan_length):
+        return self.qa_1_2_helper(plan_length, is_positive_fluents_question, self.question_6.__name__, fluent_type)
+
+    def question_7(self, plan_length):
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, True, self.question_7.__name__,fluent_type)
-    
-    def question_8(self,plan_length):
+        return self.qa_1_2_helper(plan_length, True, self.question_7.__name__, fluent_type)
+
+    def question_8(self, plan_length):
         fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, False, self.question_8.__name__,fluent_type)
+        return self.qa_1_2_helper(plan_length, False, self.question_8.__name__, fluent_type)
 
 
 class NumericalReasoningQuestions(QuestionGenerator):
@@ -1033,17 +976,20 @@ class NumericalReasoningQuestions(QuestionGenerator):
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         total_objects = len(self.all_objects)
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects, self.question_1.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects,
+                                         self.question_1.__name__)
 
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions_count = len(self.executable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'executable actions', actions_count, self.question_2.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'executable actions', actions_count,
+                                         self.question_2.__name__)
 
     def question_3(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions_count = len(self.inexecutable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count, self.question_3.__name__)
+        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count,
+                                         self.question_3.__name__)
 
     def question_4(self, plan_length):
         is_answer_true = random.choice([True, False])
@@ -1229,7 +1175,8 @@ class HallucinationQuestions(QuestionGenerator):
             actions = self.given_plan_sequence[:plan_length]
             random_int = random.randint(0, len(actions) - 1)
             nl_selected_action = self.domain_class.action_to_natural_language(actions[random_int])
-            nl_hallucinated_action = self.domain_class.action_to_natural_language(actions[random_int], is_hallucinated=True)
+            nl_hallucinated_action = self.domain_class.action_to_natural_language(actions[random_int],
+                                                                                  is_hallucinated=True)
             nl_actions = self.nl_actions(actions).replace(nl_selected_action, nl_hallucinated_action)
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_actions} {postfix}."
             answer = nl_hallucinated_action
