@@ -261,24 +261,6 @@ class QuestionGenerationHelpers:
                 fluents_for_object.append(fluent)
         return fluents_for_object
 
-    def pos_fluents_base_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DEFAULT_FLUENT)
-
-    def neg_fluents_base_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DEFAULT_FLUENT)
-
-    def pos_fluents_derived_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DERIVED_FLUENTS)
-
-    def neg_fluents_derived_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DERIVED_FLUENTS)
-
-    def pos_fluents_persistent_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=PERSISTENT_FLUENTS)
-
-    def neg_fluents_persistent_for_object(self, obj, plan_length):
-        return self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=PERSISTENT_FLUENTS)
-
     def object_type_by_object_name(self):
         by_object_name = {}
         for obj_type, objects in self.objects_by_type.items():
@@ -463,14 +445,16 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
     def get_fluent_type_for_object_tracking(self, obj, plan_length, fluent_type=DEFAULT_FLUENT):
         if fluent_type == DEFAULT_FLUENT:
-            pos_fluents = self.pos_fluents_base_for_object(obj, plan_length)
-            neg_fluents = self.neg_fluents_base_for_object(obj, plan_length)
+            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DEFAULT_FLUENT)
+            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DEFAULT_FLUENT)
         elif fluent_type == DERIVED_FLUENTS:
-            pos_fluents = self.pos_fluents_derived_for_object(obj, plan_length)
-            neg_fluents = self.neg_fluents_derived_for_object(obj, plan_length)
+            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DERIVED_FLUENTS)
+            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DERIVED_FLUENTS)
+        elif fluent_type == PERSISTENT_FLUENTS:
+            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=PERSISTENT_FLUENTS)
+            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=PERSISTENT_FLUENTS)
         else:
-            pos_fluents = self.pos_fluents_persistent_for_object(obj, plan_length)
-            neg_fluents = self.neg_fluents_persistent_for_object(obj, plan_length)
+            raise ValueError(f'Undefined fluent type {fluent_type}')
         return pos_fluents, neg_fluents
 
     def question_1_2_helper(self, plan_length, is_pos_fluent_question, is_answer_true, min_chosen_fluents=1,
