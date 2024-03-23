@@ -263,6 +263,13 @@ class QuestionGenerationHelpers:
                                                            [f"-{f}" for f in pos_fluents])  # add the '-' sign
         return fluents
 
+    def corrupt_action_sequence(self, plan_length):
+        corrupted_actions = deepcopy(self.given_plan_sequence[:plan_length])
+        random_break_ind = random.randint(0, plan_length - 1)
+        random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
+        corrupted_actions[random_break_ind] = random_inxecutable_action
+        return corrupted_actions, random_break_ind
+
 
 class QuestionGenerator(QuestionGenerationHelpers):
     digit_regex = '\d+'
@@ -686,14 +693,6 @@ class StateTrackingQuestions(QuestionGenerator):
         return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__, fluent_type)
 
 
-def corrupt_action_sequence(true_actions, inexecutable_actions_timestep, plan_length):
-    corrupted_actions = deepcopy(true_actions)
-    random_break_ind = random.randint(0, plan_length - 1)
-    random_inxecutable_action = random.choice(inexecutable_actions_timestep[random_break_ind])
-    corrupted_actions[random_break_ind] = random_inxecutable_action
-    return corrupted_actions, random_break_ind
-
-
 class ActionExecutabilityQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -702,28 +701,24 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def question_category():
         return 'action_executability'
 
-    def qa_1_2_helper(self, nl_sequence_of_actions):
-        return
+    def sequence_of_actions(self, plan_length, is_answer_true):
+        if not is_answer_true:
+            sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
+        else:
+            sequence_of_actions = self.given_plan_sequence[:plan_length]
+            random_break_ind = random.randint(0, plan_length - 1)
+        return sequence_of_actions, random_break_ind
 
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
-        if not is_answer_true:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
-                                                                            self.inexecutable_actions, plan_length)
-        else:
-            sequence_of_actions = self.given_plan_sequence[:plan_length]
+        sequence_of_actions, _random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
         nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
 
     def question_2(self, plan_length):
         is_answer_true = random.choice([True, False])
-        if not is_answer_true:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
-                                                                            self.inexecutable_actions, plan_length)
-        else:
-            sequence_of_actions = self.given_plan_sequence[:plan_length]
-            random_break_ind = random.randint(0, plan_length - 1)
+        sequence_of_actions, random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
         selected_action = sequence_of_actions[random_break_ind]
 
         nl_sequence_of_actions = self.nl_actions(sequence_of_actions)
@@ -747,8 +742,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
             question = f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
             return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER, self.question_5.__name__, plan_length)
         else:
-            sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
-                                                                            self.inexecutable_actions, plan_length)
+            sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
             inexecutable_action = sequence_of_actions[random_break_ind]
             question = f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
             return self.qa_data_object(question, self.domain_class.action_to_natural_language(inexecutable_action),
@@ -945,8 +939,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_9.__name__, is_planned=True)
 
     def question_10(self, plan_length):
-        sequence_of_actions, random_break_ind = corrupt_action_sequence(self.given_plan_sequence[:plan_length],
-                                                                        self.inexecutable_actions, plan_length)
+        sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
         prefix = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
         question = f"{prefix} what is the number of actions that led to the current state in the sequence before the first inexecutable action? Write as a decimal. {NONE_STATEMENT}."
 
