@@ -927,10 +927,10 @@ class EffectsQuestions(QuestionGenerator):
     
     def base_fluents(self,fluents_list):
         base_fluents = []
-        persistent_fluents = self.persistent_fluents(fluents_list)
-        derived_fluents = self.derived_fluents(fluents_list)
-        combined_list = persistent_fluents + derived_fluents
-        base_fluents = [x for x in fluents_list if x not in combined_list]
+        for item in fluents_list:
+            for prefix in self.domain_class.BASE_FLUENTS:
+                if item.startswith(prefix):
+                    base_fluents.append(item)
         return base_fluents
 
     def qa_1_2_helper(self, plan_length, is_answer_true, question_name,fluent_type=DEFAULT_FLUENT):
