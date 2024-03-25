@@ -104,7 +104,7 @@ class QuestionGenerationHelpers:
 
     def __init__(self, states_actions_all, domain_class, instance_id):
         self.states_actions_all = states_actions_all
-        # self.data[i] defines all action->states at time i, i==0 is NULL->initial state
+        # self.states_actions_all[i] defines all action->states at time i, i==0 is NULL->initial state
         self.init_state = self.states_actions_all[0][INIT_ACTION_KEY]  # initial state
         self.objects_by_type = self.init_state[OBJECTS_KEY]
         self.object_type_by_object_name = self.object_type_by_object_name()
@@ -119,12 +119,18 @@ class QuestionGenerationHelpers:
         self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
-        self.base_pos_fluents = self.extract_base_fluents_for_state(is_pos_fluent=True)
-        self.base_neg_fluents = self.extract_base_fluents_for_state(is_pos_fluent=False)
-        self.derived_pos_fluents = self.extract_derived_fluents_for_state(is_pos_fluent=True)
-        self.derived_neg_fluents = self.extract_derived_fluents_for_state(is_pos_fluent=False)
-        self.persistent_pos_fluents = self.extract_persistent_fluents_for_state(is_pos_fluent=True)
-        self.persistent_neg_fluents = self.extract_persistent_fluents_for_state(is_pos_fluent=False)
+        self.base_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
+                                                                     self.domain_class.BASE_POS_FLUENTS)
+        self.base_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
+                                                                     self.domain_class.BASE_NEG_FLUENTS)
+        self.derived_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
+                                                                        self.domain_class.DERIVED_POS_FLUENTS)
+        self.derived_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
+                                                                        self.domain_class.DERIVED_NEG_FLUENTS)
+        self.persistent_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
+                                                                           self.domain_class.PERSISTENT_POS_FLUENTS)
+        self.persistent_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
+                                                                           self.domain_class.PERSISTENT_NEG_FLUENTS)
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
@@ -176,27 +182,8 @@ class QuestionGenerationHelpers:
 
     def extract_fluents_types_for_state(self, fluents_given_plan, fluents_prefixes):
         "Extracts the base fluents for each time step"
-        return [self.extract_fluents_based_on_prefix(fluents_timestep, fluents_prefixes) for fluents_timestep in fluents_given_plan]
-
-    def extract_base_fluents_for_state(self, is_pos_fluent=True):
-        "Extracts the base fluents for each time step"
-        if is_pos_fluent:
-            return self.extract_fluents_types_for_state(self.pos_fluents_given_plan, self.domain_class.BASE_POS_FLUENTS)
-        else:
-            return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.BASE_NEG_FLUENTS)
-
-    def extract_derived_fluents_for_state(self, is_pos_fluent=True):
-        "Extracts the derived fluents for each time step"
-        if is_pos_fluent:
-            return self.extract_fluents_types_for_state(self.pos_fluents_given_plan, self.domain_class.DERIVED_POS_FLUENTS)
-        else:
-            return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.DERIVED_NEG_FLUENTS)
-
-    def extract_persistent_fluents_for_state(self, is_pos_fluent=True):
-        if is_pos_fluent:
-            return self.extract_fluents_types_for_state(self.pos_fluents_given_plan, self.domain_class.PERSISTENT_POS_FLUENTS)
-        else:
-            return self.extract_fluents_types_for_state(self.neg_fluents_given_plan, self.domain_class.PERSISTENT_NEG_FLUENTS)
+        return [self.extract_fluents_based_on_prefix(fluents_timestep, fluents_prefixes) for fluents_timestep in
+                fluents_given_plan]
 
     def get_pos_neg_fluents_for_fluent_type(self, plan_length, fluent_type=DEFAULT_FLUENT):
         if fluent_type == DEFAULT_FLUENT:
@@ -566,7 +553,7 @@ class FluentTrackingQuestions(QuestionGenerator):
             pos_fluent = random.choice(pos_fluent)
             neg_fluent = random.choice(neg_fluent)
         fluent = \
-        self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+            self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
