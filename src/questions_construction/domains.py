@@ -2921,10 +2921,7 @@ class Satellite(BaseDomain):
     STATIC_POS_FLUENTS = ['on_board(','supports(','calibration_target(']
     STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
-    BASE_NEG_FLUENTS = []
-    DERIVED_FLUENTS = ['power_avail(','-power_avail(']
-    PERSISTENT_FLUENTS = ['on_board(','-on_board(','pointing(','-pointing(']
+
     SUBSTRINGS_TO_RAND = {
         'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
         'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
@@ -3633,8 +3630,7 @@ class Zenotravel(BaseDomain):
     STATIC_POS_FLUENTS = ['next(']
     STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
-    DERIVED_FLUENTS = []  # TODO double check
+
     SUBSTRINGS_TO_RAND = {
         'board': 'jxfvtxvzgh', 'boards': 'jxfvtxvzgh', 'boarding': 'jxfvtxvzgh', 'boarded': 'jxfvtxvzgh',
         'debark': 'jnjwzqrpms', 'debarks': 'jnjwzqrpms', 'debarking': 'jnjwzqrpms', 'debarked': 'jnjwzqrpms',
