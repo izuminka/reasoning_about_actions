@@ -93,7 +93,18 @@ class BaseDomain:
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
-    DERIVED_FLUENTS = ['clear(', 'handempty']
+    
+    BASE_POS_FLUENTS = ['ontable(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['clear(', 'handempty']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['holding(', 'on(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_FLUENTS = []
+    
     DOMAIN_DESC_WITHOUT_RAM = (
         'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
         'By picking up that block, it makes that block not present on the table and not clear. '
@@ -382,7 +393,17 @@ class Depots(BaseDomain):
         "A truck can be only at one location. "
         "A crate can only be at one location. "
         "A crate can only be on top of one surface. ")
-    DERIVED_FLUENTS = ['clear(', 'available(']
+    
+    BASE_POS_FLUENTS = []
+    BASE_NEG_FLUENTS = []
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['clear(', 'available(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(', 'on(', 'in(', 'lifting(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_FLUENTS = []
 
     SUBSTRINGS_TO_RAND = {
         'surface': 'fshxjwxean', 'surfaces': 'fshxjwxean',
@@ -697,7 +718,19 @@ class Driverlog(BaseDomain):
         "A driver is driving the truck if and only if the driver is not at a location "
         "An object can only be at one location. "
         "A driver can only be at one location.")
-    DERIVED_FLUENTS = ['empty']
+    
+    BASE_POS_FLUENTS = []
+    BASE_NEG_FLUENTS = []
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['empty(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(', 'in(', 'driving(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['link(', 'path(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
         'truck': 'zkkizjecwh', 'trucks': 'zkkizjecwh',
@@ -1062,7 +1095,19 @@ class Goldminer(BaseDomain):
         "The place is clear if and only if it does not contain any soft rock, gold, or hard rock. "
         "The robot is holding a laser if and only if the laser is not at a location. ")
 
-    DERIVED_FLUENTS = ['arm_empty', 'clear(']
+    BASE_POS_FLUENTS = ['bomb_at(', 'laser_at(', 'soft_rock_at(', 'hard_rock_at(', 'holds_bomb(', 'holds_laser(', 'holds_gold(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['arm_empty', 'clear(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['robot_at(','gold_at(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['connected(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
     SUBSTRINGS_TO_RAND = {
         'robot': 'oiycijmjmo',
         'laser': 'jaakaxcemj',
@@ -1553,7 +1598,21 @@ class Goldminer(BaseDomain):
 
 class Grippers(BaseDomain):
     DOMAIN_NAME = 'grippers'
-    DERIVED_FLUENTS = ['free']
+    
+    BASE_POS_FLUENTS = ['carry(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['free']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at_robby(', 'at(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = []
+    STATIC_NEG_FLUENTS = []
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
+    
     DOMAIN_DESC_WITHOUT_RAM = (
         'A robot can move from a specified room if it is in that room. '
         'Moving the robot causes it to be not in the said room but in the destination room. '
@@ -1803,7 +1862,21 @@ class Logistics(BaseDomain):
 
         "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
         "A truck can only be at one location at a time. A plane can only be in one location at a time.")
-    DERIVED_FLUENTS = []  # kept this empty because no derived fluents for this domain
+    
+    BASE_POS_FLUENTS = []
+    BASE_NEG_FLUENTS = []
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = []
+    DERIVED_NEG_FLUENTS = []
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(', 'in(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['in_city(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+
+
     SUBSTRINGS_TO_RAND = {
         'package': 'tnzistccqp', 'packages': 'tnzistccqp',
         'truck': 'pvcuetihtl', 'trucks': 'pvcuetihtl',
@@ -2032,7 +2105,20 @@ class Miconic(BaseDomain):
 
         "A lift can only be on one floor at a time. "
         "If the passenger is served, then the passenger is not boarded.")
-    DERIVED_FLUENTS = []  # TODO double check
+    
+    BASE_POS_FLUENTS = ['boarded(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['served(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['lift_at(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['origin(','destin(','above(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
     SUBSTRINGS_TO_RAND = {
         # 'up': 'lfapuhgnsn',
         # 'down': 'mmphaaxcri',
@@ -2328,7 +2414,20 @@ class Mystery(BaseDomain):
         "Cargo can only be at one place at a time. "
         "The location's fuel level is unique. "
         "The vehicle's amount of space is unique. ")
-    DERIVED_FLUENTS = []  # TODO double check
+    
+    BASE_POS_FLUENTS = []
+    BASE_NEG_FLUENTS = []
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = []
+    DERIVED_NEG_FLUENTS = []
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(', 'in(','has_space(','has_fuel(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['space_neighbor(','fuel_neighbor(','conn(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
     SUBSTRINGS_TO_RAND = {
         'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
         'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
@@ -2631,7 +2730,20 @@ class Mystery(BaseDomain):
 
 class Npuzzle(BaseDomain):
     DOMAIN_NAME = 'npuzzle'
-    DERIVED_FLUENTS = ['empty']
+    
+    BASE_POS_FLUENTS = []
+    BASE_NEG_FLUENTS = []
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['empty(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['neighbor(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
     DOMAIN_DESC_WITHOUT_RAM = (
         'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
         'Moving a tile from source position to destination position causes the tile to be present at destination position, destination position to be not empty, and causes source position to be empty.')
@@ -2796,7 +2908,23 @@ class Satellite(BaseDomain):
 
         "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
         "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
-    DERIVED_FLUENTS = ['power_avail(']
+    
+    BASE_POS_FLUENTS = ['power_on(','calibrated(','have_image(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['power_avail(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['pointing(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['on_board(','supports(','calibration_target(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
+    BASE_NEG_FLUENTS = []
+    DERIVED_FLUENTS = ['power_avail(','-power_avail(']
+    PERSISTENT_FLUENTS = ['on_board(','-on_board(','pointing(','-pointing(']
     SUBSTRINGS_TO_RAND = {
         'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
         'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
@@ -3160,7 +3288,20 @@ class Spanner(BaseDomain):
         "The spanner is not at a location if it is being hold by the man. "
         "The nut is not loose if and only if it is tightened. "
         "The spanner is not usable if and only if the nut is tightened. ")
-    DERIVED_FLUENTS = ['useable(']
+    
+    BASE_POS_FLUENTS = ['carrying(', 'useable(', 'tightened(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['loose(','useable(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['link(']  
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+
     SUBSTRINGS_TO_RAND = {
         'nut': 'uwdhnrpile', 'nuts': 'uwdhnrpile',
         'man': 'bmojqrwpdg',
@@ -3479,6 +3620,20 @@ class Zenotravel(BaseDomain):
         "The aircraft cannot be in two different cities at the same time. "
         "An aircraft cannot have two different fuel levels. "
         "Person can only be at one place.")
+    
+    BASE_POS_FLUENTS = ['fuel_level(']
+    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = []
+    DERIVED_NEG_FLUENTS = []
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at(', 'in(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['next(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
     DERIVED_FLUENTS = []  # TODO double check
     SUBSTRINGS_TO_RAND = {
         'board': 'jxfvtxvzgh', 'boards': 'jxfvtxvzgh', 'boarding': 'jxfvtxvzgh', 'boarded': 'jxfvtxvzgh',
@@ -3736,7 +3891,21 @@ class Visitall(BaseDomain):
         "Moving from a current position to the next position causes the robot to be present at the next position. "
 
         "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. ")
-    DERIVED_FLUENTS = ['visited(']
+    
+    BASE_POS_FLUENTS = []
+    BASE_NEG_FLUENTS = []
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['visited(']
+    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['at_robot(']
+    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_POS_FLUENTS = ['connected(']
+    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
+    
+        
     SUBSTRINGS_TO_RAND = {
         'robot': 'xtjpivjhco', 'robots': 'xtjpivjhco',
         'position': 'puxuduuqen', 'positions': 'puxuduuqen',
