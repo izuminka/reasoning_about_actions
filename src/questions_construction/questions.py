@@ -279,6 +279,33 @@ class QuestionGenerationHelpers:
         return sequence_of_actions, random_break_ind
 
 
+    def get_fluent_type_for_object_tracking(self, obj, plan_length, fluent_type=BASE_FLUENTS):
+        #TODO: rename to fluents_for_object_tracking
+        if fluent_type == BASE_FLUENTS:
+            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=BASE_FLUENTS)
+            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=BASE_FLUENTS)
+        elif fluent_type == DERIVED_FLUENTS:
+            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DERIVED_FLUENTS)
+            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DERIVED_FLUENTS)
+        elif fluent_type == PERSISTENT_FLUENTS:
+            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=PERSISTENT_FLUENTS)
+            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=PERSISTENT_FLUENTS)
+        else:
+            raise ValueError(f'Undefined fluent type {fluent_type}')
+        return pos_fluents, neg_fluents
+
+    def fluents_for_random_obj(self, plan_length, min_chosen_fluents=1, timeout=MAX_TIMEOUT, fluent_type=BASE_FLUENTS):
+        pos_fluents, neg_fluents = [], []
+        while (len(pos_fluents)+len(neg_fluents)) < min_chosen_fluents and timeout > 0:
+            obj = random.choice(self.all_objects)
+            pos_fluents, neg_fluents = self.get_fluent_type_for_object_tracking(obj, plan_length, fluent_type)
+            if len(pos_fluents) and len(neg_fluents):
+                return pos_fluents, neg_fluents, obj
+            timeout -= 1
+        if timeout == 0:
+            return None, None
+
+
 class QuestionGenerator(QuestionGenerationHelpers):
     digit_regex = '\d+'
     word_regex = '[a-zA-Z]+'
@@ -399,48 +426,17 @@ class ObjectTrackingQuestions(QuestionGenerator):
     def question_category():
         return 'object_tracking'
 
-    @staticmethod
-    def is_variable_in_fluent(fluent):
-        return ('(' in fluent) and (')' in fluent)
-
-    @staticmethod
-    def select_fluents_with_vars(fluents):
-        return [f for f in fluents if ObjectTrackingQuestions.is_variable_in_fluent(f)]
-
-    def get_fluent_type_for_object_tracking(self, obj, plan_length, fluent_type=BASE_FLUENTS):
-        if fluent_type == BASE_FLUENTS:
-            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=BASE_FLUENTS)
-            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=BASE_FLUENTS)
-        elif fluent_type == DERIVED_FLUENTS:
-            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=DERIVED_FLUENTS)
-            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=DERIVED_FLUENTS)
-        elif fluent_type == PERSISTENT_FLUENTS:
-            pos_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=True, fluent_type=PERSISTENT_FLUENTS)
-            neg_fluents = self.fluents_for_obj(obj, plan_length, is_true_fluents=False, fluent_type=PERSISTENT_FLUENTS)
-        else:
-            raise ValueError(f'Undefined fluent type {fluent_type}')
-        return pos_fluents, neg_fluents
-
-    def question_1_2_helper(self, plan_length, is_pos_fluent_question, is_answer_true, min_chosen_fluents=1,
-                            timeout=MAX_TIMEOUT, fluent_type=BASE_FLUENTS):
-        chosen_fluents = []
-        while len(chosen_fluents) < min_chosen_fluents and timeout > 0:
-            obj = random.choice(self.all_objects)
-            pos_fluents, neg_fluents = self.get_fluent_type_for_object_tracking(obj, plan_length, fluent_type)
-            # print(pos_fluents,neg_fluents)
-            if not (len(pos_fluents) and len(neg_fluents)):
-                timeout -= 1
-                continue
-            fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
-            if min_chosen_fluents <= len(fluents):
-                num_samples = random.randint(min_chosen_fluents, len(fluents))
-                chosen_fluents = random.sample(fluents, num_samples)
-            timeout -= 1
-        if timeout == 0:
-            # raise 'Timeout error'
+    def question_1_2_helper(self, plan_length, is_pos_fluent_question, is_answer_true, min_chosen_fluents=1, fluent_type=BASE_FLUENTS):
+        #TODO rename since it is used for more than 1,2
+        #TODO add fluent types
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, min_chosen_fluents=min_chosen_fluents, fluent_type=fluent_type)
+        if pos_fluents is None and neg_fluents is None:
             return None
+        fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
+        num_samples = random.randint(min_chosen_fluents, len(fluents))
+        chosen_fluents = random.sample(fluents, num_samples)
         nl_fluents = self.nl_fluents(chosen_fluents)
-        return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {nl_fluents}?"
+        return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {obj} is involved in the following {FLUENTS_NL}: {nl_fluents}?"
 
     def question_1(self, plan_length):
         is_pos_fluent_question = True
@@ -1110,10 +1106,13 @@ class CompositeQuestions(QuestionGenerator):
             prefix = ACTIONS_ARE_PERFORMED_PREFIX
         return f"{prefix} {nl_actions} to reach the current state."
 
+    def none_postfix(self):
+        return 'Return None is all are feasible'
+
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? Return None is all are feasible"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? {self.none_postfix()}"
         if is_answer_true:
             answer = 'None'
         else:
@@ -1126,7 +1125,23 @@ class CompositeQuestions(QuestionGenerator):
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         #TODO add fluent types
         fluents_type_nl = FLUENTS_NL
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What {fluents_type_nl} are true before the first infeasible action in the sequence? Return None is all are feasible"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What {fluents_type_nl} are true before the first infeasible action in the sequence? {self.none_postfix()}"
+        if is_answer_true:
+            answer = 'None'
+        else:
+            # TODO modify this based on the type of fluents
+            fluents = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
+            answer = self.nl_fluents(sorted(fluents))
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_1.__name__, plan_length)
+
+    def question_3(self, plan_length):
+        is_answer_true = random.choice([True, False])
+        actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
+
+        obj = ''
+        #TODO add fluent types
+        fluents_type_nl = FLUENTS_NL
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. What are the {fluents_type_nl} for {obj} before the first infeasible action in the sequence? {self.none_postfix()}"
         if is_answer_true:
             answer = 'None'
         else:
