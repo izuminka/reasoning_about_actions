@@ -1130,7 +1130,7 @@ class CompositeQuestions(QuestionGenerator):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         #TODO add fluent types
-        fluents_type_nl = FLUENTS_NL
+        fluents_type_nl = BASE_FLUENTS_NL
         question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What {fluents_type_nl} are true before the first infeasible action in the sequence? {self.none_postfix()}"
         if is_answer_true:
             answer = 'None'
@@ -1146,7 +1146,7 @@ class CompositeQuestions(QuestionGenerator):
 
         #TODO add fluent types
         fluent_type = BASE_FLUENTS
-        fluents_type_nl = FLUENTS_NL
+        fluents_type_nl = BASE_FLUENTS_NL
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
