@@ -1112,15 +1112,12 @@ class CompositeQuestions(QuestionGenerator):
             prefix = ACTIONS_ARE_PERFORMED_PREFIX
         return f"{prefix} {nl_actions} to reach the current state."
 
-    def none_postfix(self):
-        return 'Return None is all are feasible'
-
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? {self.none_postfix()}"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? {NONE_STATEMENT}"
         if is_answer_true:
-            answer = 'None'
+            answer = NONE_ANSWER
         else:
             state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = self.nl_fluents(sorted(state))
@@ -1131,9 +1128,9 @@ class CompositeQuestions(QuestionGenerator):
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         #TODO add fluent types
         fluents_type_nl = BASE_FLUENTS_NL
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What {fluents_type_nl} are true before the first infeasible action in the sequence? {self.none_postfix()}"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. Some of the actions may not be executable. What {fluents_type_nl} are true before the first infeasible action in the sequence? {NONE_STATEMENT}"
         if is_answer_true:
-            answer = 'None'
+            answer = NONE_ANSWER
         else:
             # TODO modify this based on the type of fluents
             fluents = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
@@ -1151,9 +1148,9 @@ class CompositeQuestions(QuestionGenerator):
         if pos_fluents is None and neg_fluents is None:
             return None
         # TODO modify with the fluent type
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. What are the {fluents_type_nl} for {obj} before the first infeasible action in the sequence? {self.none_postfix()}"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. What are the {fluents_type_nl} for {obj} before the first infeasible action in the sequence? {NONE_STATEMENT}"
         if is_answer_true:
-            answer = 'None'
+            answer = NONE_ANSWER
         else:
             # TODO modify this based on the type of fluents
             fluents = pos_fluents + pos_fluents
@@ -1172,7 +1169,7 @@ class CompositeQuestions(QuestionGenerator):
             return None
 
         # TODO modify with the fluent type
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions))}.If I perform action {action_performed}, what would be all of the {fluent_type_nl} for {obj}? {self.none_postfix()}"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions))}.If I perform action {action_performed}, what would be all of the {fluent_type_nl} for {obj}? {NONE_STATEMENT}"
         fluents = pos_fluents + pos_fluents
         answer = self.nl_fluents(sorted(fluents))
         return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
