@@ -29,6 +29,10 @@ STATIC_FLUENTS = 'STATIC_FLUENTS'
 STATIC_POS_FLUENTS = 'STATIC_POS_FLUENTS'
 STATIC_NEG_FLUENTS = 'STATIC_NEG_FLUENTS'
 
+BASE_FLUENTS_NL = FLUENTS_NL + " that don't depend on other " + FLUENTS_NL
+DERIVED_FLUENTS_NL = FLUENTS_NL + " that depend on other " + FLUENTS_NL
+PERSISTENT_FLUENTS_NL = FLUENTS_NL + " that depend on themselves"
+
 PART_OF_THE_STATE = 'part of the state'
 MAX_TIMEOUT = 100
 
@@ -246,7 +250,9 @@ class QuestionGenerationHelpers:
         else:
             num_to_be_corrupted_samples = random.randint(1, min(len_corrupted_fluents, final_length) - 1)
         corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
-        return corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
+        final = corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
+        final.shuffle()
+        return final
 
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
         if is_pos_fluent_question:
@@ -436,7 +442,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
         num_samples = random.randint(min_chosen_fluents, len(fluents))
         chosen_fluents = random.sample(fluents, num_samples)
         nl_fluents = self.nl_fluents(chosen_fluents)
-        return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {obj} is involved in the following {FLUENTS_NL}: {nl_fluents}?"
+        return f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {FLUENTS_NL} are correct for {obj}: {nl_fluents}?"
 
     def question_1(self, plan_length):
         is_pos_fluent_question = True
@@ -1132,21 +1138,42 @@ class CompositeQuestions(QuestionGenerator):
             # TODO modify this based on the type of fluents
             fluents = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = self.nl_fluents(sorted(fluents))
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_1.__name__, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_2.__name__, plan_length)
 
     def question_3(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
 
-        obj = ''
         #TODO add fluent types
+        fluent_type = BASE_FLUENTS
         fluents_type_nl = FLUENTS_NL
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
+        if pos_fluents is None and neg_fluents is None:
+            return None
+        # TODO modify with the fluent type
         question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned = True)}. What are the {fluents_type_nl} for {obj} before the first infeasible action in the sequence? {self.none_postfix()}"
         if is_answer_true:
             answer = 'None'
         else:
             # TODO modify this based on the type of fluents
-            fluents = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
+            fluents = pos_fluents + pos_fluents
             answer = self.nl_fluents(sorted(fluents))
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_1.__name__, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_3.__name__, plan_length)
+
+    def question_4(self, plan_length):
+        actions = self.given_plan_sequence[:plan_length]
+        action_performed = actions[plan_length]
+
+        #TODO add fluent types
+        fluent_type = BASE_FLUENTS
+        fluent_type_nl = BASE_FLUENTS_NL
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length+1, fluent_type=fluent_type)
+        if pos_fluents is None and neg_fluents is None:
+            return None
+
+        # TODO modify with the fluent type
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions))}.If I perform action {action_performed}, what would be all of the {fluent_type_nl} for {obj}? {self.none_postfix()}"
+        fluents = pos_fluents + pos_fluents
+        answer = self.nl_fluents(sorted(fluents))
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_4.__name__, plan_length)
 
