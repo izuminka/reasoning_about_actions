@@ -1112,13 +1112,13 @@ class CompositeQuestions(QuestionGenerator):
 
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
-        actions, random_break = self.sequence_of_actions(plan_length, is_answer_true)
+        actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         nl_actions = self.nl_actions(actions)
-        is_planned = True
-        question = f"{self.nl_question_prefix_custom(nl_actions, is_planned)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? Return None is all are feasable"
+        question = f"{self.nl_question_prefix_custom(nl_actions, is_planned = True)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? Return None is all are feasable"
         if is_answer_true:
-            raise ValueError('Implement This')
-        else:
             answer = 'None'
+        else:
+            state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
+            answer = self.nl_fluents(sorted(state))
         return self.qa_data_object(question, answer, FREE_ANSWER, self.question_1.__name__, plan_length)
 
