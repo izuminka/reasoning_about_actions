@@ -734,7 +734,7 @@ class Depots(BaseDomain):
                 elif obj.startswith('pallet'):
                     return [
                         f'{obj} is {prefix_nl}delivered to {place}',
-                        f'{place} does {prefix_nl}recieve delivery of {obj}'
+                        f'{place} does {prefix_nl}receive delivery of {obj}'
                     ]
                 else:
                     raise Exception('fluent is not defined')
@@ -856,7 +856,7 @@ class Driverlog(BaseDomain):
         "To drive a truck from one location to another, the truck must be at the initial location, the driver must be driving the truck, and there must be a link between the initial and final locations. "
         "Driving the truck causes it to be at the final location. "
         "To walk from one location to another, the driver must be at the initial location, and there must be a path between the initial and final locations. "
-        "Walking from inital location to final location, causes the driver to be at the final location. "
+        "Walking from initial location to final location, causes the driver to be at the final location. "
         "A truck is empty if and only if it is not driven by anyone (any driver). "
         "A driver is driving the truck if and only if the driver is not at a location "
         "An object can only be at one location. "
