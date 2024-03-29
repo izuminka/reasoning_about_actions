@@ -500,8 +500,10 @@ class Depots(BaseDomain):
         # 'available': 'xlhhnyciys',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['at']
             obj, place = self.extract_multi_variable(fluent)
             if (obj.startswith('truck') or
                     obj.startswith('crate') or
@@ -516,6 +518,8 @@ class Depots(BaseDomain):
             else:
                 raise Exception('fluent is not defined')
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['not at']
             obj, place = self.extract_multi_variable(fluent)
             if (obj.startswith('truck') or
                     obj.startswith('crate') or
@@ -531,6 +535,8 @@ class Depots(BaseDomain):
                 raise Exception('fluent is not defined')
 
         elif fluent.startswith('on('):
+            if is_without_object:
+                return ['on']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is on {obj2}',
@@ -538,6 +544,8 @@ class Depots(BaseDomain):
                 f'{obj1} is on top of {obj2}'
             ]
         elif fluent.startswith('-on('):
+            if is_without_object:
+                return ['not on']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not on {obj2}',
@@ -546,6 +554,8 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is in {obj2}',
@@ -553,6 +563,8 @@ class Depots(BaseDomain):
                 f'{obj1} is inside {obj2}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['not in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not in {obj2}',
@@ -561,6 +573,8 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('lifting('):
+            if is_without_object:
+                return ['lifting']
             hoist, crate = self.extract_multi_variable(fluent)
             return [
                 f'{hoist} is lifting {crate}',
@@ -568,6 +582,8 @@ class Depots(BaseDomain):
                 f'{hoist} is elevating {crate}'
             ]
         elif fluent.startswith('-lifting('):
+            if is_without_object:
+                return ['not lifting']
             hoist, crate = self.extract_multi_variable(fluent)
             return [
                 f'{hoist} is not lifting {crate}',
@@ -576,6 +592,8 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('available('):
+            if is_without_object:
+                return ['available']
             hoist = self.extract_single_variable(fluent)
             return [
                 f'{hoist} is available',
@@ -583,6 +601,8 @@ class Depots(BaseDomain):
                 f'{hoist} is available for work'
             ]
         elif fluent.startswith('-available('):
+            if is_without_object:
+                return ['not available']
             hoist = self.extract_single_variable(fluent)
             return [
                 f'{hoist} is not available',
@@ -591,12 +611,16 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('clear('):
+            if is_without_object:
+                return ['clear']
             surface = self.extract_single_variable(fluent)
             return [
                 f'{surface} is clear',
                 f'{surface} is clear of any crates'
             ]
         elif fluent.startswith('-clear('):
+            if is_without_object:
+                return ['not clear']
             surface = self.extract_single_variable(fluent)
             return [
                 f'{surface} is not clear',
