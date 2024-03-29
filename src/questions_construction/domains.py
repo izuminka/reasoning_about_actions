@@ -2989,8 +2989,10 @@ class Npuzzle(BaseDomain):
         # 'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['tile is at position']
             tile, position = self.extract_multi_variable(fluent)
             return [
                 f'tile {tile} is at position {position}',
@@ -2998,6 +3000,8 @@ class Npuzzle(BaseDomain):
                 f'tile {tile} is present in the position {position}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['tile is not at position']
             tile, position = self.extract_multi_variable(fluent)
             return [
                 f'tile {tile} is not at position {position}',
@@ -3006,6 +3010,8 @@ class Npuzzle(BaseDomain):
             ]
 
         elif fluent.startswith('neighbor('):
+            if is_without_object:
+                return ['positions are neighbors']
             position1, position2 = self.extract_multi_variable(fluent)
             return [
                 f'position {position1} is a neighbor of position {position2}',
@@ -3013,6 +3019,8 @@ class Npuzzle(BaseDomain):
                 f'positions {position1} and {position2} are neighbors'
             ]
         elif fluent.startswith('-neighbor('):
+            if is_without_object:
+                return ['positions are not neighbors']
             position1, position2 = self.extract_multi_variable(fluent)
             return [
                 f'position {position1} is not a neighbor of position {position2}',
@@ -3021,12 +3029,16 @@ class Npuzzle(BaseDomain):
             ]
 
         elif fluent.startswith('empty('):
+            if is_without_object:
+                return ['position is empty']
             position = self.extract_single_variable(fluent)
             return [
                 f'position {position} is empty',
                 f'position {position} does not contain any tile'
             ]
         elif fluent.startswith('-empty('):
+            if is_without_object:
+                return ['position is not empty']
             position = self.extract_single_variable(fluent)
             return [
                 f'position {position} is not empty',
