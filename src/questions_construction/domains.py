@@ -3947,8 +3947,10 @@ class Zenotravel(BaseDomain):
         # 'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
         'level': 'ndozmmwian', 'levels': 'ndozmmwian'}
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['an obj is at a city']
             obj, city = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is at {city}",
@@ -3956,6 +3958,8 @@ class Zenotravel(BaseDomain):
                 f'{obj} is present at {city}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['an obj is not at a city']
             obj, city = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is not at {city}",
@@ -3963,6 +3967,8 @@ class Zenotravel(BaseDomain):
                 f'{obj} is not present at {city}'
             ]
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['a person is in an aircraft']
             person, aircraft = self.extract_multi_variable(fluent)
             return [
                 f"{person} is in {aircraft}",
@@ -3970,6 +3976,8 @@ class Zenotravel(BaseDomain):
                 f'{person} is located in {aircraft}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['a person is not in an aircraft']
             person, aircraft = self.extract_multi_variable(fluent)
             return [
                 f"{person} is not in {aircraft}",
@@ -3977,6 +3985,8 @@ class Zenotravel(BaseDomain):
                 f'{person} is not located in {aircraft}'
             ]
         elif fluent.startswith('fuel_level('):
+            if is_without_object:
+                return ['an aircraft has a fuel level']
             aircraft, flevel = self.extract_multi_variable(fluent)
             return [
                 f"{aircraft} has fuel level {flevel}",
@@ -3984,6 +3994,8 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} possesses a fuel level of {flevel}'
             ]
         elif fluent.startswith('-fuel_level('):
+            if is_without_object:
+                return ['an aircraft does not have a fuel level']
             aircraft, flevel = self.extract_multi_variable(fluent)
             return [
                 f"{aircraft} does not have fuel level {flevel}",
@@ -3991,6 +4003,8 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} doesn\'t possesses a fuel level of {flevel}'
             ]
         elif fluent.startswith('next('):
+            if is_without_object:
+                return ['fuel levels are next to each other']
             fuel1, fuel2 = self.extract_multi_variable(fluent)
             return [
                 f"fuel level {fuel2} is next to fuel level {fuel1}",
@@ -3998,6 +4012,8 @@ class Zenotravel(BaseDomain):
                 f'fuel level {fuel2} is next to {fuel1}'
             ]
         elif fluent.startswith('-next('):
+            if is_without_object:
+                return ['fuel levels are not next to each other']
             fuel1, fuel2 = self.extract_multi_variable(fluent)
             return [
                 f"fuel level {fuel2} is not next to fuel level {fuel1}",
