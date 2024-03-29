@@ -1208,4 +1208,4 @@ class CompositeQuestions(QuestionGenerator):
         else:
             state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_1.__name__, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_13.__name__, plan_length)
