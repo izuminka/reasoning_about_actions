@@ -3587,8 +3587,10 @@ class Spanner(BaseDomain):
         # 'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['an obj is at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is at {location}",
@@ -3596,6 +3598,8 @@ class Spanner(BaseDomain):
                 f'{obj} is currently at {location}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['an obj is not at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is not at {location}",
@@ -3604,12 +3608,16 @@ class Spanner(BaseDomain):
             ]
 
         elif fluent.startswith('carrying('):
+            if is_without_object:
+                return ['an person is carrying a spanner']
             man, spanner = self.extract_multi_variable(fluent)
             return [
                 f"{man} is carrying {spanner}",
                 f'{spanner} is carried by {man}',
             ]
         elif fluent.startswith('-carrying('):
+            if is_without_object:
+                return ['an person is not carrying a spanner']
             man, spanner = self.extract_multi_variable(fluent)
             return [
                 f"{man} is not carrying {spanner}",
@@ -3617,6 +3625,8 @@ class Spanner(BaseDomain):
             ]
 
         elif fluent.startswith('useable('):
+            if is_without_object:
+                return ['an spanner is usable']
             spanner = self.extract_single_variable(fluent)
             return [
                 f"{spanner} is usable",
@@ -3624,6 +3634,8 @@ class Spanner(BaseDomain):
                 f'{spanner} is functional'
             ]
         elif fluent.startswith('-useable('):
+            if is_without_object:
+                return ['an spanner is not usable']
             spanner = self.extract_single_variable(fluent)
             return [
                 f"{spanner} is not usable",
@@ -3632,12 +3644,16 @@ class Spanner(BaseDomain):
             ]
 
         elif fluent.startswith('tightened('):
+            if is_without_object:
+                return ['a nut is tightened']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is tightened",
                 f'tightening of {nut} is complete'
             ]
         elif fluent.startswith('-tightened('):
+            if is_without_object:
+                return ['a nut is not tightened']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is not tightened",
@@ -3645,12 +3661,16 @@ class Spanner(BaseDomain):
             ]
 
         elif fluent.startswith('loose('):
+            if is_without_object:
+                return ['a nut is loose']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is loose",
                 f'{nut} is not secured'
             ]
         elif fluent.startswith('-loose('):
+            if is_without_object:
+                return ['a nut is not loose']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is not loose",
@@ -3658,6 +3678,8 @@ class Spanner(BaseDomain):
             ]
 
         elif fluent.startswith('link('):
+            if is_without_object:
+                return ['locations are linked']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f"{location1} is linked to {location2}",
@@ -3665,6 +3687,8 @@ class Spanner(BaseDomain):
                 f'a link between {location1} and {location2} exists'
             ]
         elif fluent.startswith('-link('):
+            if is_without_object:
+                return ['locations are not linked']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f"{location1} is not linked to {location2}",
