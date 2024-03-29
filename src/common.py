@@ -56,7 +56,6 @@ NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
 POSITIVE_FLUENTS_NL = 'valid properties of the state'
 NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
-STATE_DESC_NL = f'a state is a list of all valid {FLUENTS_NL} that may or may not involve negations'
 BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
 DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
 PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL

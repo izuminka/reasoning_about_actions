@@ -80,7 +80,25 @@ class TestDomains(unittest.TestCase):
                     res = domain_class.action_to_natural_language('stack(b1,b2)', is_hallucinated)
                     self.assertTrue(res)
 
+    def test_blocksworld_domain_description(self):
+        dom = ALL_DOMAIN_CLASSES[0]
+        domain_class = dom(False, True)
+        expected_text = (
+            'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
+            'Picking up the block leads to the block being held. Putting down the block can only be executed if the block is being held. '
+            'Putting down the block causes the block to be on the table. A block can be stacked on the second block if it is being held and the second block is clear. '
+            'By stacking the first block on the second, it causes the first block to be on top of the second block. '
+            'The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. '
+            'Unstacking the first block from the second causes first block to be held A block is said to be clear if it is not being held and there are no blocks that are on top of it. '
+            'The hand is said to be empty if and only if it is not holding any block. The block can only be at one place at a time.\n\n'
 
+            'A state is a set of valid properties. Properties may or may not involve negations. Properties of the state can be of 4 types: base, derived, persistent, and static. '
+            "Base properties of the state are properties that don't depend on other properties. In this domain, they are: on the table and not on the table. "
+            'Derived properties of the state are properties that depend on other properties. In this domain, they are: clear, hand is empty, not clear and hand is not empty. '
+            'Self constraint properties of the state are properties that depend on themselves. In this domain, they are: holding, on, not holding and not on. '
+            "Static properties of the state are properties that don't change under any action. There are no static properties of the state in this domain. ")
+
+        self.assertEqual(expected_text, domain_class.domain_description)
 
 
 if __name__ == '__main__':

@@ -4,8 +4,6 @@ import string
 from src.common import *
 
 
-
-
 def capitalize_first_letter(string):
     return string[0].upper() + string[1:]
 
@@ -22,8 +20,8 @@ def gen_random_str(length=10):
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
-    DOMAIN_DESC_WITHOUT_RAM = None
-    DOMAIN_DESC_WITH_RAM = None
+    DOMAIN_DESC_WITHOUT_RAM = ''
+    DOMAIN_DESC_WITH_RAM = ''
     SUBSTRINGS_TO_RAND = {}
     REPLACE_REGEX_PREFIX = r'(?<!\S)'
     REPLACE_REGEX_POSTFIX = r'(?![^\s"\'\.\,:;?!])'
@@ -33,13 +31,13 @@ class BaseDomain:
     PERSISTENT_FLUENTS = []
     STATIC_FLUENTS = []
 
-    def __init__(self, is_random_sub, is_ramifications):
+    def __init__(self, is_random_sub, is_ramifications, is_with_fluent_info=True):
         self.is_random_sub = is_random_sub
         self.is_ramifications = is_ramifications
-        if is_ramifications:
-            self.domain_description = self.DOMAIN_DESC_WITH_RAM + '\n\n' + self.fluent_info_for_domain()
-        else:
-            self.domain_description = self.DOMAIN_DESC_WITHOUT_RAM + '\n\n' + self.fluent_info_for_domain()
+        self.domain_description = self.DOMAIN_DESC_WITH_RAM if is_ramifications else self.DOMAIN_DESC_WITHOUT_RAM
+        self.fluent_info_for_domain = self.construct_fluent_info_for_domain()
+        if is_with_fluent_info:
+            self.domain_description += '\n\n' + self.fluent_info_for_domain
         if is_random_sub:
             self.domain_description = self.replace_substrings(self.domain_description, self.SUBSTRINGS_TO_RAND)
 
@@ -54,27 +52,30 @@ class BaseDomain:
         nl_obj_ls = [self.fluent_to_natural_language_helper(f, is_without_object=True)[0] for f in obj_ls]
         return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
 
-    def fluent_info_for_domain(self):
+    def construct_fluent_info_for_domain(self):
         def add_fluents(fluent_ls, fluent_type_nl):
             result = ''
-            result += f"{capitalize_first_letter(fluent_type_nl)} are properties of the state that don't depend on other properties. "
             if fluent_ls:
-                result += f"They are {self.asp_to_nl(fluent_ls)}. "
+                result += f"In this domain, they are: {self.asp_to_nl(fluent_ls)}. "
             else:
                 result += f"There are no {fluent_type_nl} in this domain. "
             return result
 
-        result = f'{capitalize_first_letter(STATE_DESC_NL)}. ',
-        result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 flavors: base, derived, persistent, and static {FLUENTS_NL}. '
+        result = f'A state is a set of valid properties. Properties may or may not involve negations. '
+        result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
 
-        result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties of the state that don't depend on other properties. "
-        result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS_NL) + '. '
+        result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties that don't depend on other properties. "
+        result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS_NL)
 
-        result += f"{capitalize_first_letter(DERIVED_FLUENTS_NL)} are properties of the state that depend on other properties. "
-        result += add_fluents(self.DERIVED_FLUENTS, DERIVED_FLUENTS_NL)  + '. '
+        result += f"{capitalize_first_letter(DERIVED_FLUENTS_NL)} are properties that depend on other properties. "
+        result += add_fluents(self.DERIVED_FLUENTS, DERIVED_FLUENTS_NL)
 
-        result += f"{capitalize_first_letter(PERSISTENT_FLUENTS_NL)} are properties of the state that depend on themselves. "
-        result += add_fluents(self.PERSISTENT_FLUENTS, PERSISTENT_FLUENTS_NL) + '. '
+        result += f"{capitalize_first_letter(PERSISTENT_FLUENTS_NL)} are properties that depend on themselves. "
+        result += add_fluents(self.PERSISTENT_FLUENTS, PERSISTENT_FLUENTS_NL)
+
+        result += f"{capitalize_first_letter(STATIC_FLUENTS_NL)} are properties that don't change under any action. "
+        result += add_fluents(self.STATIC_FLUENTS, STATIC_FLUENTS_NL)
+
         return result
 
     def extract_single_variable(self, obj):
