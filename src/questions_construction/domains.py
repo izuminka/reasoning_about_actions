@@ -3182,8 +3182,10 @@ class Satellite(BaseDomain):
         # 'source': 'uuwgcgehnr',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('on_board('):
+            if is_without_object:
+                return ['an instrument is on board a satellite']
             instrument, satellite = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is on board {satellite}',
@@ -3191,6 +3193,8 @@ class Satellite(BaseDomain):
                 f'{satellite} has {instrument} on board'
             ]
         elif fluent.startswith('-on_board('):
+            if is_without_object:
+                return ['an instrument is not on board a satellite']
             instrument, satellite = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is not on board {satellite}',
@@ -3199,6 +3203,8 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('supports('):
+            if is_without_object:
+                return ['an instrument supports a mode']
             instrument, mode = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} supports {mode}',
@@ -3206,6 +3212,8 @@ class Satellite(BaseDomain):
                 f'{mode} is compatible with {instrument}'
             ]
         elif fluent.startswith('-supports('):
+            if is_without_object:
+                return ['an instrument does not support a mode']
             instrument, mode = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} does not support {mode}',
@@ -3214,6 +3222,8 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('pointing('):
+            if is_without_object:
+                return ['a satellite is pointing to a direction']
             satellite, direction = self.extract_multi_variable(fluent)
             return [
                 f'{satellite} is pointing to {direction}',
@@ -3221,6 +3231,8 @@ class Satellite(BaseDomain):
                 f'{direction} is where {satellite} is pointed'
             ]
         elif fluent.startswith('-pointing('):
+            if is_without_object:
+                return ['a satellite is not pointing to a direction']
             satellite, direction = self.extract_multi_variable(fluent)
             return [
                 f'{satellite} is not pointing to {direction}',
@@ -3229,6 +3241,8 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('power_avail('):
+            if is_without_object:
+                return ['a satellite has power']
             satellite = self.extract_single_variable(fluent)
             return [
                 f'{satellite} has power available',
@@ -3236,6 +3250,8 @@ class Satellite(BaseDomain):
                 f'{satellite} has power'
             ]
         elif fluent.startswith('-power_avail('):
+            if is_without_object:
+                return ['a satellite does not have power']
             satellite = self.extract_single_variable(fluent)
             return [
                 f'{satellite} does not have power available',
@@ -3244,6 +3260,8 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('power_on('):
+            if is_without_object:
+                return ['an instrument is powered on']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is powered on',
@@ -3251,6 +3269,8 @@ class Satellite(BaseDomain):
                 f'{instrument} is turned on'
             ]
         elif fluent.startswith('-power_on('):
+            if is_without_object:
+                return ['an instrument is not powered on']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is not powered on',
@@ -3259,12 +3279,16 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('calibrated('):
+            if is_without_object:
+                return ['an instrument is calibrated']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is calibrated',
                 f'calibration of {instrument} is complete'
             ]
         elif fluent.startswith('-calibrated('):
+            if is_without_object:
+                return ['an instrument is not calibrated']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is not calibrated',
@@ -3272,12 +3296,16 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('have_image('):
+            if is_without_object:
+                return ['there is an image of a direction in a mode']
             direction, mode = self.extract_multi_variable(fluent)
             return [
                 f'there is an image of {direction} in {mode}',
                 f'image of {direction} exists in {mode}'
             ]
         elif fluent.startswith('-have_image('):
+            if is_without_object:
+                return ['there is not an image of a direction in a mode']
             direction, mode = self.extract_multi_variable(fluent)
             return [
                 f'there is no image of direction {direction} in {mode}',
@@ -3285,6 +3313,8 @@ class Satellite(BaseDomain):
             ]
 
         elif fluent.startswith('calibration_target('):
+            if is_without_object:
+                return ['an instrument is calibrated for a direction']
             instrument, direction = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is calibrated for {direction}',
@@ -3292,6 +3322,8 @@ class Satellite(BaseDomain):
                 f'for {direction}, {instrument} is calibrated'
             ]
         elif fluent.startswith('-calibration_target('):
+            if is_without_object:
+                return ['an instrument is not calibrated for a direction']
             instrument, direction = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is not calibrated for {direction}',
