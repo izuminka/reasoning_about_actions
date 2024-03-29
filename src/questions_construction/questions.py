@@ -16,34 +16,6 @@ TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
 NONE_ANSWER = 'None'
 
-# fluent names for QA
-# POSITIVE_FLUENT = 'positive fluent'
-# NEGATIVE_FLUENT = 'negative fluent'
-# FLUENTS = 'fluents'
-# POSITIVE_FLUENTS = 'positive fluents'
-# NEGATIVE_FLUENTS = 'negative fluents'
-
-# # fluent names for QA
-# POSITIVE_FLUENT = 'true property of the world'
-# NEGATIVE_FLUENT = 'true property of the world that involve a negation'
-# FLUENTS = 'properties of the world that can be true or false'
-# POSITIVE_FLUENTS = 'true properties of the world'
-# NEGATIVE_FLUENTS = 'true properties of the world that involve a negation'
-
-# # fluent names for QA
-# POSITIVE_FLUENT = 'true property of the state'
-# NEGATIVE_FLUENT = 'true property of the state that involves a negation'
-# FLUENTS = 'properties of the state'
-# POSITIVE_FLUENTS = 'true properties of the state'
-# NEGATIVE_FLUENTS = 'true properties of the state that involve a negation'
-
-# fluent names for QA
-POSITIVE_FLUENT = 'valid property of the state'
-NEGATIVE_FLUENT = 'valid property of the state that involves a negation'
-FLUENTS = 'properties of the state'
-POSITIVE_FLUENTS = 'valid properties of the state'
-NEGATIVE_FLUENTS = 'valid properties of the state that involve negations'
-
 BASE_FLUENTS = 'BASE_FLUENTS'
 BASE_POS_FLUENTS = 'BASE_POS_FLUENTS'
 BASE_NEG_FLUENTS = 'BASE_NEG_FLUENTS'
@@ -551,7 +523,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         if exit_condition_on_fluents(pos_fluents, neg_fluents):
             return None
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
-        question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
+        question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS_NL} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
     def qa_5_6_helper(self, plan_length, is_pos_fluent_question, question_name, timeout=MAX_TIMEOUT):
@@ -666,10 +638,10 @@ class StateTrackingQuestions(QuestionGenerator):
 
     def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name):
         if is_pos_fluent_question:
-            fluent_type = POSITIVE_FLUENTS
+            fluent_type = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length]
         else:
-            fluent_type = NEGATIVE_FLUENTS
+            fluent_type = NEGATIVE_FLUENTS_NL
             fluents = self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type}. {NONE_STATEMENT}."
@@ -852,10 +824,10 @@ class EffectsQuestions(QuestionGenerator):
     def qa_3_4_helper(self, plan_length, is_positive_fluents_question, question_name):
         action = self.given_plan_sequence[plan_length]
         if is_positive_fluents_question:
-            fluents_type = POSITIVE_FLUENTS
+            fluents_type = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
-            fluents_type = NEGATIVE_FLUENTS
+            fluents_type = NEGATIVE_FLUENTS_NL
             fluents = self.neg_fluents_given_plan[plan_length + 1]
         question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, what would be all of the {fluents_type}? {NONE_STATEMENT}."
         return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER, question_name, plan_length)
@@ -953,12 +925,12 @@ class NumericalReasoningQuestions(QuestionGenerator):
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_5.__name__)
 
     def question_6(self, plan_length):
-        name_count = POSITIVE_FLUENTS
+        name_count = POSITIVE_FLUENTS_NL
         count = len(self.pos_fluents_given_plan[plan_length])
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_6.__name__)
 
     def question_7(self, plan_length):
-        name_count = NEGATIVE_FLUENTS
+        name_count = NEGATIVE_FLUENTS_NL
         count = len(self.neg_fluents_given_plan[plan_length])
         return self.free_answer_qa_helper(plan_length, name_count, count, self.question_7.__name__)
 
@@ -1030,7 +1002,7 @@ class HallucinationQuestions(QuestionGenerator):
         else:
             nl_fluent = self.domain_class.fluent_to_natural_language(fluent, is_hallucinated=True)
 
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS)}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
+        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS_NL)}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
     def qa_4_5_helper(self, plan_length, is_executable_action, question_name):
@@ -1084,11 +1056,11 @@ class HallucinationQuestions(QuestionGenerator):
 
     def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
         if is_pos_fluent_question:
-            fluent_type = POSITIVE_FLUENT
+            fluent_type = POSITIVE_FLUENT_NL
             fluents = random.sample(self.pos_fluents_given_plan[plan_length],
                                     random.randint(2, len(self.pos_fluents_given_plan[plan_length])))
         else:
-            fluent_type = NEGATIVE_FLUENT
+            fluent_type = NEGATIVE_FLUENT_NL
             fluents = random.sample(self.neg_fluents_given_plan[plan_length],
                                     random.randint(2, len(self.neg_fluents_given_plan[plan_length])))
         if is_answer_true:

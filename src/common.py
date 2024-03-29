@@ -49,6 +49,12 @@ WITHOUT_RANDOM_SUB= 'without_random_sub'
 # model and prompts
 MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
 
+# fluent names for QA
+FLUENTS_NL = 'properties of the state'
+POSITIVE_FLUENT_NL = 'valid property of the state'
+NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
+POSITIVE_FLUENTS_NL = 'valid properties of the state'
+NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
