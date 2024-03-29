@@ -2639,8 +2639,10 @@ class Mystery(BaseDomain):
         # 'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['vehicle is at location']
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
                 return [
@@ -2655,6 +2657,8 @@ class Mystery(BaseDomain):
                     f'cargo {obj} is situated at location {location}'
                 ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['vehicle is not at location']
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
                 return [
@@ -2670,6 +2674,8 @@ class Mystery(BaseDomain):
                 ]
 
         elif fluent.startswith('conn('):
+            if is_without_object:
+                return ['locations are connected']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f'location {location1} is connected to location {location2}',
@@ -2677,6 +2683,8 @@ class Mystery(BaseDomain):
                 f'location {location1} and location {location2} are connected'
             ]
         elif fluent.startswith('-conn('):
+            if is_without_object:
+                return ['locations are not connected']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f'location {location1} is not connected to location {location2}',
@@ -2685,6 +2693,8 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('has_fuel('):
+            if is_without_object:
+                return ['location has fuel']
             location, fuel = self.extract_multi_variable(fluent)
             return [
                 f'location {location} has fuel {fuel}',
@@ -2692,6 +2702,8 @@ class Mystery(BaseDomain):
                 f'fuel {fuel} exists in location {location}'
             ]
         elif fluent.startswith('-has_fuel('):
+            if is_without_object:
+                return ['location does not have fuel']
             location, fuel = self.extract_multi_variable(fluent)
             return [
                 f'location {location} does not have fuel {fuel}',
@@ -2700,12 +2712,16 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('fuel_neighbor('):
+            if is_without_object:
+                return ['fuel level neighbours another fuel level']
             f1, f2 = self.extract_multi_variable(fluent)
             return [
                 f'fuel level {f1} neighbours fuel level {f2}',
                 f'fuel-levels {f1} and {f2} are neighbors'
             ]
         elif fluent.startswith('-fuel_neighbor('):
+            if is_without_object:
+                return ['fuel level does not neighbour another fuel level']
             f1, f2 = self.extract_multi_variable(fluent)
             return [
                 f'fuel level {f1} does not neighbour fuel level {f2}',
@@ -2713,6 +2729,8 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['cargo is in vehicle']
             cargo, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'cargo {cargo} is in vehicle {vehicle}',
@@ -2720,6 +2738,8 @@ class Mystery(BaseDomain):
                 f'vehicle {vehicle} contains cargo {cargo}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['cargo is not in vehicle']
             cargo, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'cargo {cargo} is not in vehicle {vehicle}',
@@ -2728,12 +2748,16 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('has_space('):
+            if is_without_object:
+                return ['vehicle has space']
             vehicle, space = self.extract_multi_variable(fluent)
             return [
                 f'vehicle {vehicle} has space {space}',
                 f'vehicle {vehicle} contains space {space}'
             ]
         elif fluent.startswith('-has_space('):
+            if is_without_object:
+                return ['vehicle does not have space']
             vehicle, space = self.extract_multi_variable(fluent)
             return [
                 f'vehicle {vehicle} does not have space {space}',
@@ -2741,12 +2765,16 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('space_neighbor('):
+            if is_without_object:
+                return ['space neighbours another space']
             s1, s2 = self.extract_multi_variable(fluent)
             return [
                 f'space {s1} neighbours space {s2}',
                 f'spaces {s1} and {s2} are neighbors'
             ]
         elif fluent.startswith('-space_neighbor('):
+            if is_without_object:
+                return ['space does not neighbour another space']
             s1, s2 = self.extract_multi_variable(fluent)
             return [
                 f'space {s1} does not neighbour space {s2}',
