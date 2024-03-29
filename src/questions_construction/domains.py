@@ -855,8 +855,10 @@ class Driverlog(BaseDomain):
         # 'location': 'iatympbexj', 'locations': 'iatympbexj',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['at']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is at loaction {location}',
@@ -864,6 +866,8 @@ class Driverlog(BaseDomain):
                 f'{obj} is currently at location {location}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['not at']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is not at location {location}',
@@ -872,6 +876,8 @@ class Driverlog(BaseDomain):
             ]
 
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is in {obj2}',
@@ -879,6 +885,8 @@ class Driverlog(BaseDomain):
                 f'{obj1} is located in {obj2}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['not in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not in {obj2}',
@@ -887,6 +895,8 @@ class Driverlog(BaseDomain):
             ]
 
         elif fluent.startswith('driving('):
+            if is_without_object:
+                return ['driving']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is driving {obj2}',
@@ -894,6 +904,8 @@ class Driverlog(BaseDomain):
                 f'{obj1} is driving {obj2} currently'
             ]
         elif fluent.startswith('-driving('):
+            if is_without_object:
+                return ['not driving']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not driving {obj2}',
@@ -902,6 +914,8 @@ class Driverlog(BaseDomain):
             ]
 
         elif fluent.startswith('link('):
+            if is_without_object:
+                return ['a link between locations']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is a link between location {obj1} and location {obj2}',
@@ -909,6 +923,8 @@ class Driverlog(BaseDomain):
                 f'locations {obj1} and {obj2} have a link between them'
             ]
         elif fluent.startswith('-link('):
+            if is_without_object:
+                return ['no link between locations']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is no link between location {obj1} and location {obj2}',
@@ -917,6 +933,8 @@ class Driverlog(BaseDomain):
             ]
 
         elif fluent.startswith('path('):
+            if is_without_object:
+                return ['a path between locations']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is a path between location {obj1} and location {obj2}',
@@ -924,6 +942,8 @@ class Driverlog(BaseDomain):
                 f'locations {obj1} and {obj2} have a path between them'
             ]
         elif fluent.startswith('-path('):
+            if is_without_object:
+                return ['no path between locations']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is no path between location {obj1} and location {obj2}',
@@ -932,12 +952,16 @@ class Driverlog(BaseDomain):
             ]
 
         elif fluent.startswith('empty('):
+            if is_without_object:
+                return ['empty']
             obj = self.extract_single_variable(fluent)
             return [
                 f'{obj} is empty',
                 f'{obj} contains nothing'
             ]
         elif fluent.startswith('-empty('):
+            if is_without_object:
+                return ['not empty']
             obj = self.extract_single_variable(fluent)
             return [
                 f'{obj} is not empty',
