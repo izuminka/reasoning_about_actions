@@ -4225,8 +4225,10 @@ class Visitall(BaseDomain):
         'visit': 'lknwwwkrbf', 'visits': 'lknwwwkrbf', 'visiting': 'lknwwwkrbf', 'visited': 'lknwwwkrbf',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at_robot('):
+            if is_without_object:
+                return ['a robot is at a place']
             place = self.extract_single_variable(fluent)
             return [
                 f"robot is at {place}",
@@ -4234,6 +4236,8 @@ class Visitall(BaseDomain):
                 f'robot is placed at {place}'
             ]
         elif fluent.startswith('-at_robot('):
+            if is_without_object:
+                return ['a robot is not at a place']
             place = self.extract_single_variable(fluent)
             return [
                 f"robot is not at {place}",
@@ -4242,6 +4246,8 @@ class Visitall(BaseDomain):
             ]
 
         elif fluent.startswith('connected('):
+            if is_without_object:
+                return ['places are connected']
             place1, place2 = self.extract_multi_variable(fluent)
             return [
                 f"{place1} is connected to {place2}",
@@ -4249,6 +4255,8 @@ class Visitall(BaseDomain):
                 f'there is a connection between {place1} and {place2}'
             ]
         elif fluent.startswith('-connected('):
+            if is_without_object:
+                return ['places are not connected']
             place1, place2 = self.extract_multi_variable(fluent)
             return [
                 f"{place1} is not connected to {place2}",
@@ -4257,12 +4265,16 @@ class Visitall(BaseDomain):
             ]
 
         elif fluent.startswith('visited('):
+            if is_without_object:
+                return ['a place is visited']
             place = self.extract_single_variable(fluent)
             return [
                 f"{place} is visited",
                 f'{place} is marked as visited'
             ]
         elif fluent.startswith('-visited('):
+            if is_without_object:
+                return ['a place is not visited']
             place = self.extract_single_variable(fluent)
             return [
                 f"{place} is not visited",
