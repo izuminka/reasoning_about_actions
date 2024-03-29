@@ -1,6 +1,11 @@
 import re
 import random
 import string
+from src.common import *
+
+
+def capitalize_first_letter(string):
+    return string[0].upper() + string[1:]
 
 
 def strip_action_prefix(action):
@@ -15,21 +20,63 @@ def gen_random_str(length=10):
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
-    DOMAIN_DESC_WITHOUT_RAM = None
-    DOMAIN_DESC_WITH_RAM = None
+    DOMAIN_DESC_WITHOUT_RAM = ''
+    DOMAIN_DESC_WITH_RAM = ''
     SUBSTRINGS_TO_RAND = {}
     REPLACE_REGEX_PREFIX = r'(?<!\S)'
     REPLACE_REGEX_POSTFIX = r'(?![^\s"\'\.\,:;?!])'
 
-    def __init__(self, is_random_sub, is_ramifications):
+    BASE_FLUENTS = []
+    DERIVED_FLUENTS = []
+    PERSISTENT_FLUENTS = []
+    STATIC_FLUENTS = []
+
+    def __init__(self, is_random_sub, is_ramifications, is_with_fluent_info=True):
         self.is_random_sub = is_random_sub
         self.is_ramifications = is_ramifications
-        if is_ramifications:
-            self.domain_description = self.DOMAIN_DESC_WITH_RAM
-        else:
-            self.domain_description = self.DOMAIN_DESC_WITHOUT_RAM
+        self.domain_description = self.DOMAIN_DESC_WITH_RAM if is_ramifications else self.DOMAIN_DESC_WITHOUT_RAM
+        self.fluent_info_for_domain = self.construct_fluent_info_for_domain()
+        if is_with_fluent_info:
+            self.domain_description += '\n\n' + self.fluent_info_for_domain
         if is_random_sub:
             self.domain_description = self.replace_substrings(self.domain_description, self.SUBSTRINGS_TO_RAND)
+
+    def asp_to_nl(self, obj_ls):
+        if not obj_ls:
+            return None
+        and_str = ' and '
+        comma_str = ', '
+        if len(obj_ls) == 1:
+            nl_obj = self.fluent_to_natural_language_helper(obj_ls[0], is_without_object=True)[0]
+            return nl_obj
+        nl_obj_ls = [self.fluent_to_natural_language_helper(f, is_without_object=True)[0] for f in obj_ls]
+        return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
+
+    def construct_fluent_info_for_domain(self):
+        def add_fluents(fluent_ls, fluent_type_nl):
+            result = ''
+            if fluent_ls:
+                result += f"In this domain, they are: {self.asp_to_nl(fluent_ls)}. "
+            else:
+                result += f"There are no {fluent_type_nl} in this domain. "
+            return result
+
+        result = f'A state is a set of valid properties. Properties may or may not involve negations. '
+        result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
+
+        result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties that don't depend on other properties. "
+        result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS_NL)
+
+        result += f"{capitalize_first_letter(DERIVED_FLUENTS_NL)} are properties that depend on other properties. "
+        result += add_fluents(self.DERIVED_FLUENTS, DERIVED_FLUENTS_NL)
+
+        result += f"{capitalize_first_letter(PERSISTENT_FLUENTS_NL)} are properties that depend on themselves. "
+        result += add_fluents(self.PERSISTENT_FLUENTS, PERSISTENT_FLUENTS_NL)
+
+        result += f"{capitalize_first_letter(STATIC_FLUENTS_NL)} are properties that don't change under any action. "
+        result += add_fluents(self.STATIC_FLUENTS, STATIC_FLUENTS_NL)
+
+        return result
 
     def extract_single_variable(self, obj):
         return re.findall(self.OBJ_IN_PAREN_REGEX, obj)[0]
@@ -56,7 +103,7 @@ class BaseDomain:
             result.append(sentence)
         return sentence_split_token.join(result)
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         raise 'Implement in child class'
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
@@ -76,7 +123,7 @@ class BaseDomain:
 
         if self.is_random_sub:
             nl_fluent_list = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_fluent_list]
-        
+
         return random.choice(nl_fluent_list)
 
     def action_to_natural_language(self, action, is_hallucinated=False):
@@ -87,24 +134,24 @@ class BaseDomain:
 
         if self.is_random_sub:
             nl_action_list = [self.replace_substrings(ele, self.SUBSTRINGS_TO_RAND) for ele in nl_action_list]
-        
+
         return random.choice(nl_action_list)
 
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
-    
+
     BASE_POS_FLUENTS = ['ontable(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['clear(', 'handempty']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['holding(', 'on(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_FLUENTS = []
-    
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
         'By picking up that block, it makes that block not present on the table and not clear. '
@@ -141,13 +188,15 @@ class Blocksworld(BaseDomain):
                       'unstacked': 'wxqdwukszo'}
     FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
                       # 'clear': 'ormkfgqwve',
-                       'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
+                      'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
                       # 'empty': 'yqttlkcqqj',
                       'hand': 'egpbpdtalq'}
     SUBSTRINGS_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('on('):
+            if is_without_object:
+                return ['a block is on another block']
             b1, b2 = self.extract_multi_variable(fluent)
             return [
                 f'block {b1} is on block {b2}',
@@ -155,6 +204,8 @@ class Blocksworld(BaseDomain):
                 f'block {b1} is placed on top of block {b2}'
             ]
         elif fluent.startswith('-on('):
+            if is_without_object:
+                return ['a block is not on another block']
             b1, b2 = self.extract_multi_variable(fluent)
             return [
                 f'block {b1} is not on block {b2}',
@@ -163,23 +214,31 @@ class Blocksworld(BaseDomain):
             ]
 
         elif fluent.startswith('clear('):
+            if is_without_object:
+                return ['a block is clear']
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is clear'
             ]
         elif fluent.startswith('-clear('):
+            if is_without_object:
+                return ['a block is not clear']
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not clear'
             ]
 
         elif fluent.startswith('ontable('):
+            if is_without_object:
+                return ['a block is on the table']
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is on the table',
                 f'block {b} is located at the table'
             ]
         elif fluent.startswith('-ontable('):
+            if is_without_object:
+                return ['a block is not on the table']
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not on the table',
@@ -187,6 +246,8 @@ class Blocksworld(BaseDomain):
             ]
 
         elif fluent.startswith('holding('):
+            if is_without_object:
+                return ['a block is being held']
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is being held',
@@ -194,6 +255,8 @@ class Blocksworld(BaseDomain):
                 f'block {b} is being held by the hand'
             ]
         elif fluent.startswith('-holding('):
+            if is_without_object:
+                return ['a block is not being held']
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not being held',
@@ -319,7 +382,7 @@ class Blocksworld(BaseDomain):
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
-        
+
         # lift
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
@@ -328,7 +391,7 @@ class Blocksworld(BaseDomain):
                 f'block {block_name} is lifted by the hand',
                 f'the hand lifts the block {block_name}'
             ]
-        
+
         # lower
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
@@ -337,7 +400,7 @@ class Blocksworld(BaseDomain):
                 f'block {block_name} is lowered by the hand',
                 f'block {block_name} is lowered to the table'
             ]
-        
+
         # remove
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
@@ -346,7 +409,7 @@ class Blocksworld(BaseDomain):
                 f'block {b1} is removed from top of block {b2}'
                 f'from top of block {b2}, block {b1} is removed'
             ]
-        
+
         # crashed
         elif 'stack(' in action:
             b1, b2 = self.extract_multi_variable(action)
@@ -393,15 +456,15 @@ class Depots(BaseDomain):
         "A truck can be only at one location. "
         "A crate can only be at one location. "
         "A crate can only be on top of one surface. ")
-    
+
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['clear(', 'available(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at(', 'on(', 'in(', 'lifting(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_FLUENTS = []
 
@@ -421,13 +484,15 @@ class Depots(BaseDomain):
         # 'available': 'xlhhnyciys',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['at']
             obj, place = self.extract_multi_variable(fluent)
-            if (obj.startswith('truck') or 
-                obj.startswith('crate') or 
-                obj.startswith('hoist') or 
-                obj.startswith('pallet')):
+            if (obj.startswith('truck') or
+                    obj.startswith('crate') or
+                    obj.startswith('hoist') or
+                    obj.startswith('pallet')):
                 return [
                     f'{obj} is at {place}',
                     f'{obj} is located at {place}',
@@ -437,11 +502,13 @@ class Depots(BaseDomain):
             else:
                 raise Exception('fluent is not defined')
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['not at']
             obj, place = self.extract_multi_variable(fluent)
-            if (obj.startswith('truck') or 
-                obj.startswith('crate') or 
-                obj.startswith('hoist') or 
-                obj.startswith('pallet')):
+            if (obj.startswith('truck') or
+                    obj.startswith('crate') or
+                    obj.startswith('hoist') or
+                    obj.startswith('pallet')):
                 return [
                     f'{obj} is not at {place}',
                     f'{obj} is not located at {place}',
@@ -452,6 +519,8 @@ class Depots(BaseDomain):
                 raise Exception('fluent is not defined')
 
         elif fluent.startswith('on('):
+            if is_without_object:
+                return ['on']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is on {obj2}',
@@ -459,6 +528,8 @@ class Depots(BaseDomain):
                 f'{obj1} is on top of {obj2}'
             ]
         elif fluent.startswith('-on('):
+            if is_without_object:
+                return ['not on']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not on {obj2}',
@@ -467,6 +538,8 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is in {obj2}',
@@ -474,6 +547,8 @@ class Depots(BaseDomain):
                 f'{obj1} is inside {obj2}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['not in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not in {obj2}',
@@ -482,6 +557,8 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('lifting('):
+            if is_without_object:
+                return ['a hoist is lifting a crate']
             hoist, crate = self.extract_multi_variable(fluent)
             return [
                 f'{hoist} is lifting {crate}',
@@ -489,6 +566,8 @@ class Depots(BaseDomain):
                 f'{hoist} is elevating {crate}'
             ]
         elif fluent.startswith('-lifting('):
+            if is_without_object:
+                return ['a hoist is not lifting a crate']
             hoist, crate = self.extract_multi_variable(fluent)
             return [
                 f'{hoist} is not lifting {crate}',
@@ -497,6 +576,8 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('available('):
+            if is_without_object:
+                return ['hoist is available']
             hoist = self.extract_single_variable(fluent)
             return [
                 f'{hoist} is available',
@@ -504,6 +585,8 @@ class Depots(BaseDomain):
                 f'{hoist} is available for work'
             ]
         elif fluent.startswith('-available('):
+            if is_without_object:
+                return ['hoist is not available']
             hoist = self.extract_single_variable(fluent)
             return [
                 f'{hoist} is not available',
@@ -512,12 +595,16 @@ class Depots(BaseDomain):
             ]
 
         elif fluent.startswith('clear('):
+            if is_without_object:
+                return ['a surface is clear']
             surface = self.extract_single_variable(fluent)
             return [
                 f'{surface} is clear',
                 f'{surface} is clear of any crates'
             ]
         elif fluent.startswith('-clear('):
+            if is_without_object:
+                return ['a surface is not clear']
             surface = self.extract_single_variable(fluent)
             return [
                 f'{surface} is not clear',
@@ -597,7 +684,7 @@ class Depots(BaseDomain):
                     ]
                 else:
                     raise Exception('fluent is not defined')
-            
+
             elif fluent.startswith(f'{prefix_asp}on('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
                 # within
@@ -605,7 +692,7 @@ class Depots(BaseDomain):
                     f'{obj1} is {prefix_nl}within {obj2}',
                     f'{obj1} does {prefix_nl}exist within {obj2}'
                 ]
-            
+
             elif fluent.startswith(f'{prefix_asp}in('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
                 # next to
@@ -613,7 +700,7 @@ class Depots(BaseDomain):
                     f'{obj1} is {prefix_nl}next to {obj2}',
                     f'{obj1} is {prefix_nl}situated next to {obj2}'
                 ]
-            
+
             elif fluent.startswith(f'{prefix_asp}lifting('):
                 hoist, crate = self.extract_multi_variable(fluent)
                 # transporting
@@ -621,7 +708,7 @@ class Depots(BaseDomain):
                     f'{hoist} is {prefix_nl}transporting {crate}',
                     f'{crate} is {prefix_nl}being transported by {hoist}'
                 ]
-            
+
             elif fluent.startswith(f'{prefix_asp}available('):
                 hoist = self.extract_single_variable(fluent)
                 # malfunction (changed from 'free')
@@ -629,7 +716,7 @@ class Depots(BaseDomain):
                     f'{hoist} is {prefix_nl}malfunctioning',
                     f'{hoist} is {prefix_nl}experiencing a malfunciton'
                 ]
-            
+
             elif fluent.startswith(f'{prefix_asp}clear('):
                 surface = self.extract_single_variable(fluent)
                 # expensive (changed from 'free')
@@ -718,18 +805,18 @@ class Driverlog(BaseDomain):
         "A driver is driving the truck if and only if the driver is not at a location "
         "An object can only be at one location. "
         "A driver can only be at one location.")
-    
+
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['empty(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at(', 'in(', 'driving(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = ['link(', 'path(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
@@ -752,23 +839,29 @@ class Driverlog(BaseDomain):
         # 'location': 'iatympbexj', 'locations': 'iatympbexj',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['an object is obj is at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
-                f'{obj} is at loaction {location}',
+                f'{obj} is at location {location}',
                 f'{obj} is present at location {location}',
                 f'{obj} is currently at location {location}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['an object is obj is not at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is not at location {location}',
                 f'{obj} is not present at location {location}',
                 f'{obj} is not currently at location {location}'
             ]
-        
+
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is in {obj2}',
@@ -776,14 +869,18 @@ class Driverlog(BaseDomain):
                 f'{obj1} is located in {obj2}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['not in']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not in {obj2}',
                 f'{obj1} is not placed in {obj2}',
                 f'{obj1} is not located in {obj2}'
             ]
-        
+
         elif fluent.startswith('driving('):
+            if is_without_object:
+                return ['driving']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is driving {obj2}',
@@ -791,14 +888,18 @@ class Driverlog(BaseDomain):
                 f'{obj1} is driving {obj2} currently'
             ]
         elif fluent.startswith('-driving('):
+            if is_without_object:
+                return ['not driving']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not driving {obj2}',
                 f'{obj2} is not being driven by {obj1}',
                 f'{obj1} is not driving {obj2} currently'
             ]
-        
+
         elif fluent.startswith('link('):
+            if is_without_object:
+                return ['locations are linked']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is a link between location {obj1} and location {obj2}',
@@ -806,14 +907,18 @@ class Driverlog(BaseDomain):
                 f'locations {obj1} and {obj2} have a link between them'
             ]
         elif fluent.startswith('-link('):
+            if is_without_object:
+                return ['locations are not linked']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is no link between location {obj1} and location {obj2}',
                 f'there doesn\'t exist a link between the locations {obj1} and {obj2}',
                 f'locations {obj1} and {obj2} does not have a link between them'
             ]
-        
+
         elif fluent.startswith('path('):
+            if is_without_object:
+                return ['there is a path between locations']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is a path between location {obj1} and location {obj2}',
@@ -821,6 +926,8 @@ class Driverlog(BaseDomain):
                 f'locations {obj1} and {obj2} have a path between them'
             ]
         elif fluent.startswith('-path('):
+            if is_without_object:
+                return ['there is no a path between locations']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is no path between location {obj1} and location {obj2}',
@@ -829,12 +936,16 @@ class Driverlog(BaseDomain):
             ]
 
         elif fluent.startswith('empty('):
+            if is_without_object:
+                return ['empty']
             obj = self.extract_single_variable(fluent)
             return [
                 f'{obj} is empty',
                 f'{obj} contains nothing'
             ]
         elif fluent.startswith('-empty('):
+            if is_without_object:
+                return ['not empty']
             obj = self.extract_single_variable(fluent)
             return [
                 f'{obj} is not empty',
@@ -1095,19 +1206,20 @@ class Goldminer(BaseDomain):
         "The place is clear if and only if it does not contain any soft rock, gold, or hard rock. "
         "The robot is holding a laser if and only if the laser is not at a location. ")
 
-    BASE_POS_FLUENTS = ['bomb_at(', 'laser_at(', 'soft_rock_at(', 'hard_rock_at(', 'holds_bomb(', 'holds_laser(', 'holds_gold(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_POS_FLUENTS = ['bomb_at(', 'laser_at(', 'soft_rock_at(', 'hard_rock_at(', 'holds_bomb(', 'holds_laser(',
+                        'holds_gold(']
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['arm_empty', 'clear(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
-    PERSISTENT_POS_FLUENTS = ['robot_at(','gold_at(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_POS_FLUENTS = ['robot_at(', 'gold_at(']
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = ['connected(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
+
     SUBSTRINGS_TO_RAND = {
         'robot': 'oiycijmjmo',
         'laser': 'jaakaxcemj',
@@ -1127,8 +1239,10 @@ class Goldminer(BaseDomain):
         # 'location': 'cltqghvirt', 'locations': 'cltqghvirt',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('robot_at('):
+            if is_without_object:
+                return ['a robot is at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'robot is at location {place}',
@@ -1136,6 +1250,8 @@ class Goldminer(BaseDomain):
                 f'robot is located at {place}'
             ]
         elif fluent.startswith('-robot_at('):
+            if is_without_object:
+                return ['a robot is not at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'robot is not at location {place}',
@@ -1144,6 +1260,8 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('bomb_at('):
+            if is_without_object:
+                return ['a bomb is at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'bomb is at location {place}',
@@ -1151,6 +1269,8 @@ class Goldminer(BaseDomain):
                 f'bomb is located at {place}'
             ]
         elif fluent.startswith('-bomb_at('):
+            if is_without_object:
+                return ['a bomb is not at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'bomb is not at location {place}',
@@ -1159,6 +1279,8 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('laser_at('):
+            if is_without_object:
+                return ['a laser is at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'laser is at location {place}',
@@ -1166,6 +1288,8 @@ class Goldminer(BaseDomain):
                 f'laser is located at {place}'
             ]
         elif fluent.startswith('-laser_at('):
+            if is_without_object:
+                return ['a laser is not at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'laser is not at location {place}',
@@ -1174,6 +1298,8 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('soft_rock_at('):
+            if is_without_object:
+                return ['a soft rock is at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'soft rock is at location {place}',
@@ -1181,6 +1307,8 @@ class Goldminer(BaseDomain):
                 f'soft rock is located at {place}'
             ]
         elif fluent.startswith('-soft_rock_at('):
+            if is_without_object:
+                return ['a soft rock is not at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'soft rock is not at location {place}',
@@ -1189,6 +1317,8 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('hard_rock_at('):
+            if is_without_object:
+                return ['a hard rock is at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'hard rock is at location {place}',
@@ -1196,6 +1326,8 @@ class Goldminer(BaseDomain):
                 f'hard rock is located at {place}'
             ]
         elif fluent.startswith('-hard_rock_at('):
+            if is_without_object:
+                return ['a hard rock is not at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'hard rock is not at location {place}',
@@ -1204,6 +1336,8 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('gold_at('):
+            if is_without_object:
+                return ['gold is at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'gold is at location {place}',
@@ -1211,6 +1345,8 @@ class Goldminer(BaseDomain):
                 f'gold is located at {place}'
             ]
         elif fluent.startswith('-gold_at('):
+            if is_without_object:
+                return ['gold is not at a location']
             place = self.extract_single_variable(fluent)
             return [
                 f'gold is not at location {place}',
@@ -1219,6 +1355,8 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('connected('):
+            if is_without_object:
+                return ['locations are connected']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is a connection between location {obj1} and location {obj2}',
@@ -1226,6 +1364,8 @@ class Goldminer(BaseDomain):
                 f'locations {obj1} and {obj2} are connected'
             ]
         elif fluent.startswith('-connected('):
+            if is_without_object:
+                return ['locations are not connected']
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'there is no connection between location {obj1} and location {obj2}',
@@ -1280,12 +1420,16 @@ class Goldminer(BaseDomain):
             ]
 
         elif fluent.startswith('clear('):
+            if is_without_object:
+                return ['a location is clear']
             location = self.extract_single_variable(fluent)
             return [
                 f'location {location} is clear',
                 f'location {location} contains nothing'
             ]
         elif fluent.startswith('-clear('):
+            if is_without_object:
+                return ['a location is not clear']
             location = self.extract_single_variable(fluent)
             return [
                 f'location {location} is not clear',
@@ -1598,21 +1742,20 @@ class Goldminer(BaseDomain):
 
 class Grippers(BaseDomain):
     DOMAIN_NAME = 'grippers'
-    
+
     BASE_POS_FLUENTS = ['carry(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
-    DERIVED_POS_FLUENTS = ['free']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_POS_FLUENTS = ['free(']
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at_robby(', 'at(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = []
     STATIC_NEG_FLUENTS = []
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
-    
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'A robot can move from a specified room if it is in that room. '
         'Moving the robot causes it to be not in the said room but in the destination room. '
@@ -1643,13 +1786,15 @@ class Grippers(BaseDomain):
         'gripper': 'yegitqlmuq', 'grippers': 'yegitqlmuq',
         'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
         'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
-        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn','dropped': 'qhfmsjkotn',
+        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn', 'dropped': 'qhfmsjkotn',
         'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt',
         'transported': 'kseqanhkzt',
         'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at_robby('):
+            if is_without_object:
+                return ['a robot is at a room']
             robot, room = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is at {room}',
@@ -1657,6 +1802,8 @@ class Grippers(BaseDomain):
                 f'{robot} is located at {room}'
             ]
         elif fluent.startswith('-at_robby('):
+            if is_without_object:
+                return ['a robot is not at a room']
             robot, room = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is not at {room}',
@@ -1665,6 +1812,8 @@ class Grippers(BaseDomain):
             ]
 
         elif fluent.startswith('at('):
+            if is_without_object:
+                return ['an object is at a room']
             obj, room = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is at {room}',
@@ -1672,6 +1821,8 @@ class Grippers(BaseDomain):
                 f'{obj} is present at {room}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['an object is not at a room']
             obj, room = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is not at {room}',
@@ -1680,6 +1831,8 @@ class Grippers(BaseDomain):
             ]
 
         elif fluent.startswith('free('):
+            if is_without_object:
+                return ['a gripper is free']
             robot, gripper = self.extract_multi_variable(fluent)
             return [
                 f"{gripper} of {robot} is free",
@@ -1687,6 +1840,8 @@ class Grippers(BaseDomain):
                 f'{robot}\'s {gripper} is available'
             ]
         elif fluent.startswith('-free('):
+            if is_without_object:
+                return ['a gripper is not free']
             robot, gripper = self.extract_multi_variable(fluent)
             return [
                 f"{gripper} of {robot} is not free",
@@ -1695,6 +1850,8 @@ class Grippers(BaseDomain):
             ]
 
         elif fluent.startswith('carry('):
+            if is_without_object:
+                return ['a robot is carrying an object with a gripper']
             robot, obj, gripper = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is carrying {obj} with {gripper}',
@@ -1702,6 +1859,8 @@ class Grippers(BaseDomain):
                 f'{gripper} of {robot} is carrying {obj}'
             ]
         elif fluent.startswith('-carry('):
+            if is_without_object:
+                return ['a robot is not carrying an object with a gripper']
             robot, obj, gripper = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is not carrying {obj} with {gripper}',
@@ -1709,7 +1868,7 @@ class Grippers(BaseDomain):
                 f'{gripper} of {robot} is not carrying {obj}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: "{fluent}" is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -1767,7 +1926,7 @@ class Grippers(BaseDomain):
                 f'{obj} is not transported to {room}',
                 f'{obj} isn\'t moved to {room}'
             ]
-        
+
         # broken
         elif fluent.startswith('free('):
             robot, gripper = self.extract_multi_variable(fluent)
@@ -1781,7 +1940,7 @@ class Grippers(BaseDomain):
                 f"{gripper} of {robot} is not broken",
                 f'{robot}\'s {gripper} is not broken'
             ]
-        
+
         # loading
         elif fluent.startswith('carry('):
             robot, obj, gripper = self.extract_multi_variable(fluent)
@@ -1862,7 +2021,7 @@ class Logistics(BaseDomain):
 
         "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
         "A truck can only be at one location at a time. A plane can only be in one location at a time.")
-    
+
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -1870,12 +2029,11 @@ class Logistics(BaseDomain):
     DERIVED_NEG_FLUENTS = []
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at(', 'in(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = ['in_city(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-
 
     SUBSTRINGS_TO_RAND = {
         'package': 'tnzistccqp', 'packages': 'tnzistccqp',
@@ -1890,12 +2048,15 @@ class Logistics(BaseDomain):
         'unloaded': 'bdfszwzdpi',
         'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn',
         'driven': 'umcjrdgfyn',
-        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar', 'flown': 'umnkjqinar',
+        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar',
+        'flown': 'umnkjqinar',
         # 'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('in_city('):
+            if is_without_object:
+                return ['an airport is in a city']
             airport, city = self.extract_multi_variable(fluent)
             return [
                 f'airport {airport} is in city {city}',
@@ -1903,14 +2064,18 @@ class Logistics(BaseDomain):
                 f'city {city} contains airport {airport}'
             ]
         elif fluent.startswith('-in_city('):
+            if is_without_object:
+                return ['an airport is not in a city']
             airport, city = self.extract_multi_variable(fluent)
             return [
                 f'airport {airport} is not in city {city}'
                 f'airport {airport} is not located in city {city}',
                 f'city {city} does not contain airport {airport}'
             ]
-        
+
         elif fluent.startswith('at('):
+            if is_without_object:
+                return ['an object is at an airport']
             physical_object, airport = self.extract_multi_variable(fluent)
             return [
                 f'object {physical_object} is at airport {airport}',
@@ -1918,14 +2083,18 @@ class Logistics(BaseDomain):
                 f'at airport {airport}, object {physical_object} is located'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['an object is not at an airport']
             physical_object, airport = self.extract_multi_variable(fluent)
             return [
                 f'object {physical_object} is not at airport {airport}',
                 f'object {physical_object} is not located at airport {airport}',
                 f'at airport {airport}, object {physical_object} is not located'
             ]
-        
+
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['a package is in a vehicle']
             package, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'package {package} is in vehicle {vehicle}',
@@ -1933,6 +2102,8 @@ class Logistics(BaseDomain):
                 f'package {package} is located in vehicle {vehicle}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['a package is not in a vehicle']
             package, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'package {package} is not in vehicle {vehicle}',
@@ -2105,20 +2276,20 @@ class Miconic(BaseDomain):
 
         "A lift can only be on one floor at a time. "
         "If the passenger is served, then the passenger is not boarded.")
-    
+
     BASE_POS_FLUENTS = ['boarded(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['served(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['lift_at(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
-    STATIC_POS_FLUENTS = ['origin(','destin(','above(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_POS_FLUENTS = ['origin(', 'destin(', 'above(']
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
+
     SUBSTRINGS_TO_RAND = {
         # 'up': 'lfapuhgnsn',
         # 'down': 'mmphaaxcri',
@@ -2131,11 +2302,13 @@ class Miconic(BaseDomain):
         'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
         'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
         'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
-        'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja','departed': 'jbctpepaja'
+        'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja', 'departed': 'jbctpepaja'
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('origin('):
+            if is_without_object:
+                return ['a passenger boards at a floor']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'passenger {passenger} enters at floor {floor}',
@@ -2143,14 +2316,18 @@ class Miconic(BaseDomain):
                 f'passenger {passenger} boards on level {floor}'
             ]
         elif fluent.startswith('-origin('):
+            if is_without_object:
+                return ['a passenger does not board at a floor']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'passenger {passenger} does not enter at floor {floor}',
                 f'passenger {passenger} does not boards at floor {floor}',
                 f'passenger {passenger} does not boards on level {floor}'
             ]
-        
+
         elif fluent.startswith('destin('):
+            if is_without_object:
+                return ['a destination']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'destination of passenger {passenger} is floor {floor}',
@@ -2158,14 +2335,18 @@ class Miconic(BaseDomain):
                 f'destination of passenger {passenger} is level {floor}'
             ]
         elif fluent.startswith('-destin('):
+            if is_without_object:
+                return ['not a destination']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'destination of passenger {passenger} is not floor {floor}',
                 f'floor {floor} is not the destination of passenger {passenger}',
                 f'destination of passenger {passenger} is not level {floor}',
             ]
-        
+
         elif fluent.startswith('above('):
+            if is_without_object:
+                return ['one floor is above another']
             floor1, floor2 = self.extract_multi_variable(fluent)
             return [
                 f'floor {floor2} is above floor {floor1}',
@@ -2173,6 +2354,8 @@ class Miconic(BaseDomain):
                 f'floor {floor1} is below floor {floor2}'
             ]
         elif fluent.startswith('-above('):
+            if is_without_object:
+                return ['one floor is not above another']
             floor1, floor2 = self.extract_multi_variable(fluent)
             return [
                 f'floor {floor2} is not above floor {floor1}',
@@ -2180,38 +2363,50 @@ class Miconic(BaseDomain):
                 f'floor {floor1} is not below floor {floor2}'
             ]
         elif fluent.startswith('boarded('):
+            if is_without_object:
+                return ['a passenger is boarded']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is boarded',
                 f'passenger {passenger} has boarded the lift'
             ]
         elif fluent.startswith('-boarded('):
+            if is_without_object:
+                return ['a passenger is not boarded']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is not boarded',
                 f'passenger {passenger} has not boarded the lift'
             ]
-        
+
         elif fluent.startswith('served('):
+            if is_without_object:
+                return ['a passenger is served']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is served',
                 f'passenger {passenger} is attended to'
             ]
         elif fluent.startswith('-served('):
+            if is_without_object:
+                return ['a passenger is not served']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is not served',
                 f'passenger {passenger} is not attended to'
             ]
-        
+
         elif fluent.startswith('lift_at('):
+            if is_without_object:
+                return ['a lift is at floor']
             floor = self.extract_single_variable(fluent)
             return [
                 f'lift is at floor {floor}',
                 f'lift is positioned at level {floor}'
             ]
         elif fluent.startswith('-lift_at('):
+            if is_without_object:
+                return ['a lift is not at floor']
             floor = self.extract_single_variable(fluent)
             return [
                 f'lift is not at floor {floor}',
@@ -2252,7 +2447,6 @@ class Miconic(BaseDomain):
             ]
         else:
             raise Exception('action is not defined')
-
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # stairs (changed from "wait")
@@ -2332,7 +2526,7 @@ class Miconic(BaseDomain):
                 f'passenger {passenger} does not ride',
                 f'passenger {passenger} does not take a ride'
             ]
-        
+
         # stuck
         elif fluent.startswith('lift_at('):
             floor = self.extract_single_variable(fluent)
@@ -2414,20 +2608,20 @@ class Mystery(BaseDomain):
         "Cargo can only be at one place at a time. "
         "The location's fuel level is unique. "
         "The vehicle's amount of space is unique. ")
-    
+
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = []
     DERIVED_NEG_FLUENTS = []
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
-    PERSISTENT_POS_FLUENTS = ['at(', 'in(','has_space(','has_fuel(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_POS_FLUENTS = ['at(', 'in(', 'has_space(', 'has_fuel(']
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
-    STATIC_POS_FLUENTS = ['space_neighbor(','fuel_neighbor(','conn(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_POS_FLUENTS = ['space_neighbor(', 'fuel_neighbor(', 'conn(']
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
+
     SUBSTRINGS_TO_RAND = {
         'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
         'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
@@ -2437,8 +2631,10 @@ class Mystery(BaseDomain):
         # 'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['a vehicle is at a location']
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
                 return [
@@ -2453,6 +2649,8 @@ class Mystery(BaseDomain):
                     f'cargo {obj} is situated at location {location}'
                 ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['a vehicle is not at a location']
             obj, location = self.extract_multi_variable(fluent)
             if obj.startswith('vehicle'):
                 return [
@@ -2466,8 +2664,10 @@ class Mystery(BaseDomain):
                     f'cargo {obj} is not present at location {location}',
                     f'cargo {obj} is not situated at location {location}'
                 ]
-        
+
         elif fluent.startswith('conn('):
+            if is_without_object:
+                return ['locations are connected']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f'location {location1} is connected to location {location2}',
@@ -2475,6 +2675,8 @@ class Mystery(BaseDomain):
                 f'location {location1} and location {location2} are connected'
             ]
         elif fluent.startswith('-conn('):
+            if is_without_object:
+                return ['locations are not connected']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f'location {location1} is not connected to location {location2}',
@@ -2483,6 +2685,8 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('has_fuel('):
+            if is_without_object:
+                return ['location has fuel']
             location, fuel = self.extract_multi_variable(fluent)
             return [
                 f'location {location} has fuel {fuel}',
@@ -2490,6 +2694,8 @@ class Mystery(BaseDomain):
                 f'fuel {fuel} exists in location {location}'
             ]
         elif fluent.startswith('-has_fuel('):
+            if is_without_object:
+                return ['location does not have fuel']
             location, fuel = self.extract_multi_variable(fluent)
             return [
                 f'location {location} does not have fuel {fuel}',
@@ -2498,12 +2704,16 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('fuel_neighbor('):
+            if is_without_object:
+                return ['fuel level neighbours another fuel level']
             f1, f2 = self.extract_multi_variable(fluent)
             return [
                 f'fuel level {f1} neighbours fuel level {f2}',
                 f'fuel-levels {f1} and {f2} are neighbors'
             ]
         elif fluent.startswith('-fuel_neighbor('):
+            if is_without_object:
+                return ['fuel level does not neighbour another fuel level']
             f1, f2 = self.extract_multi_variable(fluent)
             return [
                 f'fuel level {f1} does not neighbour fuel level {f2}',
@@ -2511,6 +2721,8 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['cargo is in a vehicle']
             cargo, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'cargo {cargo} is in vehicle {vehicle}',
@@ -2518,6 +2730,8 @@ class Mystery(BaseDomain):
                 f'vehicle {vehicle} contains cargo {cargo}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['cargo is not in a vehicle']
             cargo, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'cargo {cargo} is not in vehicle {vehicle}',
@@ -2526,12 +2740,16 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('has_space('):
+            if is_without_object:
+                return ['a vehicle has space']
             vehicle, space = self.extract_multi_variable(fluent)
             return [
                 f'vehicle {vehicle} has space {space}',
                 f'vehicle {vehicle} contains space {space}'
             ]
         elif fluent.startswith('-has_space('):
+            if is_without_object:
+                return ['a vehicle does not have space']
             vehicle, space = self.extract_multi_variable(fluent)
             return [
                 f'vehicle {vehicle} does not have space {space}',
@@ -2539,12 +2757,16 @@ class Mystery(BaseDomain):
             ]
 
         elif fluent.startswith('space_neighbor('):
+            if is_without_object:
+                return ['space neighbours another space']
             s1, s2 = self.extract_multi_variable(fluent)
             return [
                 f'space {s1} neighbours space {s2}',
                 f'spaces {s1} and {s2} are neighbors'
             ]
         elif fluent.startswith('-space_neighbor('):
+            if is_without_object:
+                return ['space does not neighbour another space']
             s1, s2 = self.extract_multi_variable(fluent)
             return [
                 f'space {s1} does not neighbour space {s2}',
@@ -2609,7 +2831,7 @@ class Mystery(BaseDomain):
                     f'at location {location}, cargo {obj} is not inspected',
                     f'inspection of cargo {obj} does not occur at location {location}'
                 ]
-        
+
         # far
         elif fluent.startswith('conn('):
             location1, location2 = self.extract_multi_variable(fluent)
@@ -2730,20 +2952,20 @@ class Mystery(BaseDomain):
 
 class Npuzzle(BaseDomain):
     DOMAIN_NAME = 'npuzzle'
-    
+
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['empty(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = ['neighbor(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
         'Moving a tile from source position to destination position causes the tile to be present at destination position, destination position to be not empty, and causes source position to be empty.')
@@ -2759,8 +2981,10 @@ class Npuzzle(BaseDomain):
         # 'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['a tile is at a position']
             tile, position = self.extract_multi_variable(fluent)
             return [
                 f'tile {tile} is at position {position}',
@@ -2768,14 +2992,18 @@ class Npuzzle(BaseDomain):
                 f'tile {tile} is present in the position {position}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['a tile is not at a position']
             tile, position = self.extract_multi_variable(fluent)
             return [
                 f'tile {tile} is not at position {position}',
                 f'tile {tile} is not located at position {position}',
                 f'tile {tile} is not present in the position {position}'
             ]
-        
+
         elif fluent.startswith('neighbor('):
+            if is_without_object:
+                return ['positions are neighbors']
             position1, position2 = self.extract_multi_variable(fluent)
             return [
                 f'position {position1} is a neighbor of position {position2}',
@@ -2783,20 +3011,26 @@ class Npuzzle(BaseDomain):
                 f'positions {position1} and {position2} are neighbors'
             ]
         elif fluent.startswith('-neighbor('):
+            if is_without_object:
+                return ['positions are not neighbors']
             position1, position2 = self.extract_multi_variable(fluent)
             return [
                 f'position {position1} is not a neighbor of position {position2}',
                 f'position {position1} and position {position2} are not neighbors',
                 f'positions {position1} and {position2} are not neighbors'
             ]
-        
+
         elif fluent.startswith('empty('):
+            if is_without_object:
+                return ['a position is empty']
             position = self.extract_single_variable(fluent)
             return [
                 f'position {position} is empty',
                 f'position {position} does not contain any tile'
             ]
         elif fluent.startswith('-empty('):
+            if is_without_object:
+                return ['a position is not empty']
             position = self.extract_single_variable(fluent)
             return [
                 f'position {position} is not empty',
@@ -2833,7 +3067,7 @@ class Npuzzle(BaseDomain):
                 f'tile {tile} is not trapped at position {position}',
                 f'at position {position}, tile {tile} is not stuck'
             ]
-        
+
         # color (changed from "far from")
         elif fluent.startswith('neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
@@ -2850,13 +3084,15 @@ class Npuzzle(BaseDomain):
                 f'color of positions {position1} and {position2} is not same'
             ]
 
-        elif fluent.startswith('empty('): ################################## Exists is implicitly defined in initial conditions
+        elif fluent.startswith(
+                'empty('):  ################################## Exists is implicitly defined in initial conditions
             position = self.extract_single_variable(fluent)
             return [
                 f'position {position} exists'
             ]
             # return f'position {position} exists'  # does not exist
-        elif fluent.startswith('-empty('): ################################## Exists is implicitly defined in initial conditions
+        elif fluent.startswith(
+                '-empty('):  ################################## Exists is implicitly defined in initial conditions
             position = self.extract_single_variable(fluent)
             return [
                 f'position {position} does not exist'
@@ -2908,18 +3144,18 @@ class Satellite(BaseDomain):
 
         "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
         "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
-    
-    BASE_POS_FLUENTS = ['power_on(','calibrated(','have_image(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+
+    BASE_POS_FLUENTS = ['power_on(', 'calibrated(', 'have_image(']
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['power_avail(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['pointing(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
-    STATIC_POS_FLUENTS = ['on_board(','supports(','calibration_target(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_POS_FLUENTS = ['on_board(', 'supports(', 'calibration_target(']
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
@@ -2938,8 +3174,10 @@ class Satellite(BaseDomain):
         # 'source': 'uuwgcgehnr',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('on_board('):
+            if is_without_object:
+                return ['an instrument is on board a satellite']
             instrument, satellite = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is on board {satellite}',
@@ -2947,14 +3185,18 @@ class Satellite(BaseDomain):
                 f'{satellite} has {instrument} on board'
             ]
         elif fluent.startswith('-on_board('):
+            if is_without_object:
+                return ['an instrument is not on board a satellite']
             instrument, satellite = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is not on board {satellite}',
                 f'{satellite} does not carry {instrument} on board',
                 f'{satellite} does not have {instrument} on board'
             ]
-        
+
         elif fluent.startswith('supports('):
+            if is_without_object:
+                return ['an instrument supports a mode']
             instrument, mode = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} supports {mode}',
@@ -2962,14 +3204,18 @@ class Satellite(BaseDomain):
                 f'{mode} is compatible with {instrument}'
             ]
         elif fluent.startswith('-supports('):
+            if is_without_object:
+                return ['an instrument does not support a mode']
             instrument, mode = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} does not support {mode}',
                 f'{mode} is not supported by {instrument}',
                 f'{mode} is not compatible with {instrument}'
             ]
-        
+
         elif fluent.startswith('pointing('):
+            if is_without_object:
+                return ['a satellite is pointing to a direction']
             satellite, direction = self.extract_multi_variable(fluent)
             return [
                 f'{satellite} is pointing to {direction}',
@@ -2977,29 +3223,37 @@ class Satellite(BaseDomain):
                 f'{direction} is where {satellite} is pointed'
             ]
         elif fluent.startswith('-pointing('):
+            if is_without_object:
+                return ['a satellite is not pointing to a direction']
             satellite, direction = self.extract_multi_variable(fluent)
             return [
                 f'{satellite} is not pointing to {direction}',
                 f'{satellite} is not aimed towards {direction}',
                 f'{direction} is not where {satellite} is pointed'
             ]
-        
+
         elif fluent.startswith('power_avail('):
+            if is_without_object:
+                return ['a satellite has power']
             satellite = self.extract_single_variable(fluent)
             return [
                 f'{satellite} has power available',
                 f'power is available for {satellite}',
                 f'{satellite} has power'
             ]
-        elif fluent.startswith('-power_avail('):    
+        elif fluent.startswith('-power_avail('):
+            if is_without_object:
+                return ['a satellite does not have power']
             satellite = self.extract_single_variable(fluent)
             return [
                 f'{satellite} does not have power available',
                 f'power is not available for {satellite}',
                 f'{satellite} does not have power'
             ]
-        
+
         elif fluent.startswith('power_on('):
+            if is_without_object:
+                return ['an instrument is powered on']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is powered on',
@@ -3007,40 +3261,52 @@ class Satellite(BaseDomain):
                 f'{instrument} is turned on'
             ]
         elif fluent.startswith('-power_on('):
+            if is_without_object:
+                return ['an instrument is not powered on']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is not powered on',
                 f'{instrument} is not switched on',
                 f'{instrument} is not turned on'
             ]
-        
+
         elif fluent.startswith('calibrated('):
+            if is_without_object:
+                return ['an instrument is calibrated']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is calibrated',
                 f'calibration of {instrument} is complete'
             ]
         elif fluent.startswith('-calibrated('):
+            if is_without_object:
+                return ['an instrument is not calibrated']
             instrument = self.extract_single_variable(fluent)
             return [
                 f'{instrument} is not calibrated',
                 f'calibration of {instrument} is incomplete'
             ]
-        
+
         elif fluent.startswith('have_image('):
+            if is_without_object:
+                return ['there is an image of a direction in a mode']
             direction, mode = self.extract_multi_variable(fluent)
             return [
                 f'there is an image of {direction} in {mode}',
                 f'image of {direction} exists in {mode}'
             ]
         elif fluent.startswith('-have_image('):
+            if is_without_object:
+                return ['there is not an image of a direction in a mode']
             direction, mode = self.extract_multi_variable(fluent)
             return [
                 f'there is no image of direction {direction} in {mode}',
                 f'image of {direction} does not exist in {mode}'
             ]
-        
+
         elif fluent.startswith('calibration_target('):
+            if is_without_object:
+                return ['an instrument is calibrated for a direction']
             instrument, direction = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is calibrated for {direction}',
@@ -3048,6 +3314,8 @@ class Satellite(BaseDomain):
                 f'for {direction}, {instrument} is calibrated'
             ]
         elif fluent.startswith('-calibration_target('):
+            if is_without_object:
+                return ['an instrument is not calibrated for a direction']
             instrument, direction = self.extract_multi_variable(fluent)
             return [
                 f'{instrument} is not calibrated for {direction}',
@@ -3285,18 +3553,18 @@ class Spanner(BaseDomain):
         "The spanner is not at a location if it is being hold by the man. "
         "The nut is not loose if and only if it is tightened. "
         "The spanner is not usable if and only if the nut is tightened. ")
-    
+
     BASE_POS_FLUENTS = ['carrying(', 'useable(', 'tightened(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
-    DERIVED_POS_FLUENTS = ['loose(','useable(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_POS_FLUENTS = ['loose(', 'useable(']
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
-    STATIC_POS_FLUENTS = ['link(']  
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_POS_FLUENTS = ['link(']
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
@@ -3311,8 +3579,10 @@ class Spanner(BaseDomain):
         # 'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['an obj is at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is at {location}",
@@ -3320,27 +3590,35 @@ class Spanner(BaseDomain):
                 f'{obj} is currently at {location}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['an obj is not at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is not at {location}",
                 f'{obj} is not located at {location}',
                 f'{obj} is not currently at {location}'
             ]
-        
+
         elif fluent.startswith('carrying('):
+            if is_without_object:
+                return ['an person is carrying a spanner']
             man, spanner = self.extract_multi_variable(fluent)
             return [
                 f"{man} is carrying {spanner}",
                 f'{spanner} is carried by {man}',
             ]
         elif fluent.startswith('-carrying('):
+            if is_without_object:
+                return ['an person is not carrying a spanner']
             man, spanner = self.extract_multi_variable(fluent)
             return [
                 f"{man} is not carrying {spanner}",
                 f'{spanner} is not carried by {man}',
             ]
-        
+
         elif fluent.startswith('useable('):
+            if is_without_object:
+                return ['an spanner is usable']
             spanner = self.extract_single_variable(fluent)
             return [
                 f"{spanner} is usable",
@@ -3348,40 +3626,52 @@ class Spanner(BaseDomain):
                 f'{spanner} is functional'
             ]
         elif fluent.startswith('-useable('):
+            if is_without_object:
+                return ['an spanner is not usable']
             spanner = self.extract_single_variable(fluent)
             return [
                 f"{spanner} is not usable",
                 f'{spanner} can\'t be used',
                 f'{spanner} is not functional'
             ]
-        
+
         elif fluent.startswith('tightened('):
+            if is_without_object:
+                return ['a nut is tightened']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is tightened",
                 f'tightening of {nut} is complete'
             ]
         elif fluent.startswith('-tightened('):
+            if is_without_object:
+                return ['a nut is not tightened']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is not tightened",
                 f'tightening of {nut} is incomplete'
             ]
-        
+
         elif fluent.startswith('loose('):
+            if is_without_object:
+                return ['a nut is loose']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is loose",
                 f'{nut} is not secured'
             ]
         elif fluent.startswith('-loose('):
+            if is_without_object:
+                return ['a nut is not loose']
             nut = self.extract_single_variable(fluent)
             return [
                 f"{nut} is not loose",
                 f'{nut} is secured'
             ]
-        
+
         elif fluent.startswith('link('):
+            if is_without_object:
+                return ['locations are linked']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f"{location1} is linked to {location2}",
@@ -3389,6 +3679,8 @@ class Spanner(BaseDomain):
                 f'a link between {location1} and {location2} exists'
             ]
         elif fluent.startswith('-link('):
+            if is_without_object:
+                return ['locations are not linked']
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f"{location1} is not linked to {location2}",
@@ -3471,7 +3763,7 @@ class Spanner(BaseDomain):
                     f'{obj} is currently not at the store',
                     f'{obj} is not at the store currently'
                 ]
-        
+
         # working
         elif fluent.startswith('carrying('):
             man, spanner = self.extract_multi_variable(fluent)
@@ -3617,18 +3909,18 @@ class Zenotravel(BaseDomain):
         "The aircraft cannot be in two different cities at the same time. "
         "An aircraft cannot have two different fuel levels. "
         "Person can only be at one place.")
-    
+
     BASE_POS_FLUENTS = ['fuel_level(']
-    BASE_NEG_FLUENTS = ['-'+fluent for fluent in BASE_POS_FLUENTS]
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = []
     DERIVED_NEG_FLUENTS = []
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at(', 'in(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = ['next(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
@@ -3647,8 +3939,10 @@ class Zenotravel(BaseDomain):
         # 'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
         'level': 'ndozmmwian', 'levels': 'ndozmmwian'}
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
+            if is_without_object:
+                return ['at a city']
             obj, city = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is at {city}",
@@ -3656,6 +3950,8 @@ class Zenotravel(BaseDomain):
                 f'{obj} is present at {city}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['not at a city']
             obj, city = self.extract_multi_variable(fluent)
             return [
                 f"{obj} is not at {city}",
@@ -3663,6 +3959,8 @@ class Zenotravel(BaseDomain):
                 f'{obj} is not present at {city}'
             ]
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['a person is in an aircraft']
             person, aircraft = self.extract_multi_variable(fluent)
             return [
                 f"{person} is in {aircraft}",
@@ -3670,6 +3968,8 @@ class Zenotravel(BaseDomain):
                 f'{person} is located in {aircraft}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['a person is not in an aircraft']
             person, aircraft = self.extract_multi_variable(fluent)
             return [
                 f"{person} is not in {aircraft}",
@@ -3677,6 +3977,8 @@ class Zenotravel(BaseDomain):
                 f'{person} is not located in {aircraft}'
             ]
         elif fluent.startswith('fuel_level('):
+            if is_without_object:
+                return ['an aircraft has a fuel level']
             aircraft, flevel = self.extract_multi_variable(fluent)
             return [
                 f"{aircraft} has fuel level {flevel}",
@@ -3684,6 +3986,8 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} possesses a fuel level of {flevel}'
             ]
         elif fluent.startswith('-fuel_level('):
+            if is_without_object:
+                return ['an aircraft does not have a fuel level']
             aircraft, flevel = self.extract_multi_variable(fluent)
             return [
                 f"{aircraft} does not have fuel level {flevel}",
@@ -3691,6 +3995,8 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} doesn\'t possesses a fuel level of {flevel}'
             ]
         elif fluent.startswith('next('):
+            if is_without_object:
+                return ['fuel levels are next to each other']
             fuel1, fuel2 = self.extract_multi_variable(fluent)
             return [
                 f"fuel level {fuel2} is next to fuel level {fuel1}",
@@ -3698,6 +4004,8 @@ class Zenotravel(BaseDomain):
                 f'fuel level {fuel2} is next to {fuel1}'
             ]
         elif fluent.startswith('-next('):
+            if is_without_object:
+                return ['fuel levels are not next to each other']
             fuel1, fuel2 = self.extract_multi_variable(fluent)
             return [
                 f"fuel level {fuel2} is not next to fuel level {fuel1}",
@@ -3781,7 +4089,7 @@ class Zenotravel(BaseDomain):
                     f'{obj} is not maintained up-to-date',
                     f'maintenance of {obj} is not done'
                 ]
-        
+
         # jumps (changed from "boarding")
         elif fluent.startswith('in('):
             person, aircraft = self.extract_multi_variable(fluent)
@@ -3887,21 +4195,20 @@ class Visitall(BaseDomain):
         "Moving from a current position to the next position causes the robot to be present at the next position. "
 
         "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. ")
-    
+
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['visited(']
-    DERIVED_NEG_FLUENTS = ['-'+fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at_robot(']
-    PERSISTENT_NEG_FLUENTS = ['-'+fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_POS_FLUENTS = ['connected(']
-    STATIC_NEG_FLUENTS = ['-'+fluent for fluent in STATIC_POS_FLUENTS]
+    STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-    
-        
+
     SUBSTRINGS_TO_RAND = {
         'robot': 'xtjpivjhco', 'robots': 'xtjpivjhco',
         'position': 'puxuduuqen', 'positions': 'puxuduuqen',
@@ -3910,8 +4217,10 @@ class Visitall(BaseDomain):
         'visit': 'lknwwwkrbf', 'visits': 'lknwwwkrbf', 'visiting': 'lknwwwkrbf', 'visited': 'lknwwwkrbf',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at_robot('):
+            if is_without_object:
+                return ['a robot is at a place']
             place = self.extract_single_variable(fluent)
             return [
                 f"robot is at {place}",
@@ -3919,14 +4228,18 @@ class Visitall(BaseDomain):
                 f'robot is placed at {place}'
             ]
         elif fluent.startswith('-at_robot('):
+            if is_without_object:
+                return ['a robot is not at a place']
             place = self.extract_single_variable(fluent)
             return [
                 f"robot is not at {place}",
                 f'robot is not located at {place}',
                 f'robot is not placed at {place}'
             ]
-        
+
         elif fluent.startswith('connected('):
+            if is_without_object:
+                return ['places are connected']
             place1, place2 = self.extract_multi_variable(fluent)
             return [
                 f"{place1} is connected to {place2}",
@@ -3934,26 +4247,32 @@ class Visitall(BaseDomain):
                 f'there is a connection between {place1} and {place2}'
             ]
         elif fluent.startswith('-connected('):
+            if is_without_object:
+                return ['places are not connected']
             place1, place2 = self.extract_multi_variable(fluent)
             return [
                 f"{place1} is not connected to {place2}",
                 f'{place1} and {place2} are not connected',
                 f'there is no connection between {place1} and {place2}'
             ]
-        
+
         elif fluent.startswith('visited('):
+            if is_without_object:
+                return ['a place is visited']
             place = self.extract_single_variable(fluent)
             return [
                 f"{place} is visited",
                 f'{place} is marked as visited'
             ]
         elif fluent.startswith('-visited('):
+            if is_without_object:
+                return ['a place is not visited']
             place = self.extract_single_variable(fluent)
             return [
                 f"{place} is not visited",
                 f'{place} is not marked as visited'
             ]
-        
+
         else:
             raise Exception('fluent is not defined')
 
