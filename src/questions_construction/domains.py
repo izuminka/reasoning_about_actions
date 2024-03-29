@@ -277,11 +277,9 @@ class Blocksworld(BaseDomain):
         else:
             raise Exception('fluent is not defined')
 
-    def action_to_natural_language_helper(self, action, is_without_object=False):
+    def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
         if 'pick_up(' in action:
-            if is_without_object:
-                return ['pick up']
             block_name = self.extract_single_variable(action)
             return [
                 f'block {block_name} is picked up',
@@ -289,8 +287,6 @@ class Blocksworld(BaseDomain):
                 f'block {block_name} is picked up from the table'
             ]
         elif 'put_down(' in action:
-            if is_without_object:
-                return ['put down']
             block_name = self.extract_single_variable(action)
             return [
                 f'block {block_name} is put down',
@@ -298,8 +294,6 @@ class Blocksworld(BaseDomain):
                 f'the hand puts down the block {block_name}'
             ]
         elif 'unstack(' in action:
-            if is_without_object:
-                return ['unstack']
             b1, b2 = self.extract_multi_variable(action)
             return [
                 f'block {b1} is unstacked from block {b2}',
@@ -307,8 +301,6 @@ class Blocksworld(BaseDomain):
                 f'from top of block {b2}, block {b1} is unstacked'
             ]
         elif 'stack(' in action:
-            if is_without_object:
-                return ['stack']
             b1, b2 = self.extract_multi_variable(action)
             return [
                 f'block {b1} is stacked on top of block {b2}',
