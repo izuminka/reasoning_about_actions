@@ -2061,8 +2061,10 @@ class Logistics(BaseDomain):
         # 'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('in_city('):
+            if is_without_object:
+                return ['airport is in city']
             airport, city = self.extract_multi_variable(fluent)
             return [
                 f'airport {airport} is in city {city}',
@@ -2070,6 +2072,8 @@ class Logistics(BaseDomain):
                 f'city {city} contains airport {airport}'
             ]
         elif fluent.startswith('-in_city('):
+            if is_without_object:
+                return ['airport is not in city']
             airport, city = self.extract_multi_variable(fluent)
             return [
                 f'airport {airport} is not in city {city}'
@@ -2078,6 +2082,8 @@ class Logistics(BaseDomain):
             ]
 
         elif fluent.startswith('at('):
+            if is_without_object:
+                return ['object is at airport']
             physical_object, airport = self.extract_multi_variable(fluent)
             return [
                 f'object {physical_object} is at airport {airport}',
@@ -2085,6 +2091,8 @@ class Logistics(BaseDomain):
                 f'at airport {airport}, object {physical_object} is located'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['object is not at airport']
             physical_object, airport = self.extract_multi_variable(fluent)
             return [
                 f'object {physical_object} is not at airport {airport}',
@@ -2093,6 +2101,8 @@ class Logistics(BaseDomain):
             ]
 
         elif fluent.startswith('in('):
+            if is_without_object:
+                return ['package is in vehicle']
             package, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'package {package} is in vehicle {vehicle}',
@@ -2100,6 +2110,8 @@ class Logistics(BaseDomain):
                 f'package {package} is located in vehicle {vehicle}'
             ]
         elif fluent.startswith('-in('):
+            if is_without_object:
+                return ['package is not in vehicle']
             package, vehicle = self.extract_multi_variable(fluent)
             return [
                 f'package {package} is not in vehicle {vehicle}',
