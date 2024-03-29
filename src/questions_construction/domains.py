@@ -1,13 +1,9 @@
 import re
 import random
 import string
-from src.common import FLUENTS_NL
+from src.common import *
 
-STATE = f'a state is a list of all valid {FLUENTS_NL} that may or may not involve negations'
-BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
-DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
-PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL
-STATIC_FLUENTS_NL = 'static ' + FLUENTS_NL
+
 
 
 def capitalize_first_letter(string):
@@ -68,7 +64,7 @@ class BaseDomain:
                 result += f"There are no {fluent_type_nl} in this domain. "
             return result
 
-        result = f'{capitalize_first_letter(STATE)}. ',
+        result = f'{capitalize_first_letter(STATE_DESC_NL)}. ',
         result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 flavors: base, derived, persistent, and static {FLUENTS_NL}. '
 
         result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties of the state that don't depend on other properties. "
