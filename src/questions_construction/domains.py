@@ -1754,7 +1754,7 @@ class Grippers(BaseDomain):
     BASE_POS_FLUENTS = ['carry(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
-    DERIVED_POS_FLUENTS = ['free']
+    DERIVED_POS_FLUENTS = ['free(']
     DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
     DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
     PERSISTENT_POS_FLUENTS = ['at_robby(', 'at(']
@@ -1876,7 +1876,7 @@ class Grippers(BaseDomain):
                 f'{gripper} of {robot} is not carrying {obj}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: "{fluent}" is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)

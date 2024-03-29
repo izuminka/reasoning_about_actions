@@ -65,7 +65,7 @@ class TestDomains(unittest.TestCase):
             for is_random_sub in [True, False]:
                 for is_ramifications in [True, False]:
                     domain_class = dom(is_random_sub, is_ramifications)
-                    print(domain_class.domain_description)
+                    self.assertIsNotNone(domain_class.domain_description)
                     self.assertTrue(domain_class)
 
     def test_blocksworld_fluents_actions(self):
