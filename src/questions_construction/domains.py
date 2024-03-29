@@ -2313,8 +2313,10 @@ class Miconic(BaseDomain):
         'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja', 'departed': 'jbctpepaja'
     }
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('origin('):
+            if is_without_object:
+                return ['passenger boards at floor']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'passenger {passenger} enters at floor {floor}',
@@ -2322,6 +2324,8 @@ class Miconic(BaseDomain):
                 f'passenger {passenger} boards on level {floor}'
             ]
         elif fluent.startswith('-origin('):
+            if is_without_object:
+                return ['passenger does not board at floor']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'passenger {passenger} does not enter at floor {floor}',
@@ -2330,6 +2334,8 @@ class Miconic(BaseDomain):
             ]
 
         elif fluent.startswith('destin('):
+            if is_without_object:
+                return ['destination of passenger is floor']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'destination of passenger {passenger} is floor {floor}',
@@ -2337,6 +2343,8 @@ class Miconic(BaseDomain):
                 f'destination of passenger {passenger} is level {floor}'
             ]
         elif fluent.startswith('-destin('):
+            if is_without_object:
+                return ['destination of passenger is not floor']
             passenger, floor = self.extract_multi_variable(fluent)
             return [
                 f'destination of passenger {passenger} is not floor {floor}',
@@ -2345,6 +2353,8 @@ class Miconic(BaseDomain):
             ]
 
         elif fluent.startswith('above('):
+            if is_without_object:
+                return ['one floor is above another']
             floor1, floor2 = self.extract_multi_variable(fluent)
             return [
                 f'floor {floor2} is above floor {floor1}',
@@ -2352,6 +2362,8 @@ class Miconic(BaseDomain):
                 f'floor {floor1} is below floor {floor2}'
             ]
         elif fluent.startswith('-above('):
+            if is_without_object:
+                return ['one floor is not above another']
             floor1, floor2 = self.extract_multi_variable(fluent)
             return [
                 f'floor {floor2} is not above floor {floor1}',
@@ -2359,12 +2371,16 @@ class Miconic(BaseDomain):
                 f'floor {floor1} is not below floor {floor2}'
             ]
         elif fluent.startswith('boarded('):
+            if is_without_object:
+                return ['passenger is boarded']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is boarded',
                 f'passenger {passenger} has boarded the lift'
             ]
         elif fluent.startswith('-boarded('):
+            if is_without_object:
+                return ['passenger is not boarded']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is not boarded',
@@ -2372,12 +2388,16 @@ class Miconic(BaseDomain):
             ]
 
         elif fluent.startswith('served('):
+            if is_without_object:
+                return ['passenger is served']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is served',
                 f'passenger {passenger} is attended to'
             ]
         elif fluent.startswith('-served('):
+            if is_without_object:
+                return ['passenger is not served']
             passenger = self.extract_single_variable(fluent)
             return [
                 f'passenger {passenger} is not served',
@@ -2385,12 +2405,16 @@ class Miconic(BaseDomain):
             ]
 
         elif fluent.startswith('lift_at('):
+            if is_without_object:
+                return ['lift is at floor']
             floor = self.extract_single_variable(fluent)
             return [
                 f'lift is at floor {floor}',
                 f'lift is positioned at level {floor}'
             ]
         elif fluent.startswith('-lift_at('):
+            if is_without_object:
+                return ['lift is not at floor']
             floor = self.extract_single_variable(fluent)
             return [
                 f'lift is not at floor {floor}',
