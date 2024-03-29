@@ -1807,8 +1807,10 @@ class Grippers(BaseDomain):
         'transported': 'kseqanhkzt',
         'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
 
-    def fluent_to_natural_language_helper(self, fluent):
+    def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at_robby('):
+            if is_without_object:
+                return ['robot is at a room']
             robot, room = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is at {room}',
@@ -1816,6 +1818,8 @@ class Grippers(BaseDomain):
                 f'{robot} is located at {room}'
             ]
         elif fluent.startswith('-at_robby('):
+            if is_without_object:
+                return ['robot is not at a room']
             robot, room = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is not at {room}',
@@ -1824,6 +1828,8 @@ class Grippers(BaseDomain):
             ]
 
         elif fluent.startswith('at('):
+            if is_without_object:
+                return ['object is at a room']
             obj, room = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is at {room}',
@@ -1831,6 +1837,8 @@ class Grippers(BaseDomain):
                 f'{obj} is present at {room}'
             ]
         elif fluent.startswith('-at('):
+            if is_without_object:
+                return ['object is not at a room']
             obj, room = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is not at {room}',
@@ -1839,6 +1847,8 @@ class Grippers(BaseDomain):
             ]
 
         elif fluent.startswith('free('):
+            if is_without_object:
+                return ['gripper is free']
             robot, gripper = self.extract_multi_variable(fluent)
             return [
                 f"{gripper} of {robot} is free",
@@ -1846,6 +1856,8 @@ class Grippers(BaseDomain):
                 f'{robot}\'s {gripper} is available'
             ]
         elif fluent.startswith('-free('):
+            if is_without_object:
+                return ['gripper is not free']
             robot, gripper = self.extract_multi_variable(fluent)
             return [
                 f"{gripper} of {robot} is not free",
@@ -1854,6 +1866,8 @@ class Grippers(BaseDomain):
             ]
 
         elif fluent.startswith('carry('):
+            if is_without_object:
+                return ['robot is carrying an object with a gripper']
             robot, obj, gripper = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is carrying {obj} with {gripper}',
@@ -1861,6 +1875,8 @@ class Grippers(BaseDomain):
                 f'{gripper} of {robot} is carrying {obj}'
             ]
         elif fluent.startswith('-carry('):
+            if is_without_object:
+                return ['robot is not carrying an object with a gripper']
             robot, obj, gripper = self.extract_multi_variable(fluent)
             return [
                 f'{robot} is not carrying {obj} with {gripper}',
