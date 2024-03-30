@@ -1061,7 +1061,8 @@ class HallucinationQuestions(QuestionGenerator):
             answer = objects[0]
         random.shuffle(objects)
         nl_objects = asp_to_nl(objects, lambda x: x)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Which of the following objects, {nl_objects}, is not defined? Write None if all are defined."
+        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. "
+                    f"Which of the following objects, {nl_objects}, is not defined? Write None if all are defined.")
         return self.qa_data_object(question, answer, FREE_ANSWER, self.question_6.__name__, plan_length)
 
     def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
@@ -1081,7 +1082,8 @@ class HallucinationQuestions(QuestionGenerator):
             nl_hallucinated_fluent = self.domain_class.fluent_to_natural_language(fluents[0], is_hallucinated=True)
             random.shuffle(fluents)
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type}')}. What {fluent_type} out of, {nl_fluents}, is not defined? Write None if all are defined."
+        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type}')}. "
+                    f"What {fluent_type} out of, {nl_fluents}, is not defined? Write None if all are defined.")
         return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length)
 
     def question_7(self, plan_length):
@@ -1130,7 +1132,10 @@ class CompositeQuestions(QuestionGenerator):
     def question_1_4_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. Some of the actions may not be executable. What {fluent_type_to_fluent_nl(fluent_type)} are true before the first infeasible action in the sequence? {NONE_STATEMENT}"
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+                    f"Some of the actions may not be executable. "
+                    f"What {fluent_type_to_fluent_nl(fluent_type)} are true before the first infeasible action in the sequence? "
+                    f"{NONE_STATEMENT}")
         if is_answer_true:
             answer = NONE_ANSWER
         else:
@@ -1145,7 +1150,9 @@ class CompositeQuestions(QuestionGenerator):
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. What are the {fluent_type_to_fluent_nl(fluent_type)} for {obj} before the first infeasible action in the sequence? {NONE_STATEMENT}"
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+                    f"What are the {fluent_type_to_fluent_nl(fluent_type)} for {obj} before the first infeasible action in the sequence? "
+                    f"{NONE_STATEMENT}")
         if is_answer_true:
             answer = NONE_ANSWER
         else:
@@ -1162,7 +1169,9 @@ class CompositeQuestions(QuestionGenerator):
         if pos_fluents is None and neg_fluents is None:
             return None
 
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions))}.If I perform action {action_performed}, what would be all of the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? {NONE_STATEMENT}"
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions))}. "
+                    f"If I perform action {action_performed}, what would be all of the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? "
+                    f"{NONE_STATEMENT}")
         pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluent_type)
         fluents = pos_fluents + pos_fluents
         answer = sorted(self.nl_fluents(fluents))
@@ -1207,7 +1216,10 @@ class CompositeQuestions(QuestionGenerator):
     def question_13(self, plan_length):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. Some of the actions may not be executable. What is the state before the first infeasible action in the sequence? {NONE_STATEMENT}"
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+                    f"Some of the actions may not be executable. "
+                    f"What is the state before the first infeasible action in the sequence? "
+                    f"{NONE_STATEMENT}")
         if is_answer_true:
             answer = NONE_ANSWER
         else:
