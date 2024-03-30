@@ -16,21 +16,18 @@ NONE_STATEMENT = 'Write None if there are none'
 NONE_ANSWER = 'None'
 
 BASE_FLUENTS = 'BASE_FLUENTS'
-BASE_POS_FLUENTS = 'BASE_POS_FLUENTS'
-BASE_NEG_FLUENTS = 'BASE_NEG_FLUENTS'
 DERIVED_FLUENTS = 'DERIVED_FLUENTS'
-DERIVED_POS_FLUENTS = 'DERIVED_POS_FLUENTS'
-DERIVED_NEG_FLUENTS = 'DERIVED_NEG_FLUENTS'
 PERSISTENT_FLUENTS = 'PERSISTENT_FLUENTS'
-PERSISTENT_POS_FLUENTS = 'PERSISTENT_POS_FLUENTS'
-PERSISTENT_NEG_FLUENTS = 'PERSISTENT_NEG_FLUENTS'
 STATIC_FLUENTS = 'STATIC_FLUENTS'
-STATIC_POS_FLUENTS = 'STATIC_POS_FLUENTS'
-STATIC_NEG_FLUENTS = 'STATIC_NEG_FLUENTS'
-
-BASE_FLUENTS_NL = FLUENTS_NL + " that don't depend on other " + FLUENTS_NL
-DERIVED_FLUENTS_NL = FLUENTS_NL + " that depend on other " + FLUENTS_NL
-PERSISTENT_FLUENTS_NL = FLUENTS_NL + " that depend on themselves"
+FLUENT_TYPES_ALL = 'all_fluents'
+# STATIC_POS_FLUENTS = 'STATIC_POS_FLUENTS'
+# STATIC_NEG_FLUENTS = 'STATIC_NEG_FLUENTS'
+# PERSISTENT_POS_FLUENTS = 'PERSISTENT_POS_FLUENTS'
+# PERSISTENT_NEG_FLUENTS = 'PERSISTENT_NEG_FLUENTS'
+# DERIVED_POS_FLUENTS = 'DERIVED_POS_FLUENTS'
+# DERIVED_NEG_FLUENTS = 'DERIVED_NEG_FLUENTS'
+# BASE_POS_FLUENTS = 'BASE_POS_FLUENTS'
+# BASE_NEG_FLUENTS = 'BASE_NEG_FLUENTS'
 
 PART_OF_THE_STATE = 'part of the state'
 MAX_TIMEOUT = 100
@@ -42,9 +39,17 @@ PLAN_LENGTHS = (1, 5, 10, 15, 19)
 QUESTION_MULTIPLICITY = 2
 
 
-# from nltk.stem import WordNetLemmatizer
-# from nltk.corpus import wordnet
-# lemmatizer = WordNetLemmatizer()
+def fluent_type_to_fluent_nl(fluent_type):
+    if fluent_type == BASE_FLUENTS:
+        return BASE_FLUENTS
+    elif fluent_type == DERIVED_FLUENTS:
+        return DERIVED_FLUENTS
+    elif fluent_type == PERSISTENT_FLUENTS:
+        return PERSISTENT_FLUENTS
+    elif fluent_type == STATIC_FLUENTS:
+        return STATIC_FLUENTS
+    else:
+        raise ValueError(f'Undefined fluent type {fluent_type}')
 
 def exit_condition_on_fluents(pos_fluents, neg_fluents):
     return not len(pos_fluents) or not len(neg_fluents)
@@ -307,11 +312,11 @@ class QuestionGenerationHelpers:
         return pos_fluents, neg_fluents
 
     def fluents_for_random_obj(self, plan_length, min_chosen_fluents=1, timeout=MAX_TIMEOUT,
-                               fluent_type_nl=BASE_FLUENTS):
+                               fluent_type=BASE_FLUENTS):
         pos_fluents, neg_fluents = [], []
         while (len(pos_fluents) + len(neg_fluents)) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
-            pos_fluents, neg_fluents = self.get_fluent_type_for_object_tracking(obj, plan_length, fluent_type_nl)
+            pos_fluents, neg_fluents = self.get_fluent_type_for_object_tracking(obj, plan_length, fluent_type)
             if len(pos_fluents) and len(neg_fluents):
                 return pos_fluents, neg_fluents, obj
             timeout -= 1
@@ -326,7 +331,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def qa_data_object(self, question, answer, answer_type, question_name, plan_length, fluent_type=BASE_FLUENTS):
+    def qa_data_object(self, question, answer, answer_type, question_name, plan_length, fluent_type):
         return {OUT_OBJ_ID: str(uuid.uuid4()),
                 OUT_OBJ_DOMAIN_NAME: self.domain_class.DOMAIN_NAME,
                 OUT_OBJ_INSTANCE_ID: self.instance_id,
@@ -444,7 +449,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
         # TODO rename since it is used for more than 1,2
         # TODO add fluent types
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, min_chosen_fluents=min_chosen_fluents,
-                                                                    fluent_type_nl=fluent_type)
+                                                                    fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
         fluents = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents)
@@ -1122,82 +1127,82 @@ class CompositeQuestions(QuestionGenerator):
             prefix = ACTIONS_ARE_PERFORMED_PREFIX
         return f"{prefix} {nl_actions} to reach the current state."
 
-    def question_1_4_helper(self, plan_length, fluents_type_nl, question_name):
+    def question_1_4_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. Some of the actions may not be executable. What {fluents_type_nl} are true before the first infeasible action in the sequence? {NONE_STATEMENT}"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. Some of the actions may not be executable. What {fluent_type_to_fluent_nl(fluent_type)} are true before the first infeasible action in the sequence? {NONE_STATEMENT}"
         if is_answer_true:
             answer = NONE_ANSWER
         else:
-            fluents = self.fluents_for_fluent_type(random_action_i, fluents_type_nl)
+            fluents = self.fluents_for_fluent_type(random_action_i, fluent_type)
             answer = sorted(self.nl_fluents(fluents))
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
 
-    def question_5_8_helper(self, plan_length, fluents_type_nl, question_name):
+    def question_5_8_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
 
-        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type_nl=fluents_type_nl)
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. What are the {fluents_type_nl} for {obj} before the first infeasible action in the sequence? {NONE_STATEMENT}"
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. What are the {fluent_type_to_fluent_nl(fluent_type)} for {obj} before the first infeasible action in the sequence? {NONE_STATEMENT}"
         if is_answer_true:
             answer = NONE_ANSWER
         else:
-            pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluents_type_nl)
+            pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluent_type)
             fluents = pos_fluents + pos_fluents
             answer = sorted(self.nl_fluents(fluents))
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
 
-    def question_9_12_helper(self, plan_length, fluents_type_nl, question_name):
+    def question_9_12_helper(self, plan_length, fluent_type, question_name):
         actions = self.given_plan_sequence[:plan_length]
         action_performed = actions[plan_length]
 
-        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length + 1, fluent_type_nl=fluents_type_nl)
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length + 1, fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
 
-        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions))}.If I perform action {action_performed}, what would be all of the {fluents_type_nl} for {obj}? {NONE_STATEMENT}"
-        pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluents_type_nl)
+        question = f"{self.nl_question_prefix_custom(self.nl_actions(actions))}.If I perform action {action_performed}, what would be all of the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? {NONE_STATEMENT}"
+        pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluent_type)
         fluents = pos_fluents + pos_fluents
         answer = sorted(self.nl_fluents(fluents))
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
 
     def question_1(self, plan_length):
-        return self.question_1_4_helper(plan_length, BASE_FLUENTS_NL, self.question_1.__name__)
+        return self.question_1_4_helper(plan_length, BASE_FLUENTS, self.question_1.__name__)
 
     def question_2(self, plan_length):
-        return self.question_1_4_helper(plan_length, DERIVED_FLUENTS_NL, self.question_2.__name__)
+        return self.question_1_4_helper(plan_length, DERIVED_FLUENTS, self.question_2.__name__)
 
     def question_3(self, plan_length):
-        return self.question_1_4_helper(plan_length, PERSISTENT_FLUENTS_NL, self.question_3.__name__)
+        return self.question_1_4_helper(plan_length, PERSISTENT_FLUENTS, self.question_3.__name__)
 
     def question_4(self, plan_length):
-        return self.question_1_4_helper(plan_length, STATIC_FLUENTS_NL, self.question_4.__name__)
+        return self.question_1_4_helper(plan_length, STATIC_FLUENTS, self.question_4.__name__)
 
     def question_5(self, plan_length):
-        return self.question_5_8_helper(plan_length, BASE_FLUENTS_NL, self.question_5.__name__)
+        return self.question_5_8_helper(plan_length, BASE_FLUENTS, self.question_5.__name__)
 
     def question_6(self, plan_length):
-        return self.question_5_8_helper(plan_length, DERIVED_FLUENTS_NL, self.question_6.__name__)
+        return self.question_5_8_helper(plan_length, DERIVED_FLUENTS, self.question_6.__name__)
 
     def question_7(self, plan_length):
-        return self.question_5_8_helper(plan_length, PERSISTENT_FLUENTS_NL, self.question_7.__name__)
+        return self.question_5_8_helper(plan_length, PERSISTENT_FLUENTS, self.question_7.__name__)
 
     def question_8(self, plan_length):
-        return self.question_5_8_helper(plan_length, STATIC_FLUENTS_NL, self.question_8.__name__)
+        return self.question_5_8_helper(plan_length, STATIC_FLUENTS, self.question_8.__name__)
 
     def question_9(self, plan_length):
-        return self.question_9_12_helper(plan_length, BASE_FLUENTS_NL, self.question_9.__name__)
+        return self.question_9_12_helper(plan_length, BASE_FLUENTS, self.question_9.__name__)
 
     def question_10(self, plan_length):
-        return self.question_9_12_helper(plan_length, DERIVED_FLUENTS_NL, self.question_10.__name__)
+        return self.question_9_12_helper(plan_length, DERIVED_FLUENTS, self.question_10.__name__)
 
     def question_11(self, plan_length):
-        return self.question_9_12_helper(plan_length, PERSISTENT_FLUENTS_NL, self.question_11.__name__)
+        return self.question_9_12_helper(plan_length, PERSISTENT_FLUENTS, self.question_11.__name__)
 
     def question_12(self, plan_length):
-        return self.question_9_12_helper(plan_length, STATIC_FLUENTS_NL, self.question_12.__name__)
+        return self.question_9_12_helper(plan_length, STATIC_FLUENTS, self.question_12.__name__)
 
     def question_13(self, plan_length):
         is_answer_true = random.choice([True, False])
@@ -1208,4 +1213,4 @@ class CompositeQuestions(QuestionGenerator):
         else:
             state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_13.__name__, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_13.__name__, plan_length, FLUENT_TYPES_ALL)
