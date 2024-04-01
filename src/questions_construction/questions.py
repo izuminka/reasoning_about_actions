@@ -1,3 +1,4 @@
+import copy
 import os
 import random
 import re
@@ -50,6 +51,7 @@ def fluent_type_to_fluent_nl(fluent_type):
         return STATIC_FLUENTS
     else:
         raise ValueError(f'Undefined fluent type {fluent_type}')
+
 
 def exit_condition_on_fluents(pos_fluents, neg_fluents):
     return not len(pos_fluents) or not len(neg_fluents)
@@ -252,6 +254,7 @@ class QuestionGenerationHelpers:
 
     @staticmethod
     def corrupted_not_corrupted_mix(not_corrupted_fluents, corrupted_fluents):
+        # TODO double check this function, maybe replace with corrupt_fluents
         final_length = len(not_corrupted_fluents)
         len_corrupted_fluents = len(corrupted_fluents)
 
@@ -281,6 +284,23 @@ class QuestionGenerationHelpers:
                                                            [f"-{f}" for f in pos_fluents])  # add the '-' sign
         return fluents
 
+    @staticmethod
+    def corrupt_fluents(fluents):
+        def corrupt_fluent(fluent):
+            return f"{fluent[1:]}" if fluent[0] == '-' else f"-{fluent}"
+
+        if not fluents:
+            raise ValueError('Empty list')
+        elif len(fluents) == 1:
+            return [corrupt_fluent(fluents[0])]
+        else:
+            corrupted_fluents = copy.deepcopy(fluents)
+            num_samples_to_corrupt = random.randint(1, len(fluents) - 1)
+            samples_to_corrupt_inds = random.sample(range(0, len(fluents)), num_samples_to_corrupt)
+            for i in samples_to_corrupt_inds:
+                corrupted_fluents[i] = corrupt_fluent(fluents[i])
+            return corrupted_fluents
+
     def corrupt_action_sequence(self, plan_length):
         corrupted_actions = deepcopy(self.given_plan_sequence[:plan_length])
         random_break_ind = random.randint(0, plan_length - 1)
@@ -288,8 +308,8 @@ class QuestionGenerationHelpers:
         corrupted_actions[random_break_ind] = random_inxecutable_action
         return corrupted_actions, random_break_ind
 
-    def sequence_of_actions(self, plan_length, is_answer_true):
-        if not is_answer_true:
+    def sequence_of_actions(self, plan_length, is_correct_sequence):
+        if not is_correct_sequence:
             sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
         else:
             sequence_of_actions = self.given_plan_sequence[:plan_length]
@@ -1214,15 +1234,30 @@ class CompositeQuestions(QuestionGenerator):
         return self.question_9_12_helper(plan_length, STATIC_FLUENTS, self.question_12.__name__)
 
     def question_13(self, plan_length):
-        is_answer_true = random.choice([True, False])
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
+        is_correct_sequence = random.choice([True, False])
+        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     f"Some of the actions may not be executable. "
                     f"What is the state before the first infeasible action in the sequence? "
                     f"{NONE_STATEMENT}")
-        if is_answer_true:
+        if is_correct_sequence:
             answer = NONE_ANSWER
         else:
             state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_13.__name__, plan_length, FLUENT_TYPES_ALL)
+        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_13.__name__, plan_length,
+                                   FLUENT_TYPES_ALL)
+
+    def question_14(self, plan_length):
+        is_answer_true = random.choice([True, False])
+        is_correct_sequence = False  # random.choice([True, False])
+        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
+
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+                    "Some of the actions may not be executable. "
+                    f"Is this the state before the first infeasible action in the sequence? ")
+        state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
+        if not is_answer_true:
+            state = self.corrupt_fluents(state)
+        question += sorted(self.nl_fluents(state))
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_14.__name__, plan_length, FLUENT_TYPES_ALL)
