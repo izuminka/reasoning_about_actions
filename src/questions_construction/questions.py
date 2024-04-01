@@ -1248,16 +1248,43 @@ class CompositeQuestions(QuestionGenerator):
         return self.qa_data_object(question, answer, FREE_ANSWER, self.question_13.__name__, plan_length,
                                    FLUENT_TYPES_ALL)
 
+    #################### TF questions ####################
+
+    def question_14_17_helper(self, plan_length, fluent_type, question_name):
+        is_answer_true = random.choice([True, False])
+        is_correct_sequence = False  # random.choice([True, False])
+        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+                    f"Are the following {FLUENTS_NL} true before the first infeasible action in the sequence? ")
+
+        pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluent_type)
+        fluents = pos_fluents + pos_fluents
+        if not is_answer_true:
+            fluents = self.corrupt_fluents(fluents)
+        question += f"{sorted(self.nl_fluents(fluents))}. "
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+
     def question_14(self, plan_length):
+        return self.question_14_17_helper(plan_length, BASE_FLUENTS, self.question_14.__name__)
+    def question_15(self, plan_length):
+        return self.question_14_17_helper(plan_length, DERIVED_FLUENTS, self.question_15.__name__)
+    def question_16(self, plan_length):
+        return self.question_14_17_helper(plan_length, PERSISTENT_FLUENTS, self.question_16.__name__)
+    def question_17(self, plan_length):
+        return self.question_14_17_helper(plan_length, STATIC_FLUENTS, self.question_17.__name__)
+
+
+
+    def question_24(self, plan_length):
         is_answer_true = random.choice([True, False])
         is_correct_sequence = False  # random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     "Some of the actions may not be executable. "
-                    f"Is this the state before the first infeasible action in the sequence? ")
+                    f"Is this the state before the first infeasible action in the sequence? {TRUE_OR_FALSE}")
         state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
         if not is_answer_true:
             state = self.corrupt_fluents(state)
         question += sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_14.__name__, plan_length, FLUENT_TYPES_ALL)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_24.__name__, plan_length, FLUENT_TYPES_ALL)
