@@ -64,17 +64,17 @@ class BaseDomain:
         result = f'A state is a set of valid properties. Properties may or may not involve negations. '
         result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
 
-        result += f"{capitalize_first_letter(BASE_FLUENTS)} are properties that don't depend on other properties. "
-        result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS)
+        result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties that don't depend on other properties. "
+        result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS_NL)
 
-        result += f"{capitalize_first_letter(DERIVED_FLUENTS)} are properties that depend on other properties. "
-        result += add_fluents(self.DERIVED_FLUENTS, DERIVED_FLUENTS)
+        result += f"{capitalize_first_letter(DERIVED_FLUENTS_NL)} are properties that depend on other properties. "
+        result += add_fluents(self.DERIVED_FLUENTS, DERIVED_FLUENTS_NL)
 
-        result += f"{capitalize_first_letter(PERSISTENT_FLUENTS)} are properties that depend on themselves. "
-        result += add_fluents(self.PERSISTENT_FLUENTS, PERSISTENT_FLUENTS)
+        result += f"{capitalize_first_letter(PERSISTENT_FLUENTS_NL)} are properties that depend on themselves. "
+        result += add_fluents(self.PERSISTENT_FLUENTS, PERSISTENT_FLUENTS_NL)
 
-        result += f"{capitalize_first_letter(STATIC_FLUENTS)} are properties that don't change under any action. "
-        result += add_fluents(self.STATIC_FLUENTS, STATIC_FLUENTS)
+        result += f"{capitalize_first_letter(STATIC_FLUENTS_NL)} are properties that don't change under any action. "
+        result += add_fluents(self.STATIC_FLUENTS, STATIC_FLUENTS_NL)
 
         return result
 

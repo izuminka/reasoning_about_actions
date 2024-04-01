@@ -56,10 +56,10 @@ NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
 POSITIVE_FLUENTS_NL = 'valid properties of the state'
 NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
-BASE_FLUENTS = 'base ' + FLUENTS_NL
-DERIVED_FLUENTS = 'derived ' + FLUENTS_NL
-PERSISTENT_FLUENTS = 'self constraint ' + FLUENTS_NL
-STATIC_FLUENTS = 'static ' + FLUENTS_NL
+BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
+DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
+PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL
+STATIC_FLUENTS_NL = 'static ' + FLUENTS_NL
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
