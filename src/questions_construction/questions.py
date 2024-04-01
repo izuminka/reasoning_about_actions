@@ -1250,18 +1250,18 @@ class CompositeQuestions(QuestionGenerator):
 
     #################### TF questions ####################
 
-    def fluents_helper(self, is_answer_true, pos_fluents, neg_fluents):
+    def fluents_sample_corrupt(self, is_answer_true, pos_fluents, neg_fluents):
         if pos_fluents is None and neg_fluents is None:
             return None
+        pos_fluents = pos_fluents or []
+        neg_fluents = neg_fluents or []
 
         fluents = pos_fluents + neg_fluents
         if not is_answer_true:
             if len(fluents) == 1:
                 num_samples = 1
-            elif len(fluents) == 2:
-                num_samples = random.randint(1, len(fluents))
             else:
-                num_samples = random.randint(2, len(fluents))
+                num_samples = random.randint(int(len(fluents)/2), len(fluents))
             fluents = random.sample(fluents, num_samples)
             fluents = self.corrupt_fluents(fluents)
         return fluents
@@ -1272,7 +1272,7 @@ class CompositeQuestions(QuestionGenerator):
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
-        fluents = self.fluents_helper(plan_length, is_answer_true, pos_fluents, neg_fluents)
+        fluents = self.fluents_sample_corrupt(is_answer_true, pos_fluents, neg_fluents)
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     f"Are the following {FLUENTS_NL} true before the first infeasible action in the sequence? "
                     f"{sorted(self.nl_fluents(fluents))}. ")
@@ -1296,7 +1296,7 @@ class CompositeQuestions(QuestionGenerator):
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
-        fluents = self.fluents_helper(is_answer_true, pos_fluents, neg_fluents)
+        fluents = self.fluents_sample_corrupt(is_answer_true, pos_fluents, neg_fluents)
         if not fluents:
             return None
 
@@ -1323,7 +1323,7 @@ class CompositeQuestions(QuestionGenerator):
         action_performed = actions[plan_length]
 
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
-        fluents = self.fluents_helper(is_answer_true, pos_fluents, neg_fluents)
+        fluents = self.fluents_sample_corrupt(is_answer_true, pos_fluents, neg_fluents)
         if not fluents:
             return None
 
