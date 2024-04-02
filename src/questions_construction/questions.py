@@ -411,7 +411,18 @@ class QuestionGenerator(QuestionGenerationHelpers):
                 self.question_12,
                 self.question_13,
                 self.question_14,
-                self.question_15]
+                self.question_15,
+                self.question_16,
+                self.question_17,
+                self.question_18,
+                self.question_19,
+                self.question_20,
+                self.question_21,
+                self.question_22,
+                self.question_23,
+                self.question_24,
+                self.question_25,
+                self.question_26]
 
     def question_1(self, plan_length):
         return None
@@ -458,6 +469,38 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def question_15(self, plan_length):
         return None
 
+    def question_16(self, plan_length):
+        return None
+
+    def question_17(self, plan_length):
+        return None
+
+    def question_18(self, plan_length):
+        return None
+
+    def question_19(self, plan_length):
+        return None
+
+    def question_20(self, plan_length):
+        return None
+
+    def question_21(self, plan_length):
+        return None
+
+    def question_22(self, plan_length):
+        return None
+
+    def question_23(self, plan_length):
+        return None
+
+    def question_24(self, plan_length):
+        return None
+
+    def question_25(self, plan_length):
+        return None
+
+    def question_26(self, plan_length):
+        return None
 
 class ObjectTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
