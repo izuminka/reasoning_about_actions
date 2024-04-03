@@ -8,7 +8,7 @@ TESTS_DIR = CODE_PATH + '/tests'
 TMP_DIR = TESTS_DIR + '/tmp'
 
 jsonl_object = open_jsonl(TESTS_DIR + '/data/toy_data.blocksworld.jsonl')
-domain_class = Blocksworld()
+domain_class = Blocksworld(False, False)
 instance_id = 'sdf'
 plan_length_range = [1, 2, 3]
 

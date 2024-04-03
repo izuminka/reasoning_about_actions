@@ -29,7 +29,8 @@ OUT_OBJ_QUESTION_CATEGORY = 'question_category'
 OUT_OBJ_QUESTION_NAME = 'question_name'
 OUT_OBJ_QUESTION = 'question'
 OUT_OBJ_ANSWER_TYPE = 'answer_type'
-OUT_OBJ_ANSWER = 'answer' # ground truth answer
+OUT_OBJ_ANSWER = 'answer' # ground truth answer #TODO rename
+OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
 
 # OUTPUT ANSWER TYPES
 FREE_ANSWER = 'free_answer'
@@ -48,6 +49,17 @@ WITHOUT_RANDOM_SUB= 'without_random_sub'
 # model and prompts
 MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
 
+# fluent names for QA and domains
+FLUENTS_NL = 'properties of the state'
+POSITIVE_FLUENT_NL = 'valid property of the state'
+NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
+POSITIVE_FLUENTS_NL = 'valid properties of the state'
+NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
+
+BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
+DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
+PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL
+STATIC_FLUENTS_NL = 'static ' + FLUENTS_NL
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
@@ -80,3 +92,9 @@ def open_jsonl(path):
 def save_jsonl(data, save_path):
     with jsonlines.open(save_path, 'w') as w:
         w.write_all(data)
+
+def ramifications_keyword(is_ramifications):
+    if is_ramifications:
+        return WITH_RAMIFICATIONS
+    else:
+        return WITHOUT_RAMIFICATIONS
