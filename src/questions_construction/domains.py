@@ -104,16 +104,16 @@ class BaseDomain:
         return sentence_split_token.join(result)
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
-        raise 'Implement in child class'
+        raise Exception('Implement in child class')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
-        raise 'Implement in child class'
+        raise Exception('Implement in child class')
 
     def action_to_natural_language_helper(self, action):
-        raise 'Implement in child class'
+        raise Exception('Implement in child class')
 
     def action_to_hallucinated_natural_language_helper(self, action):
-        raise 'Implement in child class'
+        raise Exception('Implement in child class')
 
     def fluent_to_natural_language(self, fluent, is_hallucinated=False):
         if not is_hallucinated:
@@ -140,18 +140,7 @@ class BaseDomain:
 
 class Blocksworld(BaseDomain):
     DOMAIN_NAME = 'blocksworld'
-
-    BASE_POS_FLUENTS = ['ontable(']
-    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
-    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
-    DERIVED_POS_FLUENTS = ['clear(', 'handempty']
-    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
-    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
-    PERSISTENT_POS_FLUENTS = ['holding(', 'on(']
-    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
-    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
-    STATIC_FLUENTS = []
-
+    
     DOMAIN_DESC_WITHOUT_RAM = (
         'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
         'By picking up that block, it makes that block not present on the table and not clear. '
@@ -165,7 +154,8 @@ class Blocksworld(BaseDomain):
         'The block can also be unstacked from the top of the second block only if the hand is empty and the first block is clear and on top of the second block. '
         'Unstacking the first block from the second causes the second block to be clear. '
         'The first block is now being held, not clear, and not on top of the second block. '
-        'Furthermore, the hand is not empty.')
+        'Furthermore, the hand is not empty.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
         'Picking up the block leads to the block being held. '
@@ -177,21 +167,52 @@ class Blocksworld(BaseDomain):
         "Unstacking the first block from the second causes first block to be held "
         "A block is said to be clear if it is not being held and there are no blocks that are on top of it. "
         "The hand is said to be empty if and only if it is not holding any block. "
-        "The block can only be at one place at a time.")
+        "The block can only be at one place at a time."
+    )
+    
+    BASE_POS_FLUENTS = ['ontable(']
+    BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
+    BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
+    DERIVED_POS_FLUENTS = ['clear(', 'handempty']
+    DERIVED_NEG_FLUENTS = ['-' + fluent for fluent in DERIVED_POS_FLUENTS]
+    DERIVED_FLUENTS = DERIVED_POS_FLUENTS + DERIVED_NEG_FLUENTS
+    PERSISTENT_POS_FLUENTS = ['holding(', 'on(']
+    PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
+    PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
+    STATIC_FLUENTS = []
+    
+    SUBSTRINGS_TO_RAND = {
+        # Object types
+        'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs',
+        'hand': 'egpbpdtalq',
+        'table': 'gcbwvwyvkv',
 
-    # FOR RANDOM SUBSTITUTIONS
-    OBJ_TYPE_TO_RAND = {'block': 'qbyyxzqvdh', 'blocks': 'qbyyxzqvdhs'}
-    ACTION_TO_RAND = {'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
-                      'put down': 'xskgihccqt', 'puts down': 'xskgihccqt', 'putting down': 'xskgihccqt',
-                      'stack': 'oscckwdtoh', 'stacks': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
-                      'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo',
-                      'unstacked': 'wxqdwukszo'}
-    FLUENT_TO_RAND = {'table': 'zewwtdxhfs',
-                      # 'clear': 'ormkfgqwve',
-                      'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp',
-                      # 'empty': 'yqttlkcqqj',
-                      'hand': 'egpbpdtalq'}
-    SUBSTRINGS_TO_RAND = OBJ_TYPE_TO_RAND | ACTION_TO_RAND | FLUENT_TO_RAND
+        # Fluents
+        'on':'wtuwjwbuja', 'on top of': 'wtuwjwbuja', 'placed on top': 'wtuwjwbuja',
+        'on the table': 'zewwtdxhfs', 'located on the table': 'zewwtdxhfs',
+        # 'clear': 'ormkfgqwve',
+        'hold': 'casqqrrojp', 'holding': 'casqqrrojp', 'held': 'casqqrrojp', 'holds': 'casqqrrojp', 'being held': 'casqqrrojp',
+        # 'empty': 'yqttlkcqqj',
+        
+        # Actions
+        'pick up': 'ovyuecllio', 'picking up': 'ovyuecllio', 'picked up': 'ovyuecllio',
+        'put down': 'xskgihccqt', 'puts down': 'xskgihccqt', 'putting down': 'xskgihccqt',
+        'stack': 'oscckwdtoh', 'stacks': 'oscckwdtoh', 'stacking': 'oscckwdtoh', 'stacked': 'oscckwdtoh',
+        'unstack': 'wxqdwukszo', 'unstacks': 'wxqdwukszo', 'unstacking': 'wxqdwukszo', 'unstacked': 'wxqdwukszo',
+        
+        # Hallucinated Fluents
+        'switched': 'pueupbojkz', 'swapped': 'pueupbojkz', 'exchanged': 'pueupbojkz',
+        'lost': 'xzeywfsucg', 'become lost': 'xzeywfsucg',
+        'being thrown': 'zjzqfzjvqz', 'been thrown': 'zjzqfzjvqz',
+        'under the table': 'iqvpbljrxy', 'positioned under the table': 'iqvpbljrxy',
+        'broken': 'jmqpdsymid', 'now broken': 'jmqpdsymid', 'broken anymore': 'jmqpdsymid',
+        
+        # Hallucinated Actions
+        'crushed': 'qvyqxotjqc', 'crushes': 'qvyqxotjqc',
+        'glued': 'infnjzlsvf',
+        'placed inside': 'erhgolynpo', 'inserted inside': 'erhgolynpo', 'put inside': 'erhgolynpo',
+        'crashed': 'yqyqjvzjxw',
+    }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('on('):
@@ -234,7 +255,7 @@ class Blocksworld(BaseDomain):
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is on the table',
-                f'block {b} is located at the table'
+                f'block {b} is located on the table'
             ]
         elif fluent.startswith('-ontable('):
             if is_without_object:
@@ -242,7 +263,7 @@ class Blocksworld(BaseDomain):
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not on the table',
-                f'block {b} is not located at the table'
+                f'block {b} is not located on the table'
             ]
 
         elif fluent.startswith('holding('):
@@ -310,18 +331,20 @@ class Blocksworld(BaseDomain):
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
-        # under
+        # switched
         if fluent.startswith('on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return [
-                f'block {b1} is under block {b2}',
-                f'block {b1} is positioned under block {b2}'
+                f'block {b1} is switched with block {b2}',
+                f'block {b1} is swapped with block {b2}',
+                f'block {b2} is exhanged with block {b1}'
             ]
         elif fluent.startswith('-on('):
             b1, b2 = self.extract_multi_variable(fluent)
             return [
-                f'block {b1} is not under block {b2}',
-                f'block {b1} is not positioned under block {b2}'
+                f'block {b1} is not switched with block {b2}',
+                f'block {b1} is not swapped with block {b2}',
+                f'block {b2} is not exchanged with block {b1}'
             ]
 
         # lost
@@ -335,7 +358,7 @@ class Blocksworld(BaseDomain):
             b = self.extract_single_variable(fluent)
             return [
                 f'block {b} is not lost',
-                f'block {b} has not been lost'
+                f'block {b} has not become lost'
             ]
 
         # thrown
@@ -382,32 +405,32 @@ class Blocksworld(BaseDomain):
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
-
-        # lift
+        
+        # crush
         if 'pick_up(' in action:
             block_name = self.extract_single_variable(action)
             return [
-                f'block {block_name} is lifted',
-                f'block {block_name} is lifted by the hand',
-                f'the hand lifts the block {block_name}'
+                f'block {block_name} is crushed',
+                f'block {block_name} is crushed by the hand',
+                f'the hand crushes the block {block_name}'
             ]
-
-        # lower
+        
+        # glue
         elif 'put_down(' in action:
             block_name = self.extract_single_variable(action)
             return [
-                f'block {block_name} is lowered',
-                f'block {block_name} is lowered by the hand',
-                f'block {block_name} is lowered to the table'
+                f'block {block_name} is glued',
+                f'block {block_name} is glued by the hand',
+                f'block {block_name} is glued to the table'
             ]
-
-        # remove
+        
+        # inside
         elif 'unstack(' in action:
             b1, b2 = self.extract_multi_variable(action)
             return [
-                f'block {b1} is removed from block {b2}',
-                f'block {b1} is removed from top of block {b2}'
-                f'from top of block {b2}, block {b1} is removed'
+                f'block {b1} is placed inside block {b2}',
+                f'block {b1} is inserted inside block {b2}',
+                f'block {b1} is put inside block {b2}'
             ]
 
         # crashed
@@ -424,6 +447,7 @@ class Blocksworld(BaseDomain):
 
 class Depots(BaseDomain):
     DOMAIN_NAME = 'depots'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'A surface can be a pallet or a crate. '
         'A truck can be driven from one location to another only if it is present at the first location. '
@@ -437,7 +461,8 @@ class Depots(BaseDomain):
         'Loading the crate on a truck can be executed only when the crate and truck are present in the same location, and the hoist is lifting the crate. '
         'Loading the crate onto the truck causes the hoist to be available and not lifting the crate, and crate to be in the truck. '
         'Unloading the crate from the truck can be done only if the hoist and truck are in the same place, the hoist is available, and the crate is present in the truck. '
-        'Unloading the crate from the truck causes the crate to be not in the truck, and the hoist to be lifting the crate and not available.')
+        'Unloading the crate from the truck causes the crate to be not in the truck, and the hoist to be lifting the crate and not available.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'A surface can be a pallet or a crate. '
         "A truck can be driven from one location to another only if it is present at the first location. "
@@ -455,8 +480,9 @@ class Depots(BaseDomain):
         "A crate is clear if and only if no hoist is lifting that crate. "
         "A truck can be only at one location. "
         "A crate can only be at one location. "
-        "A crate can only be on top of one surface. ")
-
+        "A crate can only be on top of one surface. "
+    )
+  
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -469,19 +495,47 @@ class Depots(BaseDomain):
     STATIC_FLUENTS = []
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
+        'depot': 'viwwhelzlg', 'depots': 'viwwhelzlg',
+        'distributor': 'vjbtrtgdsx', 'distributors': 'vjbtrtgdsx',
         'surface': 'fshxjwxean', 'surfaces': 'fshxjwxean',
         'pallet': 'tzrwjuotxz', 'pallets': 'tzrwjuotxz',
         'crate': 'pjrluufopq', 'crates': 'pjrluufopq',
         'truck': 'nblmdziyqf', 'trucks': 'nblmdziyqf',
         'hoist': 'suhmddooyi', 'hoists': 'suhmddooyi',
+        
+        # Fluents
+        'at': 'cmgnqlveog', 'located at': 'cmgnqlveog',
+        'on': 'fpqyitbzqq', 'on top of': 'fpqyitbzqq',
+        'in': 'qxkqlxlezx', 'contains': 'qxkqlxlezx', 'inside': 'qxkqlxlezx',
+        'lifting': 'uzsyubjcdy', 'raising': 'uzsyubjcdy', 'elevating': 'uzsyubjcdy',
+        # 'available': 'xlhhnyciys', 'accessible': 'xlhhnyciys', 'available for work': 'xlhhnyciys',
+        # 'clear': 'sypgozifms',
+        
+        # Actions
         'driven': 'jzmscukkyy', 'drive': 'jzmscukkyy', 'driving': 'jzmscukkyy', 'drove': 'jzmscukkyy',
         'lift': 'aeaygzpsjc', 'lifting': 'aeaygzpsjc', 'lifts': 'aeaygzpsjc', 'lifted': 'aeaygzpsjc',
         'drop': 'uckhudtpif', 'drops': 'uckhudtpif', 'dropping': 'uckhudtpif', 'dropped': 'uckhudtpif',
         'load': 'gjqgfjtbnf', 'loads': 'gjqgfjtbnf', 'loading': 'gjqgfjtbnf', 'loaded': 'gjqgfjtbnf',
         'unload': 'gpztfzvsux', 'unloads': 'gpztfzvsux', 'unloading': 'gpztfzvsux', 'unloaded': 'gpztfzvsux',
-        # 'location': 'eejxtwabwx', 'locations': 'eejxtwabwx',
-        # 'clear': 'sypgozifms',
-        # 'available': 'xlhhnyciys',
+        
+        # Hallucinated Fluents
+        'maintained': 'ytvcrjybec',
+        'stranded': 'jjlqbocvnz',
+        'near': 'ginalixply',
+        'delivered': 'myywdvcitn', 'delivery': 'myywdvcitn',
+        'within': 'cxigqletvk', 'exist within': 'cxigqletvk',
+        'next to': 'fwhnkxhpvg', 'situated next to': 'fwhnkxhpvg',
+        'transporting': 'fmiayxdllr', 'transported': 'fmiayxdllr',
+        'malfunctioning': 'ikvdhtgkxv', 'experiencing a malfunciton': 'ikvdhtgkxv',
+        'expensive': 'wcjwdipviu', 'valuable': 'wcjwdipviu', 'costly': 'wcjwdipviu',
+        
+        # Hallucinated Actions
+        'inspected': 'amxudankts', 'inspection': 'amxudankts',
+        'broken': 'jnhkhfkmzz', 'breaks': 'jnhkhfkmzz',
+        'stuck': 'uotbvdpsft',
+        'packed': 'uijtrascvl', 'packs': 'uijtrascvl',
+        'hoisted': 'ahlymciwax', 'hoisting': 'ahlymciwax',
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -776,6 +830,7 @@ class Depots(BaseDomain):
 
 class Driverlog(BaseDomain):
     DOMAIN_NAME = 'driverlog'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'To load an object onto a truck at a location, the truck and the object must be at the same location. '
         'Loading the object onto the truck causes the object to not be at its initial location and to be inside the truck. '
@@ -788,7 +843,8 @@ class Driverlog(BaseDomain):
         'To drive a truck from one location to another, the truck must be at the initial location, the driver must be driving the truck, and there must be a link between the initial and final locations. '
         'Driving the truck causes it to no longer be at the initial location but to be at the final location. '
         'To walk from one location to another, the driver must be at the initial location, and there must be a path between the initial and final locations. '
-        'Walking causes the driver to no longer be at the initial location but to be at the final location.')
+        'Walking causes the driver to no longer be at the initial location but to be at the final location.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'To load an object onto a truck at a location, the truck and the object must be at the same location. '
         'Loading the object onto the truck causes the object to be inside the truck. '
@@ -804,8 +860,9 @@ class Driverlog(BaseDomain):
         "A truck is empty if and only if it is not driven by anyone (any driver). "
         "A driver is driving the truck if and only if the driver is not at a location "
         "An object can only be at one location. "
-        "A driver can only be at one location.")
-
+        "A driver can only be at one location."
+    )
+    
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -820,23 +877,43 @@ class Driverlog(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
+        # 'location': 'iatympbexj', 'locations': 'iatympbexj',
         'truck': 'zkkizjecwh', 'trucks': 'zkkizjecwh',
         'object': 'omkfkvxwrg', 'objects': 'omkfkvxwrg',
         'driver': 'fxwdnwxasu', 'drivers': 'fxwdnwxasu',
+        
+        # Fluents
+        'at': 'yceafumfdp', 'present at': 'yceafumfdp', 'currently at': 'yceafumfdp',
+        'in': 'qhkipqlxfx', 'placed in': 'qhkipqlxfx', 'located in': 'qhkipqlxfx',
+        'driving': 'qvpnltnffy', 'being driven by': 'qvpnltnffy',
         'link': 'umwttodbts', 'links': 'umwttodbts',
         'path': 'zgbnmmdljx', 'paths': 'zgbnmmdljx',
-        # 'empty': 'fgrxzszxhm',
+        # 'empty': 'fgrxzszxhm', 'nothing': 'fgrxzszxhm',
+        
+        # Actions
         'load': 'yvlcghamlt', 'loads': 'yvlcghamlt', 'loading': 'yvlcghamlt', 'loaded': 'yvlcghamlt',
-        'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj',
-        'unloaded': 'zfjywbftzj',
-        'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua',
-        'boarded': 'kqrkdhivua',
-        'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm',
-        'disembarked': 'qstuhdgygm',
-        'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie',
-        'driven': 'wqfrddftie',
+        'unload': 'zfjywbftzj', 'unloads': 'zfjywbftzj', 'unloading': 'zfjywbftzj', 'unloaded': 'zfjywbftzj',
+        'board': 'kqrkdhivua', 'boards': 'kqrkdhivua', 'boarding': 'kqrkdhivua', 'boarded': 'kqrkdhivua',
+        'disembark': 'qstuhdgygm', 'disembarks': 'qstuhdgygm', 'disembarking': 'qstuhdgygm', 'disembarked': 'qstuhdgygm',
+        'drive': 'wqfrddftie', 'drives': 'wqfrddftie', 'driving': 'wqfrddftie', 'drove': 'wqfrddftie', 'driven': 'wqfrddftie',
         'walk': 'elasopyqsh', 'walks': 'elasopyqsh', 'walking': 'elasopyqsh', 'walked': 'elasopyqsh',
-        # 'location': 'iatympbexj', 'locations': 'iatympbexj',
+        
+        # Hallucinated Fluents
+        'parked at': 'ffbivspbrs', 'parked': 'ffbivspbrs',
+        'near': 'drvlxsqrlz', 'located near': 'drvlxsqrlz',
+        'above': 'lnhfycnrbd', 'placed above': 'lnhfycnrbd', 'located above': 'lnhfycnrbd',
+        'sleeping': 'otwcyyzroo', 'currently sleeping': 'otwcyyzroo', 'taking a nap': 'otwcyyzroo',
+        'neighbors': 'fgutxzbccy', 'neighbor': 'fgutxzbccy',
+        'overloaded': 'ashjotasqz',
+        
+        # Hallucinated Actions
+        'returned': 'jrnajvctur', 'returned back': 'jrnajvctur',
+        'delivered': 'aaxcanwktt',
+        'inspects': 'mpfmwjioxq', 'inspected': 'mpfmwjioxq',
+        'repairs': 'dwunyofrzp', 'repaired': 'dwunyofrzp',
+        'checks': 'sxzlmtkqcl', 'checked': 'sxzlmtkqcl', 'checking': 'sxzlmtkqcl',
+        'rests': 'anaefeatxi', 'rest': 'anaefeatxi',
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -1031,7 +1108,7 @@ class Driverlog(BaseDomain):
                     f'{obj} is not located near location {location}'
                 ]
 
-        # above (changed from 'placed')
+        # above
         elif fluent.startswith('in('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
@@ -1047,7 +1124,7 @@ class Driverlog(BaseDomain):
                 f'{obj1} is not above {obj2}'
             ]
 
-        # sleeping (changed from "steering")
+        # sleeping
         elif fluent.startswith('driving('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
@@ -1059,7 +1136,7 @@ class Driverlog(BaseDomain):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
                 f'{obj1} is not sleeping in {obj2}',
-                f'{obj1} is currently not sleeping in {obj2}',
+                f'{obj1} is not currently sleeping in {obj2}',
                 f'{obj1} is not taking a nap in {obj2}'
             ]
 
@@ -1166,6 +1243,7 @@ class Driverlog(BaseDomain):
 
 class Goldminer(BaseDomain):
     DOMAIN_NAME = 'goldminer'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'A robot can move from one location to another if it is currently at the starting location, the locations are connected, and the destination is clear. '
         'Moving causes the robot to be at the new location, and it is no longer at the previous location. '
@@ -1179,7 +1257,8 @@ class Goldminer(BaseDomain):
         'Firing a laser from one location to another is executable only if the robot is at the starting location, holds a laser, and the locations are connected. '
         'Firing the laser results in the destination being clear, with no soft rocks, no gold, and no hard rocks at the destination. '
         'Finally, the robot can pick up gold at a specific location if it is at that location, the robot\'s arm is empty, and there is gold at that location. '
-        'Picking up gold results in the robot\'s arm no longer being empty, and it now holds the gold.')
+        'Picking up gold results in the robot\'s arm no longer being empty, and it now holds the gold.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'A robot can move from one location to another if it is currently at the starting location, the locations are connected, and the destination is clear. '
         "Moving causes the robot to be at the new location. "
@@ -1204,7 +1283,8 @@ class Goldminer(BaseDomain):
         "A robot cannot be in two places at once. "
         "The arm is said to be empty if and only if it is not holding a laser and not holding a bomb and not holding gold. "
         "The place is clear if and only if it does not contain any soft rock, gold, or hard rock. "
-        "The robot is holding a laser if and only if the laser is not at a location. ")
+        "The robot is holding a laser if and only if the laser is not at a location. "
+    )
 
     BASE_POS_FLUENTS = ['bomb_at(', 'laser_at(', 'soft_rock_at(', 'hard_rock_at(', 'holds_bomb(', 'holds_laser(',
                         'holds_gold(']
@@ -1219,24 +1299,54 @@ class Goldminer(BaseDomain):
     STATIC_POS_FLUENTS = ['connected(']
     STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-
+    
     SUBSTRINGS_TO_RAND = {
-        'robot': 'oiycijmjmo',
-        'laser': 'jaakaxcemj',
-        'arm': 'jawtollkbp', 'arms': 'jawtollkbp',
+        # Object types
+        'robot': 'oiycijmjmo', 'robot\'s': 'oiycijmjmo',
+        # 'location': 'cltqghvirt', 'locations': 'cltqghvirt',
         'bomb': 'ojyinshkhj',
-        'gold': 'gbxztwroqz',
+        'laser': 'jaakaxcemj',
         'soft rock': 'erzvzboobp', 'soft rocks': 'erzvzboobp',
         'hard rock': 'vcybvdqmgp', 'hard rocks': 'vcybvdqmgp',
-        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf', 'detonated': 'vputhhsycf',
-        'find': 'qwyadblmhl', 'finds': 'qwyadblmhl', 'finding': 'qwyadblmhl', 'found': 'qwyadblmhl',
+        'gold': 'gbxztwroqz',
+        'arm': 'jawtollkbp', 'arms': 'jawtollkbp',
+
+        # Fluents
+        'at': 'ihzolltlau', 'present at': 'ihzolltlau', 'located at': 'ihzolltlau',
+        'connected': 'vkeayseeni', 'connection': 'vkeayseeni',
+        # 'empty': 'kqtvognkhw', 'contains nothing': 'kqtvognkhw', 'contains something': 'not kqtvognkhw',
+        'holds': 'fxfwyzfzar', 'held': 'fxfwyzfzar', 'holding': 'fxfwyzfzar',
+        # 'clear': 'qvnmedqflj', 'has nothing': 'qvnmedqflj', 'has something': 'not qvnmedqflj',
+
+        # Actions
         'move': 'zdmlakgkqc', 'moves': 'zdmlakgkqc', 'moving': 'zdmlakgkqc', 'moved': 'zdmlakgkqc',
         'pick up': 'wlcfexwxse', 'picks up': 'wlcfexwxse', 'picking up': 'wlcfexwxse', 'picked up': 'wlcfexwxse',
         'put down': 'lrlcipamts', 'puts down': 'lrlcipamts', 'putting down': 'lrlcipamts',
+        'detonate': 'vputhhsycf', 'detonates': 'vputhhsycf', 'detonating': 'vputhhsycf', 'detonated': 'vputhhsycf',
         'fire': 'arvmgimcpi', 'fires': 'arvmgimcpi', 'firing': 'arvmgimcpi', 'fired': 'arvmgimcpi',
-        # 'clear': 'qvnmedqflj',
-        # 'empty': 'kqtvognkhw',
-        # 'location': 'cltqghvirt', 'locations': 'cltqghvirt',
+
+        # Hallucinated Fluents
+        'communicates': 'mjyqffezpe', 'communicating': 'mjyqffezpe',
+        'defused': 'vizuneyana', 'defuses': 'vizuneyana', 'defuse': 'vizuneyana',
+        'gear': 'vlzaxhwuea',
+        'sand': 'bcgycaqwqo',
+        'granite': 'ehpwetoajj',
+        'treasure': 'hjfltlgacl',
+        'bigger': 'mosinwuhak', 'larger': 'mosinwuhak', 'not smaller': 'mosinwuhak', 'smaller': 'not mosinwuhak',
+        'recharging': 'buwihxwpho', 'currently recharging': 'buwihxwpho', 'process of recharging': 'buwihxwpho',
+        'deploys its solar-panels': 'tsmjqaiugb', 'deploying its solar-panels': 'tsmjqaiugb', 'deployed by robot': 'tsmjqaiugb', 'deploy its solar-panels': 'tsmjqaiugb',
+        'tools': 'vgxoxqvrde',
+        'reward': 'zkhwvjaxso',
+        'spikes': 'wducbjthlg', 'spiked': 'wducbjthlg',
+
+        # Hallucinated Actions
+        'rolls': 'cluquubese',
+        'ready to fire': 'yzrwmffzzb', 'prepared for firing': 'yzrwmffzzb', 'ready to be fired': 'yzrwmffzzb',
+        'set up': 'gisfsluxlg',
+        'disposed': 'qhjxfpoxkj', 'disposes': 'qhjxfpoxkj',
+        'malfunctions': 'omwyipcewn', 'malfunctioned during detonation': 'omwyipcewn',
+        'missing': 'gkmajqzggr', 'reported missing': 'gkmajqzggr', 'lost': 'gkmajqzggr',
+        'melted': 'mizxhuksan', 'melts': 'mizxhuksan'
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -1425,7 +1535,7 @@ class Goldminer(BaseDomain):
             location = self.extract_single_variable(fluent)
             return [
                 f'location {location} is clear',
-                f'location {location} contains nothing'
+                f'location {location} has nothing'
             ]
         elif fluent.startswith('-clear('):
             if is_without_object:
@@ -1509,7 +1619,7 @@ class Goldminer(BaseDomain):
                 f'robot is not communicating at location {place}'
             ]
 
-        # defused (changed from 'detonated')
+        # defused
         elif fluent.startswith('bomb_at('):
             obj1 = self.extract_single_variable(fluent)
             return [
@@ -1589,7 +1699,7 @@ class Goldminer(BaseDomain):
                 f'treasure is not currently at location {obj1}'
             ]
 
-        # bigger (changed from "neighbors")
+        # bigger
         elif fluent.startswith('connected('):
             obj1, obj2 = self.extract_multi_variable(fluent)
             return [
@@ -1605,7 +1715,7 @@ class Goldminer(BaseDomain):
                 f'location {obj2} is not smaller than location {obj1}'
             ]
 
-        # recharging (changed from "gripper")
+        # recharging
         elif fluent.startswith('arm_empty'):
             return [
                 f"robot is recharging",
@@ -1619,7 +1729,7 @@ class Goldminer(BaseDomain):
                 f'robot is not in the process of recharging'
             ]
 
-        # solar-panel (changed from "explosive")
+        # solar-panel
         elif fluent.startswith('holds_bomb'):
             return [
                 f'robot deploys its solar-panels',
@@ -1661,7 +1771,7 @@ class Goldminer(BaseDomain):
                 f'robot is currently not holding reward'
             ]
 
-        # spikes (changed from "not occupied")
+        # spikes
         elif fluent.startswith('clear('):
             location = self.extract_single_variable(fluent)
             return [
@@ -1742,6 +1852,30 @@ class Goldminer(BaseDomain):
 
 class Grippers(BaseDomain):
     DOMAIN_NAME = 'grippers'
+    
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'A robot can move from a specified room if it is in that room. '
+        'Moving the robot causes it to be not in the said room but in the destination room. '
+        'A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. '
+        'Picking up the object causes the robot to carry that object using its gripper, the object to be not in that room, and the said gripper not free. '
+        'Dropping the object in a specified room is only executable when the robot is carrying that object using its gripper, and the robot is in the said room. '
+        'Dropping an object in a room makes the object be in that room, the gripper be free and the robot not carrying the object anymore.'
+    )
+    DOMAIN_DESC_WITH_RAM = (
+        "A robot can move from a specified room if it is in that room. "
+        "Moving the robot causes  it to be in the destination room. "
+
+        "A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. "
+        "Picking up the object causes the robot to carry the object via its gripper. "
+
+        "Dropping the object in a specified room is executable if and only if the robot is carrying the object using its gripper, and the robot is in the room. "
+        "Dropping the object causes the robot to not carry the object. "
+
+        "A robot's gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
+        "If the robot is carrying the object then the object is not in the room. "
+        "If the robot is not carrying the object then the object a in the room. "
+        "Robot can only be at one place. "
+    )
 
     BASE_POS_FLUENTS = ['carry(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
@@ -1756,40 +1890,36 @@ class Grippers(BaseDomain):
     STATIC_NEG_FLUENTS = []
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
-    DOMAIN_DESC_WITHOUT_RAM = (
-        'A robot can move from a specified room if it is in that room. '
-        'Moving the robot causes it to be not in the said room but in the destination room. '
-        'A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. '
-        'Picking up the object causes the robot to carry that object using its gripper, the object to be not in that room, and the said gripper not free. '
-        'Dropping the object in a specified room is only executable when the robot is carrying that object using its gripper, and the robot is in the said room. '
-        'Dropping an object in a room makes the object be in that room, the gripper be free and the robot not carrying the object anymore.')
-    DOMAIN_DESC_WITH_RAM = (
-        "A robot can move from a specified room if it is in that room. "
-        "Moving the robot causes  it to be in the destination room. "
-
-        "A robot can pick up the object using a gripper only when the object and the robot are in the same room and the mentioned gripper is free. "
-        "Picking up the object causes the robot to carry the object via its gripper. "
-
-        "Dropping the object in a specified room is executable if and only if the robot is carrying the object using its gripper, and the robot is in the room. "
-        "Dropping the object causes the robot to not carry the object. "
-
-        "A robot's gripper is said to be free if the robot is not carrying any of the objects with a gripper. "
-        "If the robot is carrying the object then the object is not in the room. "
-        "If the robot is not carrying the object then the object a in the room. "
-        "Robot can only be at one place. ")
-
     SUBSTRINGS_TO_RAND = {
-        'robot': 'jjjrptnvkh', 'robots': 'jjjrptnvkh',
+        # Object types
+        'robot': 'jjjrptnvkh', 'robots': 'jjjrptnvkh', 'robot\'s': 'jjjrptnvkh',
         'room': 'ixokqrvnqn', 'rooms': 'ixokqrvnqn',
+        'gripper': 'rfqqokqouf', 'grippers': 'rfqqokqouf',
+        
+        # Fluents
+        'at': 'dsbkgjtckb', 'present at': 'dsbkgjtckb', 'located at': 'dsbkgjtckb',
+        'free': 'gburhntwol', 'available': 'gburhntwol',
+        'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj',
+
+        # Actions
+        'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
+        'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
+        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn','dropped': 'qhfmsjkotn',
+
+        # Hallucinated Fluents
+        'engaged': 'vymmedxpiu',
+        'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt', 'transported': 'kseqanhkzt',
+        'broken': 'wlylmjkbyt',
+        'loading': 'kruldgryji', 'loaded': 'kruldgryji', 'load': 'kruldgryji',
+
+        # Hallucinated Actions
+        'inspected': 'ewyaiaclhl', 'inspects': 'ewyaiaclhl',
+        'checks': 'zvgsdawjsn', 'checked': 'zvgsdawjsn',
+        'destroyed': 'sjejpbrezk', 'destroys': 'sjejpbrezk',
+
         # 'destination': 'ezrqqoajas', 'destinations': 'ezrqqoajas',
         'object': 'wtdcrmrabz', 'objects': 'wtdcrmrabz',
-        'gripper': 'yegitqlmuq', 'grippers': 'yegitqlmuq',
-        'move': 'zucvbghqwl', 'moves': 'zucvbghqwl', 'moving': 'zucvbghqwl', 'moved': 'zucvbghqwl',
-        'pick': 'angmkdpvfb', 'picks': 'angmkdpvfb', 'picking': 'angmkdpvfb', 'picked': 'angmkdpvfb',
-        'drop': 'qhfmsjkotn', 'drops': 'qhfmsjkotn', 'dropping': 'qhfmsjkotn', 'dropped': 'qhfmsjkotn',
-        'transport': 'kseqanhkzt', 'transports': 'kseqanhkzt', 'transporting': 'kseqanhkzt',
-        'transported': 'kseqanhkzt',
-        'carry': 'rwgciavjpj', 'carries': 'rwgciavjpj', 'carrying': 'rwgciavjpj', 'carried': 'rwgciavjpj'}
+    }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at_robby('):
@@ -1991,6 +2121,7 @@ class Grippers(BaseDomain):
 
 class Logistics(BaseDomain):
     DOMAIN_NAME = 'logistics'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'Loading a package onto a truck is only possible if both the package and the truck are in the same location. '
         'Loading the package onto the truck causes the package not to be at that location but to be in the truck. '
@@ -2002,7 +2133,8 @@ class Logistics(BaseDomain):
         'Unloading from the airplane makes the package present in that location and not in the plane anymore. '
         'Driving a truck is possible only when the truck is in a location where the source and destination are in the same city. '
         'Driving the truck causes it to be at the destination and not at the source. Flying an airplane is possible if and only if the airplane is at a location. '
-        'Flying the airplane causes it to be not at the source location but at the destination location.')
+        'Flying the airplane causes it to be not at the source location but at the destination location.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'Loading a package onto a truck is only possible if both the package and the truck are in the same location. Loading the package onto the truck causes the package to be in the truck. '
         "Loading a package onto an airplane is possible if and only if both the package and the airplane are in the same location. "
@@ -2020,8 +2152,9 @@ class Logistics(BaseDomain):
         "Flying the airplane causes it to be at the destination location. "
 
         "If a package is in a truck or a plane, it is not at any location. If a package is not in a truck or an airplane then it is at some location. "
-        "A truck can only be at one location at a time. A plane can only be in one location at a time.")
-
+        "A truck can only be at one location at a time. A plane can only be in one location at a time."
+    )
+   
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -2036,21 +2169,37 @@ class Logistics(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
-        'package': 'tnzistccqp', 'packages': 'tnzistccqp',
+        # Object types
         'truck': 'pvcuetihtl', 'trucks': 'pvcuetihtl',
         'airplane': 'xmyqeckfwm', 'airplanes': 'xmyqeckfwm',
-        'airport': 'qpplrkefyr', 'airports': 'qpplrkefyr',
-        'object': 'causdnkeoz', 'objects': 'causdnkeoz',
+        'package': 'tnzistccqp', 'packages': 'tnzistccqp',
         'vehicle': 'qmgahdodkq', 'vehicles': 'qmgahdodkq',
+        'airport': 'qpplrkefyr', 'airports': 'qpplrkefyr',
         'city': 'bpzwevlomd', 'cities': 'bpzwevlomd',
-        'load': 'nxrnxkjybr', 'loads': 'nxrnxkjybr', 'loading': 'nxrnxkjybr', 'loaded': 'nxrnxkjybr',
-        'unload': 'bdfszwzdpi', 'unloads': 'bdfszwzdpi', 'unloading': 'bdfszwzdpi',
-        'unloaded': 'bdfszwzdpi',
-        'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn',
-        'driven': 'umcjrdgfyn',
-        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar',
-        'flown': 'umnkjqinar',
+        'object': 'causdnkeoz', 'objects': 'causdnkeoz',
         # 'location': 'wesxmnrgzy', 'locations': 'wesxmnrgzy',
+        
+        # Fluents
+        'in city': 'cppjrnvvpl', 'located in city': 'cppjrnvvpl', 'contains': 'cppjrnvvpl', 'contain': 'cppjrnvvpl',
+        'at': 'lyfgdjkunc', 'located at': 'lyfgdjkunc',
+        'in': 'kfhraifzlu', 'present in': 'kfhraifzlu', 'located in': 'kfhraifzlu',
+
+        # Actions
+        'load': 'nxrnxkjybr', 'loads': 'nxrnxkjybr', 'loading': 'nxrnxkjybr', 'loaded': 'nxrnxkjybr',
+        'unload': 'bdfszwzdpi', 'unloads': 'bdfszwzdpi', 'unloading': 'bdfszwzdpi', 'unloaded': 'bdfszwzdpi',
+        'drive': 'umcjrdgfyn', 'drives': 'umcjrdgfyn', 'driving': 'umcjrdgfyn', 'drove': 'umcjrdgfyn', 'driven': 'umcjrdgfyn',
+        'fly': 'umnkjqinar', 'flies': 'umnkjqinar', 'flying': 'umnkjqinar', 'flied': 'umnkjqinar', 'flown': 'umnkjqinar',
+
+        # Hallucinated Fluents
+        'capital': 'jmddqentke',
+        'scanned': 'xaijmlivhh',
+        'heavy': 'vnuzugdjib', 'exceeds the weight limit': 'vnuzugdjib', 'exceed the weight limit': 'vnuzugdjib',
+        
+        # Hallucinated Actions
+        'inspected': 'ywvxawjyhr', 'inspection': 'ywvxawjyhr',
+        'stuck': 'nvhbcjejlg',
+        'lost': 'wuvrtakvnb',
+        'refueled': 'lcgnljujin'
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -2155,13 +2304,13 @@ class Logistics(BaseDomain):
             return [
                 f'airplane {airplane} is flown from airport {airport_from} to airport {airport_to}',
                 f'airplane {airplane} is flown to airport {airport_to} from airport {airport_from}',
-                f'airplane {airplane} flys from airports {airport_from} to {airport_to}'
+                f'airplane {airplane} flies from airports {airport_from} to {airport_to}'
             ]
         else:
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
-        # capital (changed from "outside") 
+        # capital
         if fluent.startswith('in_city('):
             place, city = self.extract_multi_variable(fluent)
             return [
@@ -2189,7 +2338,7 @@ class Logistics(BaseDomain):
                 f'at place {place}, object {physical_object} is not scanned'
             ]
 
-        # heavy (changed from "transported")
+        # heavy
         elif fluent.startswith('in('):
             package, vehicle = self.extract_multi_variable(fluent)
             return [
@@ -2257,12 +2406,14 @@ class Logistics(BaseDomain):
 
 class Miconic(BaseDomain):
     DOMAIN_NAME = 'miconic'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'A passenger can board the lift on a floor only if the lift is on that floor and the passenger\'s travel originates from that floor. '
         'Boarding the lift causes the passenger to be boarded. Departing from the lift is executable only when the lift is on the floor, the passenger is boarded, and the passenger\'s destination is on that floor. '
         'Departing from the lift causes the passenger to be served and not boarded. A lift can go up from one floor to another if and only if it is currently on the floor and the destination floor is above the source floor. '
         'Going up makes the lift on the destination floor. A lift can go down from one floor to another if and only if it is currently on a floor and the source floor is above the destination floor. '
-        'Going down makes the lift on the destination floor.')
+        'Going down makes the lift on the destination floor.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         "A passenger can board the lift on a floor only if the lift is on that floor and the passenger's travel originates from that floor. "
         "Boarding the lift causes the passenger to be boarded. "
@@ -2275,8 +2426,9 @@ class Miconic(BaseDomain):
         "Going down makes the lift on the destination floor. "
 
         "A lift can only be on one floor at a time. "
-        "If the passenger is served, then the passenger is not boarded.")
-
+        "If the passenger is served, then the passenger is not boarded."
+    )
+    
     BASE_POS_FLUENTS = ['boarded(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -2291,18 +2443,35 @@ class Miconic(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
+        'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
+        'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez', 'level': 'rhwfsepbez', 'levels': 'rhwfsepbez',
+        'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz', 'elevator': 'ywjmmwrawz', 'elevators': 'ywjmmwrawz',
+
+        # Fluents
+        'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal', 'enters': 'bidmuazwal', 'enter': 'bidmuazwal',
+        # 'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
+        # 'above': 'idfiasmopc', 'located above': 'idfiasmopc', 'not below': 'idfiasmopc', 'below': 'not idfiasmopc',
+        'served': 'vpdiuemmjp', 'attended to': 'vpdiuemmjp',
+        'at': 'vunbrpfgtb', 'positioned at': 'vunbrpfgtb',
+
+        # Actions
+        'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja','departed': 'jbctpepaja',
         # 'up': 'lfapuhgnsn',
         # 'down': 'mmphaaxcri',
-        # 'source': 'outpkddlno',
-        # 'above': 'idfiasmopc',
-        'served': 'vpdiuemmjp',
-        'elevator': 'jbbturclrd', 'elevators': 'jbbturclrd',
-        'passenger': 'tucyshtaky', 'passengers': 'tucyshtaky',
-        # 'destination': 'gqrormjdyu', 'destinations': 'gqrormjdyu',
-        'lift': 'ywjmmwrawz', 'lifts': 'ywjmmwrawz',
-        'floor': 'rhwfsepbez', 'floors': 'rhwfsepbez',
-        'board': 'bidmuazwal', 'boards': 'bidmuazwal', 'boarding': 'bidmuazwal', 'boarded': 'bidmuazwal',
-        'depart': 'jbctpepaja', 'departs': 'jbctpepaja', 'departing': 'jbctpepaja', 'departed': 'jbctpepaja'
+        
+        # Hallucinated Fluents
+        'stairs': 'wecfuexbsn',
+        'evacuates': 'ftrcwxtscd', 'evacuate': 'ftrcwxtscd',
+        'cleaner': 'vxzirxndzr', 'clean': 'vxzirxndzr', 'not dirtier': 'vxzirxndzr', 'dirtier': 'not vxzirxndzr',
+        'walks': 'avucqtzrgw', 'walk': 'avucqtzrgw',
+        'ride': 'bwpgkgoesk', 'rides': 'bwpgkgoesk',
+        'stuck': 'ovwhyqdjic', 'trapped': 'ovwhyqdjic',
+
+        # Hallucinated Actions
+        'lives': 'joqnheevqm',
+        'shouts': 'hlzcqdfogl',
+        'windows': 'apymbdlzvk'
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -2362,6 +2531,7 @@ class Miconic(BaseDomain):
                 f'floor {floor2} is not located above floor {floor1}',
                 f'floor {floor1} is not below floor {floor2}'
             ]
+        
         elif fluent.startswith('boarded('):
             if is_without_object:
                 return ['a passenger is boarded']
@@ -2449,11 +2619,11 @@ class Miconic(BaseDomain):
             raise Exception('action is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
-        # stairs (changed from "wait")
+        # stairs
         if fluent.startswith('origin('):
             passenger, floor = self.extract_multi_variable(fluent)
             return [
-                f'passenger {passenger} takes the stais at floor {floor}',
+                f'passenger {passenger} takes the stairs at floor {floor}',
                 f'passenger {passenger} takes the stairs at level {floor}',
                 f'at floor {floor}, passenger {passenger} takes the stairs'
             ]
@@ -2547,7 +2717,7 @@ class Miconic(BaseDomain):
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
-        # lives (changed from "wait")
+        # lives
         if action.startswith('board('):
             floor, passenger = self.extract_multi_variable(action)
             return [
@@ -2555,7 +2725,7 @@ class Miconic(BaseDomain):
                 f'passenger {passenger} lives at level {floor}',
                 f'at floor {floor}, passenger {passenger} lives'
             ]
-        # shouting (changed from "walks out")
+        # shouting
         elif action.startswith('depart('):
             floor, passenger = self.extract_multi_variable(action)
             return [
@@ -2571,7 +2741,7 @@ class Miconic(BaseDomain):
                 f'lift is trapped between levels {floor1} and {floor2}',
                 f'elevator is stuck between level {floor1} and level {floor2}'
             ]
-        # windows (changed from "navigate")
+        # windows
         elif action.startswith('down('):
             floor1, floor2 = self.extract_multi_variable(action)
             return [
@@ -2593,7 +2763,8 @@ class Mystery(BaseDomain):
         'A vehicle can be loaded if cargo is at a location, the vehicle is at the same location, the vehicle has space, and there is an additional space in the vehicle. '
         'When cargo is loaded into the vehicle, cargo is no longer at a location, cargo is now in the vehicle, the first space in the vehicle is occupied, but the vehicle has a secondary space. '
         'A vehicle can be unloaded if the cargo is in the vehicle, the vehicle is at a location, the vehicle has space, and there is an additional space next to it. '
-        'When a vehicle is unloaded, cargo is no longer in the vehicle, cargo is at a location, the vehicle no longer has the initial space, and there is a secondary space.')
+        'When a vehicle is unloaded, cargo is no longer in the vehicle, cargo is at a location, the vehicle no longer has the initial space, and there is a secondary space.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         "Moving a vehicle from source location to destination location is executable if the vehicle is at source location, there is a connection between the source location and destination location, and the location's fuel level has some neighboring level. "
         "Moving a vehicle from source location to destination location causes the vehicle to be present at the destination location and decreases the location's fuel level to its next level. "
@@ -2607,8 +2778,9 @@ class Mystery(BaseDomain):
         "Vehicle can only be at one location at a time. "
         "Cargo can only be at one place at a time. "
         "The location's fuel level is unique. "
-        "The vehicle's amount of space is unique. ")
-
+        "The vehicle's amount of space is unique. "
+    )
+   
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -2623,12 +2795,40 @@ class Mystery(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
+        'space': 'kiurijzhmd', 'spaces': 'kiurijzhmd',
+        'fuel': 'vyumzovixm', 'fuels': 'vyumzovixm',
+        # 'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
         'vehicle': 'xduwfabpov', 'vehicles': 'xduwfabpov',
         'cargo': 'mrxzbljtex', 'cargos': 'mrxzbljtex',
-        'fuel': 'vyumzovixm', 'fuels': 'vyumzovixm',
-        'space': 'kiurijzhmd', 'spaces': 'kiurijzhmd',
-        'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connecting': 'qqqxlayhxq', 'connected': 'qqqxlayhxq',
-        # 'location': 'wrbrffbbsf', 'locations': 'wrbrffbbsf',
+
+        # Fluents
+        'at': 'ubukdzgtdo', 'present at': 'ubukdzgtdo', 'situated at': 'ubukdzgtdo',
+        'connect': 'qqqxlayhxq', 'connects': 'qqqxlayhxq', 'connection': 'qqqxlayhxq', 'connected': 'qqqxlayhxq',
+        # 'has fuel': 'wtiirvdcva', 'have fuel': 'wtiirvdcva', 'has a fuel-level': 'wtiirvdcva', 'have a fuel-level': 'wtiirvdcva', 'exists': 'wtiirvdcva', 'exist': 'wtiirvdcva',
+        'neighbors': 'vayiiathfq', 'neighbor': 'vayiiathfq',
+        'in': 'aubryvcpjj', 'located in': 'aubryvcpjj', 'contains': 'aubryvcpjj', 'contain': 'aubryvcpjj',
+        # 'has space': 'qwbslpmcpd', 'contains space': 'qwbslpmcpd', 'have space': 'qwbslpmcpd', 'contain space': 'qwbslpmcpd',
+
+        # Actions
+        'move': 'eszobwszrw', 'moves': 'eszobwszrw',
+        'load': 'kzcowqkyya', 'loaded': 'kzcowqkyya',
+        'unload': 'voxfehpkwm', 'unloaded': 'voxfehpkwm',
+
+        # Hallucinated Fluents
+        'maintained': 'czdukanscj', 'maintenance': 'czdukanscj',
+        'inspected': 'mhhzfbljxv', 'inspection': 'mhhzfbljxv',
+        'far': 'fzzodpjusq',
+        'sells': 'wxpeehyavy', 'sold': 'wxpeehyavy', 'sell': 'wxpeehyavy',
+        'gas station': 'kgivlnmjjk',
+        'secured': 'mjajlixuhe',
+        'parks in': 'vukazaisyk', 'parked in': 'vukazaisyk',
+        'same city': 'scrwfacwjy',
+
+        # Hallucinated Actions
+        'pulled over': 'zqhccxnqxc',
+        'breaks': 'ttmllhlahl',
+
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -2700,7 +2900,7 @@ class Mystery(BaseDomain):
             return [
                 f'location {location} does not have fuel {fuel}',
                 f'location {location} does not have a fuel-level of {fuel}',
-                f'fuel {fuel} does not exists in location {location}'
+                f'fuel {fuel} does not exist in location {location}'
             ]
 
         elif fluent.startswith('fuel_neighbor('):
@@ -2708,7 +2908,7 @@ class Mystery(BaseDomain):
                 return ['fuel level neighbours another fuel level']
             f1, f2 = self.extract_multi_variable(fluent)
             return [
-                f'fuel level {f1} neighbours fuel level {f2}',
+                f'fuel level {f1} neighbors fuel level {f2}',
                 f'fuel-levels {f1} and {f2} are neighbors'
             ]
         elif fluent.startswith('-fuel_neighbor('):
@@ -2761,7 +2961,7 @@ class Mystery(BaseDomain):
                 return ['space neighbours another space']
             s1, s2 = self.extract_multi_variable(fluent)
             return [
-                f'space {s1} neighbours space {s2}',
+                f'space {s1} neighbors space {s2}',
                 f'spaces {s1} and {s2} are neighbors'
             ]
         elif fluent.startswith('-space_neighbor('):
@@ -2862,7 +3062,7 @@ class Mystery(BaseDomain):
                 f'fuel {fuel} is not sold at location {location}'
             ]
 
-        # gas station (changed from "secure")
+        # gas station
         elif fluent.startswith('fuel_neighbor('):
             f1, f2 = self.extract_multi_variable(fluent)
             return [
@@ -2878,7 +3078,7 @@ class Mystery(BaseDomain):
                 f'fuel-level at gas station is not raised from {f2} to {f1}'
             ]
 
-        # not secured
+        # secured
         elif fluent.startswith('in('):
             cargo, vehicle = self.extract_multi_variable(fluent)
             return [
@@ -2931,7 +3131,7 @@ class Mystery(BaseDomain):
                 f'vehicle {vehicle} gets pulled over at {location1}',
                 f'at location {location1}, vehicle {vehicle} is pulled over'
             ]
-        # breaks (changed from "transported")
+        # breaks
         elif action.startswith('load('):
             cargo, vehicle, location, space1, space2 = self.extract_multi_variable(action)
             return [
@@ -2953,6 +3153,15 @@ class Mystery(BaseDomain):
 class Npuzzle(BaseDomain):
     DOMAIN_NAME = 'npuzzle'
 
+    DOMAIN_DESC_WITHOUT_RAM = (
+        'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
+        'Moving a tile from source position to destination position causes the tile to be present at destination position, destination position to be not empty, and causes source position to be empty.'
+    )
+    DOMAIN_DESC_WITH_RAM = (
+        'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
+        "A position is not empty if the tile is at that position. A tile cannot be on multiple positions at the same time."
+    )
+    
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -2965,20 +3174,26 @@ class Npuzzle(BaseDomain):
     STATIC_POS_FLUENTS = ['neighbor(']
     STATIC_NEG_FLUENTS = ['-' + fluent for fluent in STATIC_POS_FLUENTS]
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
-
-    DOMAIN_DESC_WITHOUT_RAM = (
-        'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
-        'Moving a tile from source position to destination position causes the tile to be present at destination position, destination position to be not empty, and causes source position to be empty.')
-    DOMAIN_DESC_WITH_RAM = (
-        'Moving a tile from source position to destination position is executable if source position and destination positions are neighbors i.e next to each other, destination position is empty and initially the tile is at source position. '
-        "A position is not empty if the tile is at that position. A tile cannot be on multiple positions at the same time.")
+    
     SUBSTRINGS_TO_RAND = {
+        # Object types
         'tile': 'gkxiurkpij', 'tiles': 'gkxiurkpij',
+        
+        # Fluents
+        'at': 'bcqdxwynvm', 'located at': 'bcqdxwynvm', 'present in': 'bcqdxwynvm',
+        # 'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh',
+        # 'empty': 'vigzxelnpn', 'not contain': 'vigzxelnpn', 'contains': 'not vigzxelnpn',
+
+        # Actions
         'move': 'edclnosigi', 'moves': 'edclnosigi', 'moving': 'edclnosigi', 'moved': 'edclnosigi',
-        # 'source': 'dfqdjcpgle',
-        # 'destination': 'jfyxocsjve',
-        # 'empty': 'vigzxelnpn',
-        # 'neighbor': 'wbsxhcqjhh', 'neighbors': 'wbsxhcqjhh'
+        
+        # Hallucinated Fluents
+        'stuck': 'xqvgtgecje', 'trapped': 'xqvgtgecje',
+        'color': 'weneqhejht',
+        'stolen': 'iqipcjirbi', 'robbed': 'iqipcjirbi',
+
+        # Hallucinated Actions
+        'slid diagonally': 'tqgilaraqr',
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -3067,8 +3282,8 @@ class Npuzzle(BaseDomain):
                 f'tile {tile} is not trapped at position {position}',
                 f'at position {position}, tile {tile} is not stuck'
             ]
-
-        # color (changed from "far from")
+        
+        # color
         elif fluent.startswith('neighbor('):
             position1, position2 = self.extract_multi_variable(fluent)
             return [
@@ -3084,25 +3299,25 @@ class Npuzzle(BaseDomain):
                 f'color of positions {position1} and {position2} is not same'
             ]
 
-        elif fluent.startswith(
-                'empty('):  ################################## Exists is implicitly defined in initial conditions
+        # stolen
+        elif fluent.startswith('empty('):
             position = self.extract_single_variable(fluent)
             return [
-                f'position {position} exists'
+                f'position {position} is stolen',
+                f'position {position} is robbed',
             ]
-            # return f'position {position} exists'  # does not exist
-        elif fluent.startswith(
-                '-empty('):  ################################## Exists is implicitly defined in initial conditions
+        elif fluent.startswith('-empty('):
             position = self.extract_single_variable(fluent)
             return [
-                f'position {position} does not exist'
+                f'position {position} is not stolen',
+                f'position {position} is not robbed',
             ]
-            # return f'position {position} does not exist'
         else:
             raise Exception('fluent is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
+        # slid diagonally
         if action.startswith('move('):
             tile, source, destination = self.extract_multi_variable(action)
             return [
@@ -3110,13 +3325,13 @@ class Npuzzle(BaseDomain):
                 f'tile {tile} slid diagonally from positions {source} to {destination}',
                 f'from position {source} to position {destination}, tile {tile} is slid diagonally'
             ]
-            # return f'tile {tile} is slid diagonally from position {source} to position {destination}'  # slides diagonally
         else:
             raise Exception('action is not defined')
 
 
 class Satellite(BaseDomain):
     DOMAIN_NAME = 'satellite'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'Turning a satellite to the intended direction from the source direction is executable if the satellite is facing to the source direction initially. '
         'Turning a satellite to the intended direction from the source direction causes the satellite to point to the intended direction, it also causes the satellite to not point at the source direction. '
@@ -3128,7 +3343,8 @@ class Satellite(BaseDomain):
         'Calibrating the instrument on the satellite to the intended direction is executable if the instrument is onboard with the satellite, calibration target of the instrument is set to the intended direction, the satellite is pointing to the intended direction and the instrument is powered on. '
         'Calibrating the instrument on the satellite to the intended direction causes the instrument to be calibrated. '
         'Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. '
-        'Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to.')
+        'Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'Turning a satellite to the intended direction from the source direction is executable if the satellite is facing to the source direction initially. '
         "Turning a satellite to the intended direction from the source direction causes the satellite to point to the intended direction. The satellite cannot point to two different directions simultaneously. "
@@ -3143,7 +3359,8 @@ class Satellite(BaseDomain):
         "Calibrating the instrument on the satellite to the intended direction causes the instrument to be calibrated. "
 
         "Taking an image on the satellite with the instrument set to a mode which is facing to the intended direction is executable if the instrument is calibrated, instrument is onboard with the satellite, the instrument supports the mode to which it is set to, the instrument is powered on and the satellite is pointing to the intended direction. "
-        "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. ")
+        "Taking an image on the satellite with the instrument set to a mode facing to the intended direction causes it to capture an image of the intended direction with the mode with which the instrument was set to. "
+    )
 
     BASE_POS_FLUENTS = ['power_on(', 'calibrated(', 'have_image(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
@@ -3159,19 +3376,42 @@ class Satellite(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
         'satellite': 'zzofnkbesk', 'satellites': 'zzofnkbesk',
-        'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
         'direction': 'apdptereua', 'directions': 'apdptereua',
         'instrument': 'rstzlaxvor', 'instruments': 'rstzlaxvor',
-        'onboard': 'icafejchri',
+        'mode': 'kegmrmllim', 'modes': 'kegmrmllim',
+        
+        # Fluents
+        'on board': 'icafejchri',
+        'support': 'rnayjosbpu', 'supports': 'rnayjosbpu', 'supported': 'rnayjosbpu', 'compatible': 'rnayjosbpu',
+        'pointing': 'dcxxecpmem', 'pointed': 'dcxxecpmem', 'aimed': 'dcxxecpmem',
+        'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq',
+        'powered on': 'gwuqwrsowb', 'turned on': 'gwuqwrsowb', 'switched on': 'gwuqwrsowb',
+        'calibrate': 'dymysndcxa', 'calibrates': 'dymysndcxa', 'calibration': 'dymysndcxa', 'calibrated': 'dymysndcxa',
         'image': 'fetzcryvyb', 'images': 'fetzcryvyb',
-        'turn': 'gwuqwrsowb', 'turns': 'gwuqwrsowb', 'turning': 'gwuqwrsowb', 'turned': 'gwuqwrsowb',
-        'switch': 'sqsicvmhrn', 'switches': 'sqsicvmhrn', 'switching': 'sqsicvmhrn', 'switched': 'sqsicvmhrn',
-        'calibrate': 'dymysndcxa', 'calibrates': 'dymysndcxa', 'calibrating': 'dymysndcxa', 'calibrated': 'dymysndcxa',
+
+        # Actions
+        'turns': 'lkvmwbvnym',
+        'switched': 'sqsicvmhrn', 'turned': 'sqsicvmhrn',
         'take': 'idrpvqprlo', 'takes': 'idrpvqprlo', 'taking': 'idrpvqprlo', 'taken': 'idrpvqprlo',
-        'power': 'ymikwvufrq', 'powers': 'ymikwvufrq', 'powering': 'ymikwvufrq', 'powered': 'ymikwvufrq',
-        # 'destination': 'izwwbtklpt',
-        # 'source': 'uuwgcgehnr',
+        
+        # Hallucinated Fluents
+        'out of order': 'tqsivvkqmv',
+        'discovers': 'rfhweivlxw', 'discovered': 'rfhweivlxw',
+        'moving': 'lcjsvpixsr',
+        'orbiting': 'kijwkqyxvi',
+        'functioning': 'mghenxedvq', 'not malfunctioning': 'mghenxedvq', 'malfunctioning': 'not mghenxedvq',
+        'color': 'xffcackzyl',
+        'blocks': 'hcegzhfbsl', 'blocking': 'hcegzhfbsl', 'blocked': 'hcegzhfbsl',
+        'maintenance': 'dvhhfxkfvm',
+
+        # Hallucinated Actions
+        'spins': 'vleiknomtc',
+        'fixed': 'rjjbaiaogd',
+        'dead': 'yxyozmtjnl', 'ceased to function': 'yxyozmtjnl',
+        'transmits the information': 'gpjopmfweu', 'information is transmitted': 'gpjopmfweu', 'transmission of information': 'gpjopmfweu',
+        'crashes': 'pobuoawcld'
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -3382,7 +3622,7 @@ class Satellite(BaseDomain):
                 f'{instrument} which is on {satellite} is not out of order'
             ]
 
-        # discovers (changed from "lacks")
+        # discovers
         elif fluent.startswith('supports('):
             instrument, mode = self.extract_multi_variable(fluent)
             return [
@@ -3424,7 +3664,7 @@ class Satellite(BaseDomain):
                 f'{satellite} stops orbiting'
             ]
 
-        # not functioning
+        # functioning
         elif fluent.startswith('power_on('):
             instrument = self.extract_single_variable(fluent)
             return [
@@ -3440,7 +3680,7 @@ class Satellite(BaseDomain):
                 f'{instrument} is malfunctioning'
             ]
 
-        # color (changed from "broken")
+        # color
         elif fluent.startswith('calibrated('):
             instrument = self.extract_single_variable(fluent)
             return [
@@ -3454,7 +3694,7 @@ class Satellite(BaseDomain):
                 f'color of {instrument} is not modified'
             ]
 
-        # block (changed from "inspecting")
+        # block
         elif fluent.startswith('have_image('):
             direction, mode = self.extract_multi_variable(fluent)
             return [
@@ -3490,7 +3730,7 @@ class Satellite(BaseDomain):
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
-        # spins (changed from "pointed")
+        # spins
         if action.startswith('turn_to('):
             satellite, new_dir, old_dir = self.extract_multi_variable(action)
             return [
@@ -3518,9 +3758,9 @@ class Satellite(BaseDomain):
             return [
                 f'{satellite} transmits the information to {instrument}',
                 f'information is transmitted to {instrument} from {satellite}',
-                f'transmittion of information is done from {satellite} to {instrument}'
+                f'transmission of information is done from {satellite} to {instrument}'
             ]
-        # crashes (changed from "scanned")
+        # crashes
         elif action.startswith('take_image('):
             satellite, direction, instrument, mode = self.extract_multi_variable(action)
             return [
@@ -3533,13 +3773,15 @@ class Satellite(BaseDomain):
 
 class Spanner(BaseDomain):
     DOMAIN_NAME = 'spanner'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'Walking from start location to destination location is executable if the man is at the start location and there is a link between start and the destination location. '
         'Walking from start location to destination location causes the man to be at the destination location and not be at the start location. '
         'Picking up a spanner from a location is executable if the man and the spanner is at the same location. '
         'Picking up a spanner from a location causes the man to carry the spanner, and the spanner to be not at any location. '
         'Tightening the nut at a location with a spanner is executable if the man and the nut are at the same location, the man is carrying the spanner, the spanner is usable, and the nut is loose. '
-        'Tightening the nut at a location with a spanner causes the nut to be not loose, the spanner to be unusable and the nut to be tightened.')
+        'Tightening the nut at a location with a spanner causes the nut to be not loose, the spanner to be unusable and the nut to be tightened.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'Walking from start location to destination location is executable if the man is at the start location initially and there is a link between start and the destination location. '
         "Walking from start location to destination location causes the man to be at the destination location after the walk action from start location to destination location is executed. "
@@ -3552,8 +3794,9 @@ class Spanner(BaseDomain):
         "A man cannot be at two different places at the same time. "
         "The spanner is not at a location if it is being hold by the man. "
         "The nut is not loose if and only if it is tightened. "
-        "The spanner is not usable if and only if the nut is tightened. ")
-
+        "The spanner is not usable if and only if the nut is tightened. "
+    )
+    
     BASE_POS_FLUENTS = ['carrying(', 'useable(', 'tightened(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -3568,15 +3811,39 @@ class Spanner(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
-        'nut': 'uwdhnrpile', 'nuts': 'uwdhnrpile',
-        'man': 'bmojqrwpdg',
-        'usable': 'fgbcjqnbgp',
-        'spanner': 'ujzeqlcecc', 'spanners': 'ujzeqlcecc',
-        'link': 'qzylwqxpoq', 'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
-        'walk': 'fvuxqntacz', 'walks': 'fvuxqntacz', 'walking': 'fvuxqntacz', 'walked': 'fvuxqntacz',
-        'pick': 'rcholfpyyj', 'picks': 'rcholfpyyj', 'picking': 'rcholfpyyj', 'picked': 'rcholfpyyj',
-        'tighten': 'xvxccombol', 'tightens': 'xvxccombol', 'tightening': 'xvxccombol', 'tightened': 'xvxccombol',
+        # Object types
         # 'location': 'pyliwxfzrf', 'locations': 'pyliwxfzrf',
+        'man': 'bmojqrwpdg',
+        'nut': 'uwdhnrpile', 'nuts': 'uwdhnrpile',
+        'spanner': 'ujzeqlcecc', 'spanners': 'ujzeqlcecc',
+
+        # Fluents
+        'at': 'dpafcwpirl', 'located at': 'dpafcwpirl', 'currently at': 'dpafcwpirl',
+        'carrying': 'ljtnkvygkl', 'carried': 'ljtnkvygkl',
+        'usable': 'fgbcjqnbgp', 'used': 'rhkukedvus', 'functional': 'rhkukedvus',
+        'tighten': 'xvxccombol', 'tightens': 'xvxccombol', 'tightening': 'xvxccombol', 'tightened': 'xvxccombol',
+        'loose': 'gwsneakmgx', 'not secured': 'gwsneakmgx', 'secured': 'not gwsneakmgx',
+        'link': 'qzylwqxpoq', 'links': 'qzylwqxpoq', 'linking': 'qzylwqxpoq', 'linked': 'qzylwqxpoq',
+
+        # Actions
+        'walk': 'fvuxqntacz', 'walks': 'fvuxqntacz', 'walking': 'fvuxqntacz', 'walked': 'fvuxqntacz',
+        'pick up': 'rcholfpyyj', 'picks up': 'rcholfpyyj', 'picking up': 'rcholfpyyj', 'picked up': 'rcholfpyyj',
+        
+        # Hallucinated Fluents
+        'currently sleeping': 'sxjhblnhmo', 'currently not sleeping': 'not sxjhblnhmo', 'sleeping': 'sxjhblnhmo', 'napping': 'sxjhblnhmo',
+        'sold': 'qaspmritqg',
+        'at the store': 'ihpnhnfekz',
+        'working': 'jnekioysmz', 'in working condition': 'jnekioysmz', 'useable': 'jnekioysmz', 'idlying around': 'not jnekioysmz',
+        'needed': 'wnmnirqfhh', 'unnecessary': 'not wnmnirqfhh', 'wanted': 'wnmnirqfhh', 'necessary': 'wnmnirqfhh',
+        'lost': 'nfpgqsphgw', 'gone missing': 'nfpgqsphgw', 'not found': 'nfpgqsphgw', 'found': 'not nfpgqsphgw',
+        'small': 'llzhboyvst', 'insufficiently sized': 'llzhboyvst', 'not big enough': 'llzhboyvst', 'suffiiently sized': 'not llzhboyvst', 'big enough': 'not llzhboyvst',
+        'far away': 'elvzkckros',
+
+        # Hallucinated Actions
+        'eats': 'icxbyvfyoq',
+        'sleeps': 'jygyrgstxf', 'sleep': 'jygyrgstxf',
+        'loses': 'hqjrjcyroa', 'lost': 'hqjrjcyroa',
+        'forgets': 'mahhaeambm', 'forgotten': 'mahhaeambm'
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -3726,7 +3993,7 @@ class Spanner(BaseDomain):
                     f'{obj} is currently sleeping',
                     f'{obj} is napping'
                 ]
-            # sells (changed from "screwed")
+            # sells
             elif obj.startswith('nut'):
                 return [
                     f'{obj} is sold at {location}',
@@ -3833,15 +4100,13 @@ class Spanner(BaseDomain):
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f"{location1} is far away from {location2}",
-                f'{location1} and {location2} are far away from each other',
-                f'distance between {location1} and {location2} is big'
+                f'{location1} and {location2} are far away from each other'
             ]
         elif fluent.startswith('-link('):
             location1, location2 = self.extract_multi_variable(fluent)
             return [
                 f"{location1} is not far away from {location2}",
-                f'{location1} and {location2} are not far away from each other',
-                f'distance between {location1} and {location2} is not big'
+                f'{location1} and {location2} are not far away from each other'
             ]
         else:
             raise Exception('fluent is not defined')
@@ -3878,6 +4143,7 @@ class Spanner(BaseDomain):
 
 class Zenotravel(BaseDomain):
     DOMAIN_NAME = 'zenotravel'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'Boarding a person in a city is executable if the person and the aircraft are both present in the city. '
         'Boarding a person in the city causes the person to be in the aircraft and not present in the city. '
@@ -3889,7 +4155,8 @@ class Zenotravel(BaseDomain):
         'Zooming the aircraft from a city to a destination city is executable if the aircraft is present in the city and has some initial fuel level that is at least two levels up compared to the lowest possible fuel level. '
         'It causes the aircraft to be present in the destination city and not present in the original city. It also decreases the fuel level of the aircraft two levels down. '
         'Refueling the aircraft in a city is executable if the aircraft is in the city. '
-        'It changes the current fuel level to its next level.')
+        'It changes the current fuel level to its next level.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'Boarding a person in a city is executable if the person and the aircraft are both present in the city. '
         "Boarding a person in the city causes the person to be in the aircraft. "
@@ -3908,8 +4175,9 @@ class Zenotravel(BaseDomain):
         "A person is not present in a city if the person is in some aircraft. "
         "The aircraft cannot be in two different cities at the same time. "
         "An aircraft cannot have two different fuel levels. "
-        "Person can only be at one place.")
-
+        "Person can only be at one place."
+    )
+    
     BASE_POS_FLUENTS = ['fuel_level(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
@@ -3924,20 +4192,37 @@ class Zenotravel(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
+        'aircraft': 'psjemaawdi', 'aircrafts': 'psjemaawdi',
+        'person': 'ihpgygxfoe', 'persons': 'ihpgygxfoe', 'people': 'ihpgygxfoe',
+        'city': 'uibqqmoerq', 'cities': 'uibqqmoerq',
+        'fuel level': 'ndozmmwian', 'fuel-level': 'ndozmmwian', 'fuel-levels': 'ndozmmwian',
+        'airport': 'vuvceigmai', 'airports': 'vuvceigmai',
+
+        # Fluents
+        'at': 'nriukdvbwt', 'located at': 'nriukdvbwt', 'present at': 'nriukdvbwt',
+        'in': 'mvfjxoptbs', 'present in': 'mvfjxoptbs', 'located in': 'mvfjxoptbs',
+
+        # Actions
         'board': 'jxfvtxvzgh', 'boards': 'jxfvtxvzgh', 'boarding': 'jxfvtxvzgh', 'boarded': 'jxfvtxvzgh',
         'debark': 'jnjwzqrpms', 'debarks': 'jnjwzqrpms', 'debarking': 'jnjwzqrpms', 'debarked': 'jnjwzqrpms',
         'fly': 'gartdizjnu', 'flies': 'gartdizjnu', 'flying': 'gartdizjnu', 'flown': 'gartdizjnu',
         'zoom': 'rqdfjbixnz', 'zooms': 'rqdfjbixnz', 'zooming': 'rqdfjbixnz', 'zoomed': 'rqdfjbixnz',
         'refuel': 'egufeqdcrz', 'refuels': 'egufeqdcrz', 'refueling': 'egufeqdcrz', 'refueled': 'egufeqdcrz',
-        'fuel': 'njzcihffcg', 'fuels': 'njzcihffcg', 'fueling': 'njzcihffcg', 'fueled': 'njzcihffcg',
+        
+        # Hallucinated Fluents
+        'explores': 'cgarufkgwp', 'explored': 'cgarufkgwp', 'exploring': 'cgarufkgwp', 'explore': 'cgarufkgwp',
+        'maintained': 'grtwdbivmi', 'maintenance': 'grtwdbivmi',
+        'jumps out': 'btrbutofgi', 'jumps': 'btrbutofgi', 'jump out': 'btrbutofgi', 'jump': 'btrbutofgi',
+        'leak': 'qlqzceeadv', 'leaking': 'qlqzceeadv',
+        'interchangeable': 'xqpoqobifo', 'replaced': 'xqpoqobifo', 'exchangeable': 'xqpoqobifo',
 
-        'person': 'ihpgygxfoe', 'persons': 'ihpgygxfoe', 'people': 'ihpgygxfoe',
-        'city': 'uibqqmoerq', 'cities': 'uibqqmoerq',
-        'aircraft': 'psjemaawdi', 'aircrafts': 'psjemaawdi',
-        'airport': 'vuvceigmai', 'airports': 'vuvceigmai',
-        # 'source': 'xfdqznnlrs',
-        # 'destination': 'ohytkfeoay', 'destinations': 'ohytkfeoay',
-        'level': 'ndozmmwian', 'levels': 'ndozmmwian'}
+        # Hallucinated Actions
+        'changes': 'nvjnoregfl', 'changed': 'nvjnoregfl',
+        'forgets': 'dwviipdzfg',
+        'crashes': 'oncqmxolxj',
+        'bombing': 'grztcibeqd', 'bombs': 'grztcibeqd'
+    }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
@@ -3958,6 +4243,7 @@ class Zenotravel(BaseDomain):
                 f'{obj} is not located at {city}',
                 f'{obj} is not present at {city}'
             ]
+        
         elif fluent.startswith('in('):
             if is_without_object:
                 return ['a person is in an aircraft']
@@ -3976,6 +4262,7 @@ class Zenotravel(BaseDomain):
                 f'{person} is not  present in {aircraft}',
                 f'{person} is not located in {aircraft}'
             ]
+
         elif fluent.startswith('fuel_level('):
             if is_without_object:
                 return ['an aircraft has a fuel level']
@@ -3994,6 +4281,7 @@ class Zenotravel(BaseDomain):
                 f'{aircraft}\'s current fuel-level is not {flevel}',
                 f'{aircraft} doesn\'t possesses a fuel level of {flevel}'
             ]
+        
         elif fluent.startswith('next('):
             if is_without_object:
                 return ['fuel levels are next to each other']
@@ -4064,7 +4352,7 @@ class Zenotravel(BaseDomain):
                 return [
                     f"{obj} explores {city}",
                     f'{city} is explored by {obj}',
-                    f'{obj} is currently explorng {city}'
+                    f'{obj} is currently exploring {city}'
                 ]
             # maintained
             else:
@@ -4080,7 +4368,7 @@ class Zenotravel(BaseDomain):
                 return [
                     f"{obj} does not explore {city}",
                     f'{city} is not explored by {obj}',
-                    f'{obj} is currently not explorng {city}'
+                    f'{obj} is currently not exploring {city}'
                 ]
             # maintained
             else:
@@ -4090,7 +4378,7 @@ class Zenotravel(BaseDomain):
                     f'maintenance of {obj} is not done'
                 ]
 
-        # jumps (changed from "boarding")
+        # jumps
         elif fluent.startswith('in('):
             person, aircraft = self.extract_multi_variable(fluent)
             return [
@@ -4122,7 +4410,7 @@ class Zenotravel(BaseDomain):
                 f'fuel is not leaking from {aircraft}'
             ]
 
-        # interchangeable (changed from "smaller than")
+        # interchangeable
         elif fluent.startswith('next('):
             fuel1, fuel2 = self.extract_multi_variable(fluent)
             return [
@@ -4165,7 +4453,7 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} flies to {city2} for maintenance from {city1}',
                 f'from {city1}, {aircraft} flies from {city1} to {city2} for maintenance'
             ]
-        # crashes (changed from "consumes")
+        # crashes
         elif action.startswith('zoom('):
             aircraft, city1, city2, fleve1, flevel2, flevel3 = self.extract_multi_variable(action)
             return [
@@ -4173,7 +4461,7 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} crashes at {city2} after flying from {city1}',
                 f'{aircraft} crashes at {city2} after flying from {city1}'
             ]
-        # bombing (changed from "maintain and refuel")
+        # bombing
         elif action.startswith('refuel('):
             aircraft, city, flevel1, flevel2 = self.extract_multi_variable(action)
             return [
@@ -4187,14 +4475,16 @@ class Zenotravel(BaseDomain):
 
 class Visitall(BaseDomain):
     DOMAIN_NAME = 'visitall'
+
     DOMAIN_DESC_WITHOUT_RAM = (
         'A robot can move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. '
-        'Moving from the current position to the next position causes the robot to be at the next position, not at the current position anymore, and marks the next position as visited.')
+        'Moving from the current position to the next position causes the robot to be at the next position, not at the current position anymore, and marks the next position as visited.'
+    )
     DOMAIN_DESC_WITH_RAM = (
         'A robot can only move from its current position to the next position if the robot is at its current position and the current position is connected to the next position. '
         "Moving from a current position to the next position causes the robot to be present at the next position. "
-
-        "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. ")
+        "A robot cannot be at two places at the same time. A place is marked as visited if a robot has been at that place. "
+    )
 
     BASE_POS_FLUENTS = []
     BASE_NEG_FLUENTS = []
@@ -4210,11 +4500,25 @@ class Visitall(BaseDomain):
     STATIC_FLUENTS = STATIC_POS_FLUENTS + STATIC_NEG_FLUENTS
 
     SUBSTRINGS_TO_RAND = {
+        # Object types
         'robot': 'xtjpivjhco', 'robots': 'xtjpivjhco',
         'position': 'puxuduuqen', 'positions': 'puxuduuqen',
-        'connect': 'dlipeeieju', 'connects': 'dlipeeieju', 'connecting': 'dlipeeieju', 'connected': 'dlipeeieju',
-        'move': 'pkjjnojvly', 'moves': 'pkjjnojvly', 'moving': 'pkjjnojvly', 'moved': 'pkjjnojvly',
+        
+        # Fluents
+        'at': 'xrnkqzroyd', 'located at': 'xrnkqzroyd', 'placed at': 'xrnkqzroyd',
+        'connect': 'dlipeeieju', 'connects': 'dlipeeieju', 'connecting': 'dlipeeieju', 'connected': 'dlipeeieju', 'connection': 'dlipeeieju',
         'visit': 'lknwwwkrbf', 'visits': 'lknwwwkrbf', 'visiting': 'lknwwwkrbf', 'visited': 'lknwwwkrbf',
+
+        # Actions
+        'move': 'pkjjnojvly', 'moves': 'pkjjnojvly', 'moving': 'pkjjnojvly', 'moved': 'pkjjnojvly',
+
+        # Hallucinated Fluents
+        'stuck': 'husphglbmv', 'trapped': 'husphglbmv',
+        'far from': 'tjxlbfhbax', 'distant': 'tjxlbfhbax',
+        'observed': 'rafvaikchw', 'observation': 'rafvaikchw',
+
+        # Hallucinated Actions
+        'jumps': 'ofcqrwklfo'
     }
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
@@ -4361,16 +4665,11 @@ ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logis
                       Satellite, Spanner, Visitall, Zenotravel]
 
 if __name__ == '__main__':
-    # dom = Blocksworld(is_random_sub=False, is_ramifications=True)
-    # print(dom.domain_description)
-    # dom = Blocksworld(is_random_sub=True, is_ramifications=True)
-    # print(dom.domain_description)
-
-    domain = Visitall(is_random_sub=True, is_ramifications=True)
-    print(domain.action_to_natural_language('move(p1,p2)'))
-    print(domain.action_to_natural_language('move(p1,p2)'))
-    print(domain.action_to_natural_language('move(p1,p2)'))
-
+    dom = Blocksworld(is_random_sub=False, is_ramifications=True)
+    print(dom.domain_description)
+    dom = Blocksworld(is_random_sub=True, is_ramifications=True)
+    print(dom.domain_description)
+    
     # domain = Visitall(is_random_sub=True, is_ramifications=False)
     # print(domain.fluent_to_natural_language('at_robot(p)'))
     # print(domain.fluent_to_natural_language('at_robot(p)'))
