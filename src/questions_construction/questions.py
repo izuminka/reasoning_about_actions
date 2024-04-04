@@ -102,6 +102,7 @@ def unique_id(data):
     hasher = hashlib.sha1(str(data).encode('ascii'))
     return base64.urlsafe_b64encode(hasher.digest())
 
+
 class QuestionGenerationHelpers:
     """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
     ACTION_JOIN_STR = ', '
@@ -412,7 +413,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
                 OUT_OBJ_PLAN_LENGTH: plan_length,
                 OUT_OBJ_INITIAL_STATE: self.init_state,
                 OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence}
-                # OBOUT_OBJ_QUESTION_ID: question_id}
+        # OBOUT_OBJ_QUESTION_ID: question_id}
 
     @staticmethod
     def question_category():
@@ -462,7 +463,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
         if not fluents:
             return None
         nl_fluents = self.nl_fluents(fluents)
-        #TODO add
+        # TODO add
         # q_id = unique_id((fluents, is_answer_true, question_name, is_answer_true))
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {FLUENTS_NL} are correct for {obj}: {nl_fluents}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
@@ -554,7 +555,6 @@ class FluentTrackingQuestions(QuestionGenerator):
                                   is_pos_fluent_question=is_pos_fluent_question,
                                   is_answer_true=is_answer_true,
                                   question_name=question_name(counter, 'iter_2'))
-
 
     #### FREE ANSWER QUESTIONS ####
 
@@ -672,7 +672,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
             counter += 1
             yield partial(self.questions_iter_2_helper,
                           is_answer_true=is_answer_true,
-                          question_name=question_name(counter,'iter_2'))
+                          question_name=question_name(counter, 'iter_2'))
 
     #### FREE ANSWER QUESTIONS ####
 
@@ -703,7 +703,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
             counter += 1
             yield partial(self.questions_iter_3_helper,
                           is_answer_true=is_answer_true,
-                          question_name=question_name(counter,'iter_3'))
+                          question_name=question_name(counter, 'iter_3'))
 
     def question_iterators(self):
         return chain(self.questions_iter_1(),
@@ -729,7 +729,7 @@ class EffectsQuestions(QuestionGenerator):
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
         fluents_current_state = set(pos_fluents).union(set(neg_fluents))
 
-        next_pos_fluents, next_neg_fluents = self.fluents_for_fluent_type(plan_length+1, fluent_type)
+        next_pos_fluents, next_neg_fluents = self.fluents_for_fluent_type(plan_length + 1, fluent_type)
         fluents_next_state = set(next_pos_fluents).union(set(next_neg_fluents))
         fluents_new_minus_old = fluents_next_state - fluents_current_state
 
@@ -790,8 +790,6 @@ class EffectsQuestions(QuestionGenerator):
                      self.questions_iter_2())
 
 
-
-
 class NumericalReasoningQuestions(QuestionGenerator):
     QUESTION_CATEGORY = 'numerical_reasoning'
 
@@ -803,7 +801,21 @@ class NumericalReasoningQuestions(QuestionGenerator):
         bound = int(0.2 * original_count) + 1
         return original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)])
 
-    def true_false_qa_helper(self, plan_length, is_answer_true, name_count, count, question_name):
+    def objects_count(self, plan_length):
+        return {
+            'objects': len(self.all_objects),
+            'executable actions': len(self.executable_actions[plan_length]),
+            'inexecutable actions': len(self.inexecutable_actions[plan_length]),
+            POSITIVE_FLUENTS_NL: len(self.pos_fluents_given_plan[plan_length]),
+            NEGATIVE_FLUENTS_NL: len(self.neg_fluents_given_plan[plan_length]),
+            BASE_FLUENTS_NL: list(chain(self.fluents_for_fluent_type(plan_length, BASE_FLUENTS))),
+            DERIVED_FLUENTS_NL: list(chain(self.fluents_for_fluent_type(plan_length, DERIVED_FLUENTS))),
+            PERSISTENT_FLUENTS_NL: list(chain(self.fluents_for_fluent_type(plan_length, PERSISTENT_FLUENTS))),
+            STATIC_FLUENTS_NL: list(chain(self.fluents_for_fluent_type(plan_length, STATIC_FLUENTS)))
+        }
+
+    def questions_iter_1_helper(self, plan_length, is_answer_true, name_count, question_name):
+        count = self.objects_count(plan_length)[name_count]
         if is_answer_true:
             total_count = count
         else:
@@ -811,68 +823,57 @@ class NumericalReasoningQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} is the number of {name_count} equal to {total_count}? {TRUE_OR_FALSE}"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    def free_answer_qa_helper(self, plan_length, name_count, count, question_name, is_planned=False):
-        question = f"{self.nl_question_prefix(plan_length, is_planned=is_planned)} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}."
+    def questions_iter_1(self):
+        counter = 0
+        for name_count in self.objects_count(1).keys():
+            for is_answer_true in [True, False]:
+                counter += 1
+                yield partial(self.questions_iter_1_helper,
+                              is_answer_true=is_answer_true,
+                              name_count=name_count,
+                              question_name=question_name(counter, 'iter_1'))
+
+    def questions_iter_2_helper(self, plan_length, name_count, question_name):
+        count = self.objects_count(plan_length)[name_count]
+        question = f"{self.nl_question_prefix(plan_length, is_planned=False)} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}."
         return self.qa_data_object(question, count, FREE_ANSWER, question_name, plan_length)
 
-    def question_1(self, plan_length):
-        is_answer_true = random.choice([True, False])
-        total_objects = len(self.all_objects)
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'objects', total_objects,
-                                         self.question_1.__name__)
+    def questions_iter_2(self):
+        counter = 0
+        for name_count in self.objects_count(1).keys():
+            counter += 1
+            yield partial(self.questions_iter_2_helper,
+                          name_count=name_count,
+                          question_name=question_name(counter, 'iter_2'))
 
-    def question_2(self, plan_length):
-        is_answer_true = random.choice([True, False])
-        actions_count = len(self.executable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'executable actions', actions_count,
-                                         self.question_2.__name__)
-
-    def question_3(self, plan_length):
-        is_answer_true = random.choice([True, False])
-        actions_count = len(self.inexecutable_actions[plan_length])
-        return self.true_false_qa_helper(plan_length, is_answer_true, 'inexecutable actions', actions_count,
-                                         self.question_3.__name__)
-
-    def question_4(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_3_helper(self, plan_length, is_answer_true, question_name):
         if is_answer_true:
             total_count = plan_length
         else:
             total_count = self.random_count(plan_length)
-        question = f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. Is it {TRUE_OR_FALSE} that the number of actions that led to current state in the sequence is equal to {total_count}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_4.__name__, plan_length)
+        question = (f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. "
+                    f"Is it {TRUE_OR_FALSE} that the number of actions that led to current state in the sequence is equal to {total_count}?")
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    def question_5(self, plan_length):
-        name_count = 'objects'
-        count = len(self.all_objects)
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_5.__name__)
+    def questions_iter_3(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_3_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_3'))
 
-    def question_6(self, plan_length):
-        name_count = POSITIVE_FLUENTS_NL
-        count = len(self.pos_fluents_given_plan[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_6.__name__)
-
-    def question_7(self, plan_length):
-        name_count = NEGATIVE_FLUENTS_NL
-        count = len(self.neg_fluents_given_plan[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_7.__name__)
-
-    def question_8(self, plan_length):
-        name_count = 'executable actions'
-        count = len(self.executable_actions[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_8.__name__, is_planned=True)
-
-    def question_9(self, plan_length):
-        name_count = 'inexecutable actions'
-        count = len(self.inexecutable_actions[plan_length])
-        return self.free_answer_qa_helper(plan_length, name_count, count, self.question_9.__name__, is_planned=True)
-
-    def question_10(self, plan_length):
+    def question_4(self, plan_length):
         sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
         prefix = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
         question = f"{prefix} what is the number of actions that led to the current state in the sequence before the first inexecutable action? Write as a decimal. {NONE_STATEMENT}."
+        return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_4.__name__, plan_length)
 
-        return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_10.__name__, plan_length)
+    def question_iterators(self):
+        return chain(self.questions_iter_1(),
+                     self.questions_iter_2(),
+                     self.questions_iter_3(),
+                     [self.question_4])
 
 
 class HallucinationQuestions(QuestionGenerator):
@@ -1107,7 +1108,7 @@ class CompositeQuestions(QuestionGenerator):
                               is_answer_true=is_answer_true,
                               question_name=question_name(counter, 'iter_3'))
 
-    def questions_iter_4_helper(self, plan_length,is_answer_true, question_name):
+    def questions_iter_4_helper(self, plan_length, is_answer_true, question_name):
         # is_answer_true = random.choice([True, False])
         is_correct_sequence = False  # random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
@@ -1119,7 +1120,8 @@ class CompositeQuestions(QuestionGenerator):
         if not is_answer_true:
             state = self.corrupt_fluents(state)
         question += sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, FLUENT_TYPES_ALL)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length,
+                                   FLUENT_TYPES_ALL)
 
     def questions_iter_4(self):
         counter = 0
