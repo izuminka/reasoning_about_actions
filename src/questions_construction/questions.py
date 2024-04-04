@@ -1178,8 +1178,8 @@ class CompositeQuestions(QuestionGenerator):
                               is_answer_true=is_answer_true,
                               question_name=question_name(counter, 'iter_3'))
 
-    def question_1(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_4_helper(self, plan_length,is_answer_true, question_name):
+        # is_answer_true = random.choice([True, False])
         is_correct_sequence = False  # random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
@@ -1190,12 +1190,19 @@ class CompositeQuestions(QuestionGenerator):
         if not is_answer_true:
             state = self.corrupt_fluents(state)
         question += sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length,
-                                   FLUENT_TYPES_ALL)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, FLUENT_TYPES_ALL)
+
+    def questions_iter_4(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_4_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_4'))
 
     # free answer questions
 
-    def questions_iter_4_helper(self, plan_length, fluent_type, question_name):
+    def questions_iter_5_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
@@ -1209,15 +1216,15 @@ class CompositeQuestions(QuestionGenerator):
             answer = sorted(self.nl_fluents(fluents))
         return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
 
-    def questions_iter_4(self):
+    def questions_iter_5(self):
         counter = 0
         for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
             counter += 1
-            yield partial(self.questions_iter_4_helper,
+            yield partial(self.questions_iter_5_helper,
                           fluent_type=fluent_type,
-                          question_name=question_name(counter, 'iter_1'))
+                          question_name=question_name(counter, 'iter_5'))
 
-    def questions_iter_5_helper(self, plan_length, fluent_type, question_name):
+    def questions_iter_6_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
 
@@ -1235,15 +1242,15 @@ class CompositeQuestions(QuestionGenerator):
             answer = sorted(self.nl_fluents(fluents))
         return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
 
-    def questions_iter_5(self):
+    def questions_iter_6(self):
         counter = 0
         for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
             counter += 1
-            yield partial(self.questions_iter_5_helper,
+            yield partial(self.questions_iter_6_helper,
                           fluent_type=fluent_type,
-                          question_name=question_name(counter, 'iter_2'))
+                          question_name=question_name(counter, 'iter_6'))
 
-    def questions_iter_6_helper(self, plan_length, fluent_type, question_name):
+    def questions_iter_7_helper(self, plan_length, fluent_type, question_name):
         actions = self.given_plan_sequence[:plan_length]
         action_performed = actions[plan_length]
 
@@ -1259,16 +1266,16 @@ class CompositeQuestions(QuestionGenerator):
         answer = sorted(self.nl_fluents(fluents))
         return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
 
-    def questions_iter_6(self):
+    def questions_iter_7(self):
         counter = 0
         for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
             counter += 1
-            yield partial(self.questions_iter_6_helper,
+            yield partial(self.questions_iter_7_helper,
                           fluent_type=fluent_type,
-                          question_name=question_name(counter, 'iter_3'))
+                          question_name=question_name(counter, 'iter_7'))
 
-    def question_2(self, plan_length):
-        is_correct_sequence = random.choice([True, False])
+    def questions_iter_8_helper(self, plan_length, is_correct_sequence, question_name):
+        # is_correct_sequence = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     f"Some of the actions may not be executable. "
@@ -1279,10 +1286,22 @@ class CompositeQuestions(QuestionGenerator):
         else:
             state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = sorted(self.nl_fluents(state))
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_2.__name__, plan_length,
-                                   FLUENT_TYPES_ALL)
+        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, FLUENT_TYPES_ALL)
+
+    def questions_iter_8(self):
+        counter = 0
+        for is_correct_sequence in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_7_helper,
+                          is_correct_sequence=is_correct_sequence,
+                          question_name=question_name(counter, 'iter_8'))
 
     def question_iterators(self):
-        return chain(self.questions_iter_1(), self.questions_iter_2(), self.questions_iter_3(),
-                     self.questions_iter_4(), self.questions_iter_5(), self.questions_iter_6(),
-                     [self.question_1, self.question_2])
+        return chain(self.questions_iter_1(),
+                     self.questions_iter_2(),
+                     self.questions_iter_3(),
+                     self.questions_iter_4(),
+                     self.questions_iter_5(),
+                     self.questions_iter_6(),
+                     self.questions_iter_7(),
+                     self.questions_iter_8())
