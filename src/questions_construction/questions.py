@@ -25,15 +25,6 @@ STATIC_FLUENTS = 'STATIC_FLUENTS'
 FLUENT_TYPES_ALL = 'all_fluents'
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
-# STATIC_POS_FLUENTS = 'STATIC_POS_FLUENTS'
-# STATIC_NEG_FLUENTS = 'STATIC_NEG_FLUENTS'
-# PERSISTENT_POS_FLUENTS = 'PERSISTENT_POS_FLUENTS'
-# PERSISTENT_NEG_FLUENTS = 'PERSISTENT_NEG_FLUENTS'
-# DERIVED_POS_FLUENTS = 'DERIVED_POS_FLUENTS'
-# DERIVED_NEG_FLUENTS = 'DERIVED_NEG_FLUENTS'
-# BASE_POS_FLUENTS = 'BASE_POS_FLUENTS'
-# BASE_NEG_FLUENTS = 'BASE_NEG_FLUENTS'
-
 PART_OF_THE_STATE = 'part of the state'
 MAX_TIMEOUT = 50
 
@@ -61,17 +52,6 @@ def fluent_type_to_fluent_nl(fluent_type):
 
 def exit_condition_on_fluents(pos_fluents, neg_fluents):
     return not len(pos_fluents) or not len(neg_fluents)
-
-
-def get_fluent_prefix(fluent):
-    if fluent.find('(') == -1:
-        return fluent
-    return fluent[:fluent.find('(')]
-
-
-def extract_variables(obj):
-    match = re.search(OBJ_IN_PAREN_REGEX, obj)
-    return match.group(1).split(',')
 
 
 def asp_to_nl(obj_ls, converter, fluent_subs=None):
@@ -136,10 +116,10 @@ class QuestionGenerationHelpers:
                                                                            self.domain_class.PERSISTENT_POS_FLUENTS)
         self.persistent_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
                                                                            self.domain_class.PERSISTENT_NEG_FLUENTS)
-        # self.static_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
-        #                                                                self.domain_class.STATIC_POS_FLUENTS)
-        # self.static_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
-        #                                                                self.domain_class.STATIC_NEG_FLUENTS)
+        self.static_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
+                                                                       self.domain_class.STATIC_POS_FLUENTS)
+        self.static_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
+                                                                       self.domain_class.STATIC_NEG_FLUENTS)
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
@@ -211,7 +191,10 @@ class QuestionGenerationHelpers:
             raise ValueError(f'Undefined fluent type {fluent_type}')
         return pos_fluents, neg_fluents
 
+
+
     def get_random_inexecutable_sequence(self, plan_length):
+        #TODO rm
         # Checking whether any inexecutable actions are present till the sequence length
         all_empty = True
         for i in range(plan_length):
@@ -289,6 +272,7 @@ class QuestionGenerationHelpers:
         return final
 
     def pos_neg_true_corrupted_fluents(self, is_pos_fluent_question, is_answer_true, pos_fluents, neg_fluents):
+        #TODO depricate
         if is_pos_fluent_question:
             if is_answer_true:
                 fluents = pos_fluents
@@ -511,15 +495,13 @@ class FluentTrackingQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         pos_fluent, neg_fluent = self.fluents_for_fluent_type(plan_length, fluent_type)
         if len(pos_fluent) == 0 or len(neg_fluent) == 0:
             return None
         else:
             pos_fluent = random.choice(pos_fluent)
             neg_fluent = random.choice(neg_fluent)
-        fluent = \
-            self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
+        fluent = self.pos_neg_true_corrupted_fluents(is_pos_fluent_question, is_answer_true, [pos_fluent], [neg_fluent])[0]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
@@ -536,7 +518,6 @@ class FluentTrackingQuestions(QuestionGenerator):
                                   question_name=question_name(counter, 'iter_1'))
 
     def questions_iter_2_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
         if exit_condition_on_fluents(pos_fluents, neg_fluents):
             return None
@@ -596,7 +577,6 @@ class StateTrackingQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
         if exit_condition_on_fluents(pos_fluents, neg_fluents):
             return None
@@ -635,6 +615,10 @@ class StateTrackingQuestions(QuestionGenerator):
             yield partial(self.questions_iter_2_helper,
                           is_pos_fluent_question=is_pos_fluent_question,
                           question_name=question_name(counter, 'iter_2'))
+
+    def question_iterators(self):
+        return chain(self.questions_iter_1(),
+                     self.questions_iter_2())
 
 
 class ActionExecutabilityQuestions(QuestionGenerator):
@@ -1058,6 +1042,15 @@ class HallucinationQuestions(QuestionGenerator):
                           question_name=question_name(counter, 'iter_6'))
 
 
+    def question_iterators(self):
+        return chain(self.questions_iter_1(),
+                     self.questions_iter_2(),
+                     self.questions_iter_3(),
+                     self.questions_iter_4(),
+                     self.questions_iter_5(),
+                     self.questions_iter_6())
+
+
 class CompositeQuestions(QuestionGenerator):
     QUESTION_CATEGORY = 'composite_questions'
 
@@ -1072,7 +1065,6 @@ class CompositeQuestions(QuestionGenerator):
         return f"{prefix} {nl_actions} to reach the current state."
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         is_correct_sequence = False  # random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
@@ -1096,7 +1088,6 @@ class CompositeQuestions(QuestionGenerator):
                               question_name=question_name(counter, 'iter_1'))
 
     def questions_iter_2_helper(self, plan_length, fluent_type, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         is_correct_sequence = False
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type)
@@ -1119,7 +1110,6 @@ class CompositeQuestions(QuestionGenerator):
                               question_name=question_name(counter, 'iter_2'))
 
     def questions_iter_3_helper(self, plan_length, fluent_type, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         actions = self.given_plan_sequence[:plan_length]
         action_performed = actions[plan_length]
 
@@ -1143,7 +1133,6 @@ class CompositeQuestions(QuestionGenerator):
                               question_name=question_name(counter, 'iter_3'))
 
     def questions_iter_4_helper(self, plan_length, is_answer_true, question_name):
-        # is_answer_true = random.choice([True, False])
         is_correct_sequence = False  # random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
@@ -1240,7 +1229,6 @@ class CompositeQuestions(QuestionGenerator):
                           question_name=question_name(counter, 'iter_7'))
 
     def questions_iter_8_helper(self, plan_length, is_correct_sequence, question_name):
-        # is_correct_sequence = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     f"Some of the actions may not be executable. "
