@@ -180,6 +180,8 @@ class Blocksworld(BaseDomain):
     PERSISTENT_NEG_FLUENTS = ['-' + fluent for fluent in PERSISTENT_POS_FLUENTS]
     PERSISTENT_FLUENTS = PERSISTENT_POS_FLUENTS + PERSISTENT_NEG_FLUENTS
     STATIC_FLUENTS = []
+    STATIC_POS_FLUENTS = []
+    STATIC_NEG_FLUENTS = []
     
     SUBSTRINGS_TO_RAND = {
         # Object types
