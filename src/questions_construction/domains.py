@@ -328,7 +328,7 @@ class Blocksworld(BaseDomain):
                 f'on top of block {b2}, block {b1} is stacked'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # switched
@@ -442,7 +442,7 @@ class Blocksworld(BaseDomain):
                 f'from top of block {b2}, block {b1} is crashed'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Depots(BaseDomain):
@@ -705,7 +705,7 @@ class Depots(BaseDomain):
                 f'at {place}, {hoist} unloads {crate} from {truck}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         flag = True
@@ -825,7 +825,7 @@ class Depots(BaseDomain):
                 f'{hoist} is hoisting {truck} at {place}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Driverlog(BaseDomain):
@@ -1076,7 +1076,7 @@ class Driverlog(BaseDomain):
                 f'{driver} walks from location {loc_from} to {loc_to}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -1238,7 +1238,7 @@ class Driverlog(BaseDomain):
                 f'{driver} rests at locations {loc_from} and {loc_to}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Goldminer(BaseDomain):
@@ -1600,7 +1600,7 @@ class Goldminer(BaseDomain):
                 f'robot picks up gold at location {location}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # communicates
@@ -1847,7 +1847,7 @@ class Goldminer(BaseDomain):
                 f'robot melts gold at location {location}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Grippers(BaseDomain):
@@ -2024,7 +2024,7 @@ class Grippers(BaseDomain):
                 f'{gripper} of {robot} drops {obj} in {room}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # engaged
@@ -2116,7 +2116,7 @@ class Grippers(BaseDomain):
                 f'{gripper} of {robot} destroys {obj} in {room}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Logistics(BaseDomain):
@@ -2307,7 +2307,7 @@ class Logistics(BaseDomain):
                 f'airplane {airplane} flies from airports {airport_from} to {airport_to}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # capital
@@ -2401,7 +2401,7 @@ class Logistics(BaseDomain):
                 f'at airports {airport_from} and {airport_to}, airplane {airplane} is refueled'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Miconic(BaseDomain):
@@ -2616,7 +2616,7 @@ class Miconic(BaseDomain):
                 f'elevator goes from level {floor1} down to level {floor2}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # stairs
@@ -2750,7 +2750,7 @@ class Miconic(BaseDomain):
                 f'windows are present at floors {floor1} and {floor2}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Mystery(BaseDomain):
@@ -2996,7 +2996,7 @@ class Mystery(BaseDomain):
                 f'at location {location}, cargo {cargo} is unloaded from vehicle {vehicle} with spaces {space1} and {space2}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -3147,7 +3147,7 @@ class Mystery(BaseDomain):
                 f'at location {location}, inspection of cargo {cargo} and vehicle {vehicle} is performed'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Npuzzle(BaseDomain):
@@ -3264,7 +3264,7 @@ class Npuzzle(BaseDomain):
                 f'tile {tile} is moved from position {source} to {destination}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # stuck
@@ -3326,7 +3326,7 @@ class Npuzzle(BaseDomain):
                 f'from position {source} to position {destination}, tile {tile} is slid diagonally'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Satellite(BaseDomain):
@@ -3603,7 +3603,7 @@ class Satellite(BaseDomain):
                 f'{satellite}\'s {instrument} takes an image of {direction} in {mode}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # out of order
@@ -3768,7 +3768,7 @@ class Satellite(BaseDomain):
                 f'{satellite} crashes while capturing image in {direction}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Spanner(BaseDomain):
@@ -3981,7 +3981,7 @@ class Spanner(BaseDomain):
                 f'at {loc}, {man} uses {spanner} to tighten {nut}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -4138,7 +4138,7 @@ class Spanner(BaseDomain):
                 f'{spanner} is forgotten by {man} at {loc}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Zenotravel(BaseDomain):
@@ -4342,7 +4342,7 @@ class Zenotravel(BaseDomain):
                 f'{aircraft} with fuel-levels {flevel1} and {flevel2} gets refueled at {city}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         if fluent.startswith('at('):
@@ -4470,7 +4470,7 @@ class Zenotravel(BaseDomain):
                 f'at {city}, {aircraft} bombs with fuel levels {flevel1} and {flevel2}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 class Visitall(BaseDomain):
@@ -4592,7 +4592,7 @@ class Visitall(BaseDomain):
                 f'robot moves from {place1} to {place2}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
     def fluent_to_hallucinated_natural_language_helper(self, fluent):
         # stuck
@@ -4658,7 +4658,7 @@ class Visitall(BaseDomain):
                 f'robot jumps from {place1} to {place2}'
             ]
         else:
-            raise Exception('action is not defined')
+            raise Exception(f'action: "{action}" is not defined')
 
 
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
