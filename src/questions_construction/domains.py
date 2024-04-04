@@ -296,7 +296,7 @@ class Blocksworld(BaseDomain):
                 f'hand is holding some block'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -401,7 +401,7 @@ class Blocksworld(BaseDomain):
                 f'hand is not broken anymore'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -554,7 +554,7 @@ class Depots(BaseDomain):
                     f'{obj} can be found located at {place}'
                 ]
             else:
-                raise Exception('fluent is not defined')
+                raise Exception(f'fluent: {fluent} is not defined')
         elif fluent.startswith('-at('):
             if is_without_object:
                 return ['not at']
@@ -570,7 +570,7 @@ class Depots(BaseDomain):
                     f'{obj} cannot be found located at {place}'
                 ]
             else:
-                raise Exception('fluent is not defined')
+                raise Exception(f'fluent: {fluent} is not defined')
 
         elif fluent.startswith('on('):
             if is_without_object:
@@ -665,7 +665,7 @@ class Depots(BaseDomain):
                 f'{surface} is not clear of any crates'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -737,7 +737,7 @@ class Depots(BaseDomain):
                         f'{place} does {prefix_nl}receive delivery of {obj}'
                     ]
                 else:
-                    raise Exception('fluent is not defined')
+                    raise Exception(f'fluent: {fluent} is not defined')
 
             elif fluent.startswith(f'{prefix_asp}on('):
                 obj1, obj2 = self.extract_multi_variable(fluent)
@@ -780,7 +780,7 @@ class Depots(BaseDomain):
                     f'{surface} is {prefix_nl}costly'
                 ]
         if flag:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -1029,7 +1029,7 @@ class Driverlog(BaseDomain):
                 f'{obj} contains some package'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -1186,7 +1186,7 @@ class Driverlog(BaseDomain):
                 f'{obj} is not overloaded with packages'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -1546,7 +1546,7 @@ class Goldminer(BaseDomain):
                 f'location {location} has something'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -1787,7 +1787,7 @@ class Goldminer(BaseDomain):
                 f'location {location} is not spiked'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -2087,7 +2087,7 @@ class Grippers(BaseDomain):
                 f'{robot} is not using {gripper} to load {obj}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -2260,7 +2260,7 @@ class Logistics(BaseDomain):
                 f'package {package} is not located in vehicle {vehicle}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -2352,7 +2352,7 @@ class Logistics(BaseDomain):
                 f'package {package} does not exceed the weight limit for vehicle {vehicle}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -2583,7 +2583,7 @@ class Miconic(BaseDomain):
                 f'lift is not positioned at level {floor}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -2713,7 +2713,7 @@ class Miconic(BaseDomain):
                 f'at floor {floor}, elevator is not stuck'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -2973,7 +2973,7 @@ class Mystery(BaseDomain):
                 f'spaces {s1} and {s2} are not neighbors'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -3120,7 +3120,7 @@ class Mystery(BaseDomain):
                 f'spaces {s1} and {s2} are not in the same city'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -3252,7 +3252,7 @@ class Npuzzle(BaseDomain):
                 f'position {position} contains a tile'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -3313,7 +3313,7 @@ class Npuzzle(BaseDomain):
                 f'position {position} is not robbed',
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -3563,7 +3563,7 @@ class Satellite(BaseDomain):
                 f'for {direction}, {instrument} is not calibrated'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -3726,7 +3726,7 @@ class Satellite(BaseDomain):
                 f'{instrument} is not in need of maintenance'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -3955,7 +3955,7 @@ class Spanner(BaseDomain):
                 f'a link between {location1} and {location2} does not exist'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -4109,7 +4109,7 @@ class Spanner(BaseDomain):
                 f'{location1} and {location2} are not far away from each other'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -4301,7 +4301,7 @@ class Zenotravel(BaseDomain):
                 f'fuel level {fuel2} is not next to {fuel1}'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -4426,7 +4426,7 @@ class Zenotravel(BaseDomain):
                 f'{fuel1} and {fuel2} are not exchangeable',
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -4578,7 +4578,7 @@ class Visitall(BaseDomain):
             ]
 
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_natural_language_helper(self, action):
         action = strip_action_prefix(action)
@@ -4643,7 +4643,7 @@ class Visitall(BaseDomain):
                 f'observation of {place} is not taken'
             ]
         else:
-            raise Exception('fluent is not defined')
+            raise Exception(f'fluent: {fluent} is not defined')
 
     def action_to_hallucinated_natural_language_helper(self, action):
         action = strip_action_prefix(action)
