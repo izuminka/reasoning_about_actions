@@ -595,8 +595,8 @@ class StateTrackingQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name, fluent_type=BASE_FLUENTS):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_1_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
+        # is_answer_true = random.choice([True, False])
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
         if exit_condition_on_fluents(pos_fluents, neg_fluents):
             return None
@@ -605,7 +605,19 @@ class StateTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} are all of the following properties: {nl_fluents}, correct? Respond with {TRUE_OR_FALSE}."
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
-    def qa_3_4_helper(self, plan_length, is_pos_fluent_question, question_name):
+    def questions_iter_1(self):
+        counter = 0
+        for fluent_type in FLUENT_TYPES_LIST:
+            for is_pos_fluent_question in [True, False, None]:
+                for is_answer_true in [True, False]:
+                    counter += 1
+                    yield partial(self.questions_iter_1_helper,
+                                  fluent_type=fluent_type,
+                                  is_pos_fluent_question=is_pos_fluent_question,
+                                  is_answer_true=is_answer_true,
+                                  question_name=question_name(counter, 'iter_1'))
+
+    def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
         if is_pos_fluent_question:
             fluent_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length]
@@ -616,43 +628,13 @@ class StateTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type_nl}. {NONE_STATEMENT}."
         return self.qa_data_object(question, nl_fluents, FREE_ANSWER, question_name, plan_length)
 
-    def question_1(self, plan_length):
-        is_pos_fluent_question = True
-        fluent_type = BASE_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_1.__name__, fluent_type)
-
-    def question_2(self, plan_length):
-        is_pos_fluent_question = False
-        fluent_type = BASE_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_2.__name__, fluent_type)
-
-    def question_3(self, plan_length):
-        is_pos_fluent_question = True
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_3.__name__)
-
-    def question_4(self, plan_length):
-        is_pos_fluent_question = False
-        return self.qa_3_4_helper(plan_length, is_pos_fluent_question, self.question_4.__name__)
-
-    def question_5(self, plan_length):
-        is_pos_fluent_question = True
-        fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_5.__name__, fluent_type)
-
-    def question_6(self, plan_length):
-        is_pos_fluent_question = False
-        fluent_type = DERIVED_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_6.__name__, fluent_type)
-
-    def question_7(self, plan_length):
-        is_pos_fluent_question = True
-        fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_7.__name__, fluent_type)
-
-    def question_8(self, plan_length):
-        is_pos_fluent_question = False
-        fluent_type = PERSISTENT_FLUENTS
-        return self.qa_1_2_helper(plan_length, is_pos_fluent_question, self.question_8.__name__, fluent_type)
+    def questions_iter_2(self):
+        counter = 0
+        for is_pos_fluent_question in [True, False, None]:
+            counter += 1
+            yield partial(self.questions_iter_2_helper,
+                          is_pos_fluent_question=is_pos_fluent_question,
+                          question_name=question_name(counter, 'iter_2'))
 
 
 class ActionExecutabilityQuestions(QuestionGenerator):
