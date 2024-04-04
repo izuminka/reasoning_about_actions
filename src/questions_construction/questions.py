@@ -500,7 +500,6 @@ class ObjectTrackingQuestions(QuestionGenerator):
 
     def question_iterators(self):
         return chain(self.questions_iter_1(),
-                     self.questions_iter_2(),
                      [self.question_1, self.question_2])
 
 
@@ -588,8 +587,6 @@ class FluentTrackingQuestions(QuestionGenerator):
         return chain(self.questions_iter_1(),
                      self.questions_iter_2(),
                      self.questions_iter_3())
-
-
 
 
 class StateTrackingQuestions(QuestionGenerator):
