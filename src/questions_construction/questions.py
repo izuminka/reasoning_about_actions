@@ -643,22 +643,38 @@ class ActionExecutabilityQuestions(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def question_1(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_1_helper(self, plan_length, is_answer_true, question_name):
         sequence_of_actions, _random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
         nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    def question_2(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_1(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_1_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_1'))
+
+    def questions_iter_2_helper(self, plan_length, is_answer_true, question_name):
         sequence_of_actions, random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
         selected_action = sequence_of_actions[random_break_ind]
 
         nl_sequence_of_actions = self.nl_actions(sequence_of_actions)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
         question = f"{INITIAL_CONDITION_PREFIX}, for steps 1 through {plan_length} the following actions are planned to be performed: {nl_sequence_of_actions}. Is the action: {nl_selected_action} executable at step {random_break_ind + 1}, {TRUE_OR_FALSE}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_2.__name__, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
+
+    def questions_iter_2(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_2_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter,'iter_2'))
+
+    #### FREE ANSWER QUESTIONS ####
 
     def question_3(self, plan_length):
         question = f"{self.nl_question_prefix(plan_length)} list all executable actions. {NONE_STATEMENT}."
@@ -670,17 +686,30 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         return self.qa_data_object(question, self.nl_actions(self.inexecutable_actions[plan_length]), FREE_ANSWER,
                                    self.question_4.__name__, plan_length)
 
-    def question_5(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_3_helper(self, plan_length, is_answer_true, question_name):
         if not is_answer_true:
             question = f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
-            return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER, self.question_5.__name__, plan_length)
+            return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER, question_name, plan_length)
         else:
             sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
             inexecutable_action = sequence_of_actions[random_break_ind]
             question = f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. What is the first inexecutable action in the sequence? {NONE_STATEMENT}."
             return self.qa_data_object(question, self.domain_class.action_to_natural_language(inexecutable_action),
-                                       FREE_ANSWER, self.question_5.__name__, plan_length)
+                                       FREE_ANSWER, question_name, plan_length)
+
+    def questions_iter_3(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_3_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter,'iter_3'))
+
+    def question_iterators(self):
+        return chain(self.questions_iter_1(),
+                     self.questions_iter_2(),
+                     self.questions_iter_3(),
+                     [self.question_3, self.question_4])
 
 
 class EffectsQuestions(QuestionGenerator):
