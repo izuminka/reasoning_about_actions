@@ -902,21 +902,29 @@ class HallucinationQuestions(QuestionGenerator):
                 raise 'timeout'
         return hallucinated_object
 
-    def question_1(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_1_helper(self, plan_length, is_answer_true, question_name):
         object = random.choice(self.all_objects)
         if not is_answer_true:
             object = self.hallucinated_object(object)
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Is it {TRUE_OR_FALSE} that {object} is {PART_OF_THE_STATE}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, self.question_1.__name__, plan_length)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    def qa_2_3_helper(self, plan_length, is_pos_fluent_question, question_name):
+    def questions_iter_1(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_1_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_1'))
+
+    def questions_iter_2_helper(self, plan_length, is_answer_true, is_pos_fluent_question, fluent_type, question_name):
+        pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
+
         if is_pos_fluent_question:
-            fluent = random.choice(self.pos_fluents_given_plan[plan_length])
+            fluent = random.choice(pos_fluents)
         else:
-            fluent = random.choice(self.neg_fluents_given_plan[plan_length])
+            fluent = random.choice(neg_fluents)
 
-        is_answer_true = random.choice([True, False])
         if is_answer_true:
             nl_fluent = self.domain_class.fluent_to_natural_language(fluent)
         else:
@@ -925,8 +933,19 @@ class HallucinationQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS_NL)}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    def qa_4_5_helper(self, plan_length, is_executable_action, question_name):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_2(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            for is_pos_fluent_question in [True, False]:
+                for fluent_type in FLUENT_TYPES_LIST:
+                    counter += 1
+                    yield partial(self.questions_iter_1_helper,
+                                  is_answer_true=is_answer_true,
+                                  is_pos_fluent_question=is_pos_fluent_question,
+                                  fluent_type=fluent_type,
+                                  question_name=question_name(counter, 'iter_2'))
+
+    def questions_iter_3_helper(self, plan_length, is_executable_action, is_answer_true, question_name):
         if is_executable_action:
             action_type = 'executable'
             action = random.choice(self.executable_actions[plan_length])
@@ -943,26 +962,19 @@ class HallucinationQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length, is_planned=True)} {question_setup}. Is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length)
 
-    def question_2(self, plan_length):
-        is_pos_fluent_question = True
-        return self.qa_2_3_helper(plan_length, is_pos_fluent_question, self.question_2.__name__)
+    def questions_iter_3(self):
+        counter = 0
+        for is_executable_action in [True, False]:
+            for is_answer_true in [True, False]:
+                counter += 1
+                yield partial(self.questions_iter_3_helper,
+                              is_executable_action=is_executable_action,
+                              is_answer_true=is_answer_true,
+                              question_name=question_name(counter, 'iter_3'))
 
-    def question_3(self, plan_length):
-        is_pos_fluent_question = False
-        return self.qa_2_3_helper(plan_length, is_pos_fluent_question, self.question_3.__name__)
-
-    def question_4(self, plan_length):
-        is_executable_action = True
-        return self.qa_4_5_helper(plan_length, is_executable_action, self.question_4.__name__)
-
-    def question_5(self, plan_length):
-        is_executable_action = False
-        return self.qa_4_5_helper(plan_length, is_executable_action, self.question_5.__name__)
-
-    def question_6(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_4_helper(self, plan_length, is_answer_true, question_name):
         if len(self.all_objects) < 2:
-            print('less than 2 objects', self.question_6.__name__, plan_length)
+            print('less than 2 objects', question_name, plan_length)
             return None
         objects = random.sample(self.all_objects, random.randint(2, len(self.all_objects)))
         answer = objects[0]
@@ -973,17 +985,30 @@ class HallucinationQuestions(QuestionGenerator):
         nl_objects = asp_to_nl(objects, lambda x: x)
         question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. "
                     f"Which of the following objects, {nl_objects}, is not defined? Write None if all are defined.")
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_6.__name__, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length)
 
-    def qa_7_8_helper(self, plan_length, is_pos_fluent_question, is_answer_true, question_name):
-        if is_pos_fluent_question:
+    def questions_iter_4(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_4_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_4'))
+
+    def questions_iter_5_helper(self, plan_length, is_pos_fluent_question, is_answer_true, fluent_type, question_name):
+        pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
+        lower_bound_rand_int = 2
+        if is_pos_fluent_question is True:
             fluent_type_nl = POSITIVE_FLUENT_NL
-            fluents = random.sample(self.pos_fluents_given_plan[plan_length],
-                                    random.randint(2, len(self.pos_fluents_given_plan[plan_length])))
-        else:
+            fluents = random.sample(pos_fluents, random.randint(lower_bound_rand_int, len(pos_fluents)))
+        elif is_pos_fluent_question is False:
             fluent_type_nl = NEGATIVE_FLUENT_NL
-            fluents = random.sample(self.neg_fluents_given_plan[plan_length],
-                                    random.randint(2, len(self.neg_fluents_given_plan[plan_length])))
+            fluents = random.sample(neg_fluents, random.randint(lower_bound_rand_int, len(neg_fluents)))
+        else:
+            fluent_type_nl = FLUENTS_NL
+            fluents = random.sample(pos_fluents + neg_fluents,
+                                    random.randint(lower_bound_rand_int, len(pos_fluents + neg_fluents)))
+
         if is_answer_true:
             nl_hallucinated_fluent = NONE_ANSWER
             nl_fluents = self.nl_fluents(fluents)
@@ -996,18 +1021,19 @@ class HallucinationQuestions(QuestionGenerator):
                     f"What {fluent_type_nl} out of, {nl_fluents}, is not defined? Write None if all are defined.")
         return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length)
 
-    def question_7(self, plan_length):
-        is_pos_fluent_question = True
-        is_answer_true = random.choice([True, False])
-        return self.qa_7_8_helper(plan_length, is_pos_fluent_question, is_answer_true, self.question_7.__name__)
+    def questions_iter_5(self):
+        counter = 0
+        for is_pos_fluent_question in [True, False]:
+            for is_answer_true in [True, False]:
+                for fluent_type in FLUENT_TYPES_LIST:
+                    counter += 1
+                    yield partial(self.questions_iter_4_helper,
+                                  is_pos_fluent_question=is_pos_fluent_question,
+                                  is_answer_true=is_answer_true,
+                                  fluent_type=fluent_type,
+                                  question_name=question_name(counter, 'iter_5'))
 
-    def question_8(self, plan_length):
-        is_pos_fluent_question = False
-        is_answer_true = random.choice([True, False])
-        return self.qa_7_8_helper(plan_length, is_pos_fluent_question, is_answer_true, self.question_8.__name__)
-
-    def question_9(self, plan_length):
-        is_answer_true = random.choice([True, False])
+    def questions_iter_6_helper(self, plan_length, is_answer_true, question_name):
         postfix = 'to reach the current state. Given this sequence, what action is not defined? Write None if all are defined'
         if is_answer_true:
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} {postfix}."
@@ -1021,7 +1047,15 @@ class HallucinationQuestions(QuestionGenerator):
             nl_actions = self.nl_actions(actions).replace(nl_selected_action, nl_hallucinated_action)
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_actions} {postfix}."
             answer = nl_hallucinated_action
-        return self.qa_data_object(question, answer, FREE_ANSWER, self.question_8.__name__, plan_length)
+        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length)
+
+    def questions_iter_6(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_6_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_6'))
 
 
 class CompositeQuestions(QuestionGenerator):
