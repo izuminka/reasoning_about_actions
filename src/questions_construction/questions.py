@@ -87,8 +87,10 @@ def asp_to_nl(obj_ls, converter, fluent_subs=None):
         nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
     return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
 
+
 def question_name(q_id):
     return f'question_{q_id}'
+
 
 class QuestionGenerationHelpers:
     """ Generates QAs * multiplicity for a given domain, init cond + plan sequence"""
@@ -391,7 +393,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
         return {OUT_OBJ_ID: str(uuid.uuid4()),
                 OUT_OBJ_DOMAIN_NAME: self.domain_class.DOMAIN_NAME,
                 OUT_OBJ_INSTANCE_ID: self.instance_id,
-                OUT_OBJ_QUESTION_CATEGORY: self.question_category(),
+                OUT_OBJ_QUESTION_CATEGORY: self.QUESTION_CATEGORY,
                 OUT_OBJ_QUESTION_NAME: question_name,
                 OUT_OBJ_FLUENT_TYPE: fluent_type,
                 OUT_OBJ_ANSWER_TYPE: answer_type,
@@ -432,19 +434,16 @@ class QuestionGenerator(QuestionGenerationHelpers):
                 results += self.unique_questions(question_constructor, plan_length, multiplicity)
         return results
 
-
     def question_iterators(self):
+        # return []
         raise ValueError('Implement it in the child class')
 
 
 class ObjectTrackingQuestions(QuestionGenerator):
     QUESTION_CATEGORY = 'object_tracking'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'object_tracking'
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type)
@@ -512,16 +511,16 @@ class ObjectTrackingQuestions(QuestionGenerator):
                                    fluent_type=None)
 
     def question_iterators(self):
-        return chain(self.questions_iter_1(), self.questions_iter_2(), [self.question_1, self.question_2])
+        return chain(self.questions_iter_1(),
+                     self.questions_iter_2(),
+                     [self.question_1, self.question_2])
 
 
 class FluentTrackingQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'fluent_tracking'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'fluent_tracking'
 
     def qa_1_2_helper(self, plan_length, fluent_type, is_pos_fluent_question, question_name):
         is_answer_true = random.choice([True, False])
@@ -638,12 +637,10 @@ class FluentTrackingQuestions(QuestionGenerator):
 
 
 class StateTrackingQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'state_tracking'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'state_tracking'
 
     def qa_1_2_helper(self, plan_length, is_pos_fluent_question, question_name, fluent_type=BASE_FLUENTS):
         is_answer_true = random.choice([True, False])
@@ -706,12 +703,10 @@ class StateTrackingQuestions(QuestionGenerator):
 
 
 class ActionExecutabilityQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'action_executability'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'action_executability'
 
     def question_1(self, plan_length):
         is_answer_true = random.choice([True, False])
@@ -754,12 +749,10 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
 
 class EffectsQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'effects'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'effects'
 
     def prefix(self, plan_length):
         if plan_length == 0:
@@ -867,12 +860,10 @@ class EffectsQuestions(QuestionGenerator):
 
 
 class NumericalReasoningQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'numerical_reasoning'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'numerical_reasoning'
 
     @staticmethod
     def random_count(original_count):
@@ -952,14 +943,11 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
 
 class HallucinationQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'hallucination'
     NUMBER_REGEX = f'\d'
 
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'hallucination'
 
     def question_setup(self, stuff):
         return f'some {stuff} may or may not be defined'
@@ -1103,12 +1091,10 @@ class HallucinationQuestions(QuestionGenerator):
 
 
 class CompositeQuestions(QuestionGenerator):
+    QUESTION_CATEGORY = 'composite_questions'
+
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
-
-    @staticmethod
-    def question_category():
-        return 'composite_questions'
 
     def nl_question_prefix_custom(self, nl_actions, is_planned=False):
         if is_planned:
