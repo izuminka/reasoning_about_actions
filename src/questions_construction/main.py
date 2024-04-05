@@ -64,8 +64,7 @@ if __name__ == '__main__':
                 if os.path.exists(save_dir):
                     continue
 
-                all_questions = AllQuestions(jsonl_instance, domain, instance_name,
-                                             question_multiplicity=question_multiplicity)
+                all_questions = AllQuestions(jsonl_instance, domain, instance_name)
                 all_questions.generate_all_questions()
                 all_questions.save_questions(save_dir)
             print(domain.DOMAIN_NAME, 'done')
