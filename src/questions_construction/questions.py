@@ -106,6 +106,7 @@ class QuestionGenerationHelpers:
         self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
+        self.init_state_nl = asp_to_nl(self.init_state[FLUENTS_KEY], self.domain_class.fluent_to_natural_language)
         self.base_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
                                                                      self.domain_class.BASE_POS_FLUENTS)
         self.base_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
@@ -370,7 +371,8 @@ class QuestionGenerator(QuestionGenerationHelpers):
                 OUT_OBJ_QUESTION: question,
                 OUT_OBJ_ANSWER: str(answer),
                 OUT_OBJ_PLAN_LENGTH: plan_length,
-                OUT_OBJ_INITIAL_STATE: self.init_state,
+                OUT_OBJ_INITIAL_STATE_ASP: self.init_state,
+                OUT_OBJ_INITIAL_STATE_NL: self.init_state_nl,
                 OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence}
         # OBOUT_OBJ_QUESTION_ID: question_id}
 
