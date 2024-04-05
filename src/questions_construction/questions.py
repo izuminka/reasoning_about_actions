@@ -421,8 +421,6 @@ class ObjectTrackingQuestions(QuestionGenerator):
         if not fluents:
             return None
         nl_fluents = self.nl_fluents(fluents)
-        # TODO add
-        # q_id = unique_id((fluents, is_answer_true, question_name, is_answer_true))
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {FLUENTS_NL} are correct for {obj}: {nl_fluents}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
 
@@ -490,7 +488,7 @@ class FluentTrackingQuestions(QuestionGenerator):
     def questions_iter_1(self):
         counter = 0
         for fluent_type in FLUENT_TYPES_LIST:
-            for is_pos_fluent_question in [True, False, None]:
+            for is_pos_fluent_question in [True, False]:
                 for is_answer_true in [True, False]:
                     counter += 1
                     yield partial(self.questions_iter_1_helper,
@@ -627,7 +625,8 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
         nl_sequence_of_actions = self.nl_actions(sequence_of_actions)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
-        question = f"{INITIAL_CONDITION_PREFIX}, for steps 1 through {plan_length} the following actions are planned to be performed: {nl_sequence_of_actions}. Is the action: {nl_selected_action} executable at step {random_break_ind + 1}, {TRUE_OR_FALSE}?"
+        question = (f"{INITIAL_CONDITION_PREFIX}, for steps 1 through {plan_length} the following actions are planned to be performed: {nl_sequence_of_actions}. "
+                    f"Is the action: {nl_selected_action} executable at step {random_break_ind + 1}, {TRUE_OR_FALSE}?")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
 
     def questions_iter_2(self):
@@ -832,8 +831,9 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_4(self, plan_length):
         sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
-        prefix = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
-        question = f"{prefix} what is the number of actions that led to the current state in the sequence before the first inexecutable action? Write as a decimal. {NONE_STATEMENT}."
+        question = (f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
+                    f"what is the number of actions that led to the current state in the sequence before the first inexecutable action? "
+                    f"Write as a decimal. {NONE_STATEMENT}.")
         return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_4.__name__, plan_length, None)
 
     def question_iterators(self):
@@ -928,7 +928,8 @@ class HallucinationQuestions(QuestionGenerator):
             nl_action = self.domain_class.action_to_natural_language(action, is_hallucinated=True)
 
         question_setup = self.question_setup(f'{action_type} actions')
-        question = f"{self.nl_question_prefix(plan_length, is_planned=True)} {question_setup}. Is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?"
+        question = (f"{self.nl_question_prefix(plan_length, is_planned=True)} {question_setup}. "
+                    f"Is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
 
     def questions_iter_3(self):
