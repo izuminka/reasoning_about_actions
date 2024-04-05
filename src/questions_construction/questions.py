@@ -18,10 +18,10 @@ TRUE_OR_FALSE = 'True or False'
 NONE_STATEMENT = 'Write None if there are none'
 NONE_ANSWER = 'None'
 
-BASE_FLUENTS = 'BASE_FLUENTS'
-DERIVED_FLUENTS = 'DERIVED_FLUENTS'
-PERSISTENT_FLUENTS = 'PERSISTENT_FLUENTS'
-STATIC_FLUENTS = 'STATIC_FLUENTS'
+BASE_FLUENTS = 'base_fluents'
+DERIVED_FLUENTS = 'derived_fluents'
+PERSISTENT_FLUENTS = 'persistent_fluents'
+STATIC_FLUENTS = 'static_fluents'
 FLUENT_TYPES_ALL = 'all_fluents'
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
@@ -32,9 +32,17 @@ OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
 SUBSTRING_WITHIN_PARENTHESIS_REGEX = r'\([^)]*{}\w*[^)]*\)'
 
 PLAN_LENGTHS = (1, 5, 10, 15, 19)
-QUESTION_MULTIPLICITY = 2
-
 FRACTION_TO_CORRUPT = 0.5
+
+
+QUESTION_MULTIPLICITY = 1
+def unique_id(data):
+    #TODO add, if QUESTION_MULTIPLICITY > 1
+    import base64
+    import hashlib
+    hasher = hashlib.sha1(str(data).encode('ascii'))
+    return base64.urlsafe_b64encode(hasher.digest())
+
 
 
 def fluent_type_to_fluent_nl(fluent_type):
@@ -72,15 +80,9 @@ def asp_to_nl(obj_ls, converter, fluent_subs=None):
 
 def question_name(q_id, prefix=None):
     if prefix:
-        return f'question_{prefix}_{q_id}'
+        return f'{prefix}_question_{q_id}'
     return f'question_{q_id}'
 
-
-def unique_id(data):
-    import base64
-    import hashlib
-    hasher = hashlib.sha1(str(data).encode('ascii'))
-    return base64.urlsafe_b64encode(hasher.digest())
 
 
 class QuestionGenerationHelpers:
@@ -256,23 +258,6 @@ class QuestionGenerationHelpers:
         return self.nl_actions(self.given_plan_sequence[:plan_length])
 
     @staticmethod
-    def corrupted_not_corrupted_mix(not_corrupted_fluents, corrupted_fluents):
-        # TODO double check this function, maybe replace with corrupt_fluents
-        final_length = len(not_corrupted_fluents)
-        len_corrupted_fluents = len(corrupted_fluents)
-
-        if len_corrupted_fluents == 0:
-            raise 'Empty list'
-        elif final_length in (0, 1) or len_corrupted_fluents == 1:
-            num_to_be_corrupted_samples = 1
-        else:
-            num_to_be_corrupted_samples = random.randint(1, min(len_corrupted_fluents, final_length) - 1)
-        corrupted_fluents_samples = random.sample(corrupted_fluents, num_to_be_corrupted_samples)
-        final = corrupted_fluents_samples + not_corrupted_fluents[:final_length - len(corrupted_fluents_samples)]
-        final.shuffle()
-        return final
-
-    @staticmethod
     def corrupt_fluents(fluents, fraction_to_corrupt=FRACTION_TO_CORRUPT):
         def corrupt_fluent(fluent):
             return f"{fluent[1:]}" if fluent[0] == '-' else f"-{fluent}"
@@ -337,7 +322,7 @@ class QuestionGenerationHelpers:
         elif len(fluents) == 1:
             num_samples = 1
         else:
-            num_samples = random.randint(1, len(fluents) - 1)
+            num_samples = random.randint(2, len(fluents) - 1)
         fluents = random.sample(fluents, num_samples)
         return self.corrupt_fluents(fluents)
 
@@ -421,7 +406,6 @@ class QuestionGenerator(QuestionGenerationHelpers):
         return results
 
     def question_iterators(self):
-        # return []
         raise ValueError('Implement it in the child class')
 
 
