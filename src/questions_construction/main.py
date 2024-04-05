@@ -8,7 +8,7 @@ QUESTION_CLASSES = [ObjectTrackingQuestions,
                     EffectsQuestions,
                     NumericalReasoningQuestions,
                     HallucinationQuestions]
-QUESTION_CATEGORIES = [q_class.question_category() for q_class in QUESTION_CLASSES]
+QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES]
 
 
 def random_sub_keyword(is_random_sub):
@@ -59,7 +59,7 @@ if __name__ == '__main__':
                 instance_name = f'Instance_{i}'
                 jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
 
-                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}_test_run',
+                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}_test_run3',
                                         random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
                 if os.path.exists(save_dir):
                     continue
