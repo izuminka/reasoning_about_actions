@@ -4,8 +4,6 @@ import string
 from src.common import *
 
 
-def capitalize_first_letter(string):
-    return string[0].upper() + string[1:]
 
 
 def strip_action_prefix(action):

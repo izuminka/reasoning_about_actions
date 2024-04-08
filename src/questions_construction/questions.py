@@ -106,7 +106,7 @@ class QuestionGenerationHelpers:
         self.plan_length_max = len(self.given_plan_sequence)
         self.executable_actions = self.extract_executable_actions()
         self.inexecutable_actions = self.extract_inexecutable_actions()
-        self.init_state_nl = asp_to_nl(self.init_state[FLUENTS_KEY], self.domain_class.fluent_to_natural_language)
+        self.init_state_nl = capitalize_first_letter(asp_to_nl(self.init_state[FLUENTS_KEY], self.domain_class.fluent_to_natural_language)) + '.'
         self.base_pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
                                                                      self.domain_class.BASE_POS_FLUENTS)
         self.base_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
@@ -445,17 +445,14 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} list all objects associated with type {random_object_type}. {NONE_STATEMENT}."
         answer = self.objects_by_type[random_object_type]
         nl_answer = asp_to_nl(sorted(answer), lambda x: x)
-        return self.qa_data_object(question, nl_answer, FREE_ANSWER, self.question_1.__name__, plan_length,
-                                   fluent_type=None)
+        return self.qa_data_object(question, nl_answer, FREE_ANSWER, self.question_1.__name__, plan_length, fluent_type=None)
 
     def question_2(self, plan_length):
         random_object_type = random.choice(list(self.objects_by_type.keys()))
-        random_objects = random.sample(self.objects_by_type[random_object_type],
-                                       random.randint(1, len(self.objects_by_type[random_object_type])))
+        random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])))
         nl_random_objects = asp_to_nl(random_objects, lambda x: x)
         question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
-        return self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_2.__name__, plan_length,
-                                   fluent_type=None)
+        return self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_2.__name__, plan_length, fluent_type=None)
 
     def question_iterators(self):
         return chain(self.questions_iter_1(),
@@ -469,12 +466,12 @@ class FluentTrackingQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
-        pos_fluent, neg_fluent = self.fluents_for_fluent_type(plan_length, fluent_type)
-        if len(pos_fluent) == 0 or len(neg_fluent) == 0:
+        pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
+        if len(pos_fluents) == 0 or len(neg_fluents) == 0:
             return None
         else:
-            pos_fluent = random.choice(pos_fluent)
-            neg_fluent = random.choice(neg_fluent)
+            pos_fluent = random.choice(pos_fluents)
+            neg_fluent = random.choice(neg_fluents)
 
         if is_pos_fluent_question and is_answer_true:
             fluent = pos_fluent
@@ -918,10 +915,8 @@ class HallucinationQuestions(QuestionGenerator):
 
     def questions_iter_3_helper(self, plan_length, is_executable_action, is_answer_true, question_name):
         if is_executable_action:
-            action_type = 'executable'
             action = random.choice(self.executable_actions[plan_length])
         else:
-            action_type = 'inexecutable'
             action = random.choice(self.inexecutable_actions[plan_length])
 
         if is_answer_true:
@@ -929,9 +924,8 @@ class HallucinationQuestions(QuestionGenerator):
         else:
             nl_action = self.domain_class.action_to_natural_language(action, is_hallucinated=True)
 
-        question_setup = self.question_setup(f'{action_type} actions')
-        question = (f"{self.nl_question_prefix(plan_length, is_planned=True)} {question_setup}. "
-                    f"Is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?")
+        question = (f"{self.nl_question_prefix(plan_length, is_planned=True)} "
+                    f"is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
 
     def questions_iter_3(self):
@@ -991,7 +985,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_hallucinated_fluent = self.domain_class.fluent_to_natural_language(fluents[0], is_hallucinated=True)
             random.shuffle(fluents)
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
-        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type_nl}')}. "
+        question = (f"{self.nl_question_prefix(plan_length)} {self. question_setup(f'{fluent_type_nl}')}. "
                     f"What {fluent_type_nl} out of, {nl_fluents}, is not defined? Write None if all are defined.")
         return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length, None)
 

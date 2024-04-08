@@ -99,3 +99,7 @@ def ramifications_keyword(is_ramifications):
         return WITH_RAMIFICATIONS
     else:
         return WITHOUT_RAMIFICATIONS
+
+
+def capitalize_first_letter(string):
+    return string[0].upper() + string[1:]
