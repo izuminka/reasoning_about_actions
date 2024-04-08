@@ -1,7 +1,7 @@
 #DOMAINS=('blocksworld' 'depots' 'driverlog' 'goldminer' 'grippers' 'logistics' 'miconic' 'mystery' 'npuzzle' 'satellite' 'spanner' 'visitall' 'zenotravel')
-DOMAINS=('zenotravel')
-#INSTANCES=('Instance_1' 'Instance_2' 'Instance_3' 'Instance_4' 'Instance_5' 'Instance_6' 'Instance_7' 'Instance_8' 'Instance_9' 'Instance_10')
-INSTANCES=('Instance_3')
+DOMAINS=('logistics')
+INSTANCES=('Instance_1' 'Instance_2' 'Instance_3' 'Instance_4' 'Instance_5' 'Instance_6' 'Instance_7' 'Instance_8' 'Instance_9' 'Instance_10')
+# INSTANCES=('Instance_3')
 
 PYTHON_CMD='python states_actions_generation.py'
 
@@ -11,9 +11,9 @@ for domain in "${DOMAINS[@]}"; do
         echo '#!/bin/bash' > $sbatch_file_name
         echo '#SBATCH -N 1' >> $sbatch_file_name
         echo '#SBATCH -c 1' >> $sbatch_file_name
-        echo '#SBATCH -t 1-16:00:00' >> $sbatch_file_name
+        echo '#SBATCH -t 7-00:00:00' >> $sbatch_file_name
         echo '#SBATCH -p general' >> $sbatch_file_name
-        echo '#SBATCH -q prerelease' >> $sbatch_file_name
+        echo '#SBATCH -q public' >> $sbatch_file_name
         echo '#SBATCH --mail-type=ALL' >> $sbatch_file_name
         echo '#SBATCH --output=NONE' >> $sbatch_file_name
         echo '#SBATCH --export=NONE' >> $sbatch_file_name
