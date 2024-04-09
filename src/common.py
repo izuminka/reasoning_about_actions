@@ -22,7 +22,8 @@ OBJECTS_KEY = 'objects'
 OUT_OBJ_ID = 'id'
 OUT_OBJ_DOMAIN_NAME = 'domain_name'
 OUT_OBJ_INSTANCE_ID = 'instance_id'
-OUT_OBJ_INITIAL_STATE = 'initial_state'
+OUT_OBJ_INITIAL_STATE_ASP = 'initial_state_asp'
+OUT_OBJ_INITIAL_STATE_NL = 'initial_state_nl'
 OUT_OBJ_ACTION_SEQUENCE = 'action_sequence'
 OUT_OBJ_PLAN_LENGTH = 'plan_length'
 OUT_OBJ_QUESTION_CATEGORY = 'question_category'
@@ -33,8 +34,8 @@ OUT_OBJ_ANSWER = 'answer' # ground truth answer #TODO rename
 OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
 
 # OUTPUT ANSWER TYPES
-FREE_ANSWER = 'free_answer'
-TRUE_FALSE_ANSWER = 'true_false_answer'
+FREE_ANSWER_TYPE = 'free_answer'
+TRUE_FALSE_ANSWER_TYPE = 'true_false_answer'
 
 # ramifications
 WITH_RAMIFICATIONS = 'with_ramifications'
@@ -98,3 +99,7 @@ def ramifications_keyword(is_ramifications):
         return WITH_RAMIFICATIONS
     else:
         return WITHOUT_RAMIFICATIONS
+
+
+def capitalize_first_letter(string):
+    return string[0].upper() + string[1:]

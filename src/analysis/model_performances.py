@@ -34,7 +34,7 @@ ROUGE_SCORER = rouge_scorer.RougeScorer([ROUGE_SCORE_TYPE], use_stemmer=True)
 
 TRUE_ANSWER = 'True'
 FALSE_ANSWER = 'False'
-ANSWER_RESPONSES = [TRUE_FALSE_ANSWER, FREE_ANSWER]
+ANSWER_RESPONSES = [TRUE_FALSE_ANSWER_TYPE, FREE_ANSWER_TYPE]
 
 
 ALL_LENGTHS_KEY = 'all_lengths'
@@ -132,7 +132,7 @@ class TrueFalseStats(BaseStats):
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                  score_type=F1_SCORE_KEY):
         super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain)
-        self.answer_type = TRUE_FALSE_ANSWER
+        self.answer_type = TRUE_FALSE_ANSWER_TYPE
         self.score_type = score_type
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
                                           prompt_type, domain, self.answer_type)
@@ -174,7 +174,7 @@ class FreeAnswerStats(BaseStats):
 
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain):
         super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain)
-        self.answer_type = FREE_ANSWER
+        self.answer_type = FREE_ANSWER_TYPE
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
                                           prompt_type, domain, self.answer_type)
 
@@ -199,7 +199,7 @@ def big_for_loop(data_all, answer_response, tf_score_key=F1_SCORE_KEY):
                 for ramifications in RAMIFICATION_TYPES:
                     for model_name in PROMPT_MODEL_NAMES:
                         for prompt_type in PROMPT_TYPES:
-                            if answer_response == TRUE_FALSE_ANSWER:
+                            if answer_response == TRUE_FALSE_ANSWER_TYPE:
                                 stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
                                                        model_name,
                                                        prompt_type, domain, tf_score_key)
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     data_all = gather_data()
     print('data is gathered')
 
-    answer_response = TRUE_FALSE_ANSWER
+    answer_response = TRUE_FALSE_ANSWER_TYPE
     for score_key in SCORE_KEYS:
         results = big_for_loop(data_all, answer_response, score_key)
         save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)))
