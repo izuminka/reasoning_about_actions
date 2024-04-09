@@ -72,6 +72,8 @@ def asp_to_nl(obj_ls, converter, fluent_subs=None, is_sorted=True, is_list=False
         nl_obj = converter(obj_ls[0])
         if fluent_subs:
             nl_obj = nl_obj.replace(fluent_subs[0], fluent_subs[1])
+        if is_list:
+            return [nl_obj]
         return nl_obj
     nl_obj_ls = [converter(f) for f in obj_ls]
     if fluent_subs:
@@ -391,7 +393,10 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def unique_questions(question_constructor, plan_length, multiplicity, timeout_outer=20, timeout_inner=3):
         results = {}
         while (len(results) < multiplicity) and timeout_outer > 0:
-            qa_object = question_constructor(plan_length)
+            try:
+                qa_object = question_constructor(plan_length)
+            except ValueError:
+                qa_object = None
             while (qa_object is None) and timeout_inner > 0:
                 qa_object = question_constructor(plan_length)
                 timeout_inner -= 1
@@ -718,6 +723,8 @@ class EffectsQuestions(QuestionGenerator):
                 for l in range(self.plan_length_max):
                     pos_fluents, neg_fluents = self.fluents_for_fluent_type(l, fluent_type)
                     fluents_all = fluents_all.union(set(pos_fluents).union(set(neg_fluents)))
+                if not fluents_all:
+                    return None
                 fluents = self.corrupt_fluents(list(fluents_all))
                 fluents = list(set(fluents) - fluents_new_minus_old)
                 if len(fluents) < len(fluents_new_minus_old):
@@ -1036,7 +1043,7 @@ class HallucinationQuestions(QuestionGenerator):
             random_int = random.randint(0, len(actions) - 1)
             nl_hallucinated_action = self.domain_class.action_to_natural_language(actions[random_int], is_hallucinated=True)
 
-            nl_actions_ls = asp_to_nl([a[len('action_'):] for a in actions], self.domain_class.action_to_natural_language, is_sorted=False)
+            nl_actions_ls = asp_to_nl([a[len('action_'):] for a in actions], self.domain_class.action_to_natural_language, is_sorted=False, is_list=True)
             nl_actions_ls[random_int] = nl_hallucinated_action
             nl_actions = add_commas_and(nl_actions_ls)
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_actions} {postfix}."

@@ -59,7 +59,7 @@ if __name__ == '__main__':
                 instance_name = f'Instance_{i}'
                 jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
 
-                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}_for_manual_validation_v2',
+                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}_for_manual_validation_v3',
                                         random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
                 if os.path.exists(save_dir):
                     continue
