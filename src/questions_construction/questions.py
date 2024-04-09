@@ -243,8 +243,11 @@ class QuestionGenerationHelpers:
                 by_object_name[obj] = obj_type
         return by_object_name
 
-    def nl_fluents(self, fluents, fluent_subs=None, is_sorted=True):
-        return asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs, is_sorted=is_sorted)
+    def nl_fluents(self, fluents, fluent_subs=None, is_sorted=True, is_capitalized=False):
+        nl = asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs, is_sorted=is_sorted)
+        if is_capitalized:
+            return capitalize_first_letter(nl)
+        return nl
 
     def nl_actions(self, actions, fluent_subs=None, is_sorted=False):
         actions = [a[len('action_'):] for a in actions]
@@ -279,18 +282,18 @@ class QuestionGenerationHelpers:
 
     def corrupt_action_sequence(self, plan_length):
         corrupted_actions = deepcopy(self.given_plan_sequence[:plan_length])
-        random_break_ind = random.randint(0, plan_length - 1)
-        random_inxecutable_action = random.choice(self.inexecutable_actions[random_break_ind])
-        corrupted_actions[random_break_ind] = random_inxecutable_action
-        return corrupted_actions, random_break_ind
+        random_corrupt_action_i = random.randint(0, plan_length - 1)
+        random_corrupt_action = random.choice(self.inexecutable_actions[random_corrupt_action_i])
+        corrupted_actions[random_corrupt_action_i] = random_corrupt_action
+        return corrupted_actions, random_corrupt_action_i
 
     def sequence_of_actions(self, plan_length, is_correct_sequence):
         if not is_correct_sequence:
-            sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
+            sequence_of_actions, random_corrupt_action_i = self.corrupt_action_sequence(plan_length)
         else:
             sequence_of_actions = self.given_plan_sequence[:plan_length]
-            random_break_ind = random.randint(0, plan_length - 1)
-        return sequence_of_actions, random_break_ind
+            random_corrupt_action_i = random.randint(0, plan_length - 1)
+        return sequence_of_actions, random_corrupt_action_i
 
     def fluents_for_object_tracking(self, obj, plan_length, fluent_type):
         if fluent_type == BASE_FLUENTS:
@@ -605,7 +608,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def questions_iter_1_helper(self, plan_length, is_answer_true, question_name):
-        sequence_of_actions, _random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
+        sequence_of_actions, _random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
@@ -619,14 +622,14 @@ class ActionExecutabilityQuestions(QuestionGenerator):
                           question_name=question_name(counter, 'iter_1'))
 
     def questions_iter_2_helper(self, plan_length, is_answer_true, question_name):
-        sequence_of_actions, random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
-        selected_action = sequence_of_actions[random_break_ind]
+        sequence_of_actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
+        selected_action = sequence_of_actions[random_corrupt_action_i]
 
         nl_sequence_of_actions = self.nl_actions(sequence_of_actions)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
         question = (f"{INITIAL_CONDITION_PREFIX}, "
                     f"for steps 1 through {plan_length} the following actions are planned to be performed: {nl_sequence_of_actions}. "
-                    f"Is the action: {nl_selected_action} executable at step {random_break_ind + 1}, "
+                    f"Is the action: {nl_selected_action} executable at step {random_corrupt_action_i + 1}, "
                     f"{TRUE_OR_FALSE}?")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
@@ -648,8 +651,8 @@ class ActionExecutabilityQuestions(QuestionGenerator):
                 f"{NONE_STATEMENT}.")
             return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER_TYPE, question_name, plan_length, None)
         else:
-            sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
-            inexecutable_action = sequence_of_actions[random_break_ind]
+            sequence_of_actions, random_corrupt_action_i = self.corrupt_action_sequence(plan_length)
+            inexecutable_action = sequence_of_actions[random_corrupt_action_i]
             question = (
                 f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. "
                 f"What is the first inexecutable action in the sequence? "
@@ -848,11 +851,11 @@ class NumericalReasoningQuestions(QuestionGenerator):
                           question_name=question_name(counter, 'iter_3'))
 
     def question_4(self, plan_length):
-        sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
+        sequence_of_actions, random_corrupt_action_i = self.corrupt_action_sequence(plan_length)
         question = (f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. "
-                    f"In this state, what is the number of actions that led to the current state in the sequence before the first inexecutable action? "
+                    f"How many actions are there before the first inexecutable action? "
                     f"Write as an integer. {NONE_STATEMENT}.")
-        return self.qa_data_object(question, random_break_ind, FREE_ANSWER_TYPE, self.question_4.__name__, plan_length, None)
+        return self.qa_data_object(question, random_corrupt_action_i, FREE_ANSWER_TYPE, self.question_4.__name__, plan_length, None)
 
     def question_iterators(self):
         return chain(self.questions_iter_1(),
@@ -1072,16 +1075,15 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_answer_true, question_name):
         is_correct_sequence = False
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
+        actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
-        #TODO double check
-        pos_fluents, neg_fluents = self.fluents_for_fluent_type(random_action_i+1, fluent_type)
+        pos_fluents, neg_fluents = self.fluents_for_fluent_type(random_corrupt_action_i, fluent_type)
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true)
         if not fluents:
             return None
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     f"Are the following {FLUENTS_NL} true before the first inexecutable action in the sequence? "
-                    f"{self.nl_fluents(fluents)}. ")
+                    f"{self.nl_fluents(fluents, is_capitalized=True)}. ")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_1(self):
@@ -1096,16 +1098,15 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_2_helper(self, plan_length, fluent_type, is_answer_true, question_name):
         is_correct_sequence = False
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
+        actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
-        #TODO double check random_action_i
-        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(random_action_i, fluent_type)
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(random_corrupt_action_i, fluent_type)
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true)
         if not fluents:
             return None
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     f"Are the following {FLUENTS_NL} true for {obj} before the first inexecutable action in the sequence? "
-                    f"{self.nl_fluents(fluents)}. ")
+                    f"{self.nl_fluents(fluents, is_capitalized=True)}. ")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_2(self):
@@ -1126,9 +1127,9 @@ class CompositeQuestions(QuestionGenerator):
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true)
         if not fluents:
             return None
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     f"If I perform action {action_performed}, would the following {FLUENTS_NL} be true for {obj}? "
-                    f"{self.nl_fluents(fluents)}. ")
+                    f"{self.nl_fluents(fluents, is_capitalized=True)}. ")
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_3(self):
@@ -1143,13 +1144,12 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_4_helper(self, plan_length, is_answer_true, question_name):
         is_correct_sequence = False
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
+        actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     "Some of the actions may not be executable. "
                     f"Is this the state before the first inexecutable action in the sequence? {TRUE_OR_FALSE}")
-        #TODO: check if this is correct, random_action_i
-        state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
+        state = self.pos_fluents_given_plan[random_corrupt_action_i] + self.neg_fluents_given_plan[random_corrupt_action_i]
         if not is_answer_true:
             state = self.corrupt_fluents(state)
         question += self.nl_fluents(state)
@@ -1167,15 +1167,15 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_5_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     f"Some of the actions may not be executable. "
                     f"What {fluent_type_to_fluent_nl(fluent_type)} are true before the first infeasible action in the sequence? "
                     f"{NONE_STATEMENT}")
         if is_answer_true:
             answer = NONE_ANSWER
         else:
-            fluents = self.fluents_for_fluent_type(random_action_i, fluent_type)
+            fluents = self.fluents_for_fluent_type(random_corrupt_action_i, fluent_type)
             answer = self.nl_fluents(fluents)
         return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
@@ -1189,14 +1189,13 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_6_helper(self, plan_length, fluent_type, question_name):
         is_answer_true = random.choice([True, False])
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
+        actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
 
-        #TODO double check random_action_i
-        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(random_action_i+1, fluent_type=fluent_type)
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(random_corrupt_action_i, fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
 
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     f"What are the {fluent_type_to_fluent_nl(fluent_type)} for {obj} before the first infeasible action in the sequence? "
                     f"{NONE_STATEMENT}")
         if is_answer_true:
@@ -1239,16 +1238,15 @@ class CompositeQuestions(QuestionGenerator):
                           question_name=question_name(counter, 'iter_7'))
 
     def questions_iter_8_helper(self, plan_length, is_correct_sequence, question_name):
-        actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
-        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
+        actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
+        question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
                     f"Some of the actions may not be executable. "
                     f"What is the state before the first infeasible action in the sequence? "
                     f"{NONE_STATEMENT}")
         if is_correct_sequence:
             answer = NONE_ANSWER
         else:
-            #TODO double check the correctness
-            state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
+            state = self.pos_fluents_given_plan[random_corrupt_action_i] + self.neg_fluents_given_plan[random_corrupt_action_i]
             answer = self.nl_fluents(state)
         return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, None)
 

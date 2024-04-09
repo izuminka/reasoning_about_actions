@@ -279,6 +279,17 @@ class TestHallucinationQuestionsBlocksworld(TestHelpers):
     def test_q9(self):
         self.assert_qa_objects(self.qa_class.question_9)
 
+class TestCompositenQuestionsBlocksworld(TestHelpers):
+    qa_class = CompositeQuestions(jsonl_object, domain_class, instance_id)
+
+    def test_q1(self):
+        plan_length = 1
+        fluent_type = BASE_FLUENTS
+        is_answer_true = True
+        question_name = 'test'
+        qa_object = self.qa_class.questions_iter_1_helper(plan_length, fluent_type, is_answer_true, question_name)
+
+
 # class TestQuestionGenerationAll(unittest.TestCase):
 #
 #     def test_all_questions_one_domain_one_instance(self):
