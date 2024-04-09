@@ -51,38 +51,19 @@ class AllQuestions:
 
 if __name__ == '__main__':
     question_multiplicity = 1
-    for domain_class in ALL_DOMAIN_CLASSES:
-        for is_random_sub in [False]:
-            domain = domain_class(is_random_sub=is_random_sub,
-                                  is_ramifications=False)  # for questions, is_ramifications does not matter T/F, only for prompts
-            for i in range(1, 2):
+    upper_instance = 2
+    for is_random_sub in [False, True]:
+        for domain_class in ALL_DOMAIN_CLASSES:
+            domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
+            for i in range(1, upper_instance):
                 instance_name = f'Instance_{i}'
                 jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
 
-                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}_for_manual_validation_v3',
-                                        random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
+                save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
                 if os.path.exists(save_dir):
                     continue
 
-                all_questions = AllQuestions(jsonl_instance, domain, instance_name)
+                all_questions = AllQuestions(jsonl_instance, domain, instance_name, question_multiplicity=question_multiplicity)
                 all_questions.generate_all_questions()
                 all_questions.save_questions(save_dir)
-            print(domain.DOMAIN_NAME, 'done')
-
-
-    # question_multiplicity = 1
-    # for domain_class in ALL_DOMAIN_CLASSES:
-    #     for is_random_sub in [True, False]:
-    #         domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
-    #         for i in range(1, 11):
-    #             instance_name = f'Instance_{i}'
-    #             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-    #
-    #             save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
-    #             if os.path.exists(save_dir):
-    #                 continue
-    #
-    #             all_questions = AllQuestions(jsonl_instance, domain, instance_name, question_multiplicity=question_multiplicity)
-    #             all_questions.generate_all_questions()
-    #             all_questions.save_questions(save_dir)
-    #         print(domain.DOMAIN_NAME, 'done')
+                print(domain.DOMAIN_NAME, is_random_sub, instance_name, 'done')
