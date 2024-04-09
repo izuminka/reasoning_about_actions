@@ -34,8 +34,8 @@ OUT_OBJ_ANSWER = 'answer' # ground truth answer #TODO rename
 OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
 
 # OUTPUT ANSWER TYPES
-FREE_ANSWER = 'free_answer'
-TRUE_FALSE_ANSWER = 'true_false_answer'
+FREE_ANSWER_TYPE = 'free_answer'
+TRUE_FALSE_ANSWER_TYPE = 'true_false_answer'
 
 # ramifications
 WITH_RAMIFICATIONS = 'with_ramifications'

@@ -7,6 +7,7 @@ import uuid
 from copy import deepcopy
 from functools import partial
 from itertools import chain
+import numpy as np
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 from src.common import *
@@ -26,6 +27,7 @@ FLUENT_TYPES_ALL = 'all_fluents'
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
 PART_OF_THE_STATE = 'part of the state'
+PART_OF_THE_DOMAIN = 'part of the domain'
 MAX_TIMEOUT = 50
 
 OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -58,13 +60,12 @@ def fluent_type_to_fluent_nl(fluent_type):
         raise ValueError(f'Undefined fluent type {fluent_type}')
 
 
-def exit_condition_on_fluents(pos_fluents, neg_fluents):
-    return not len(pos_fluents) or not len(neg_fluents)
-
-
-def asp_to_nl(obj_ls, converter, fluent_subs=None):
+def add_commas_and(nl_obj_ls):
     and_str = ' and '
     comma_str = ', '
+    return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
+
+def asp_to_nl(obj_ls, converter, fluent_subs=None, is_sorted=True, is_list=False):
     if not obj_ls:
         raise 'Empty list'
     if len(obj_ls) == 1:
@@ -75,7 +76,11 @@ def asp_to_nl(obj_ls, converter, fluent_subs=None):
     nl_obj_ls = [converter(f) for f in obj_ls]
     if fluent_subs:
         nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
-    return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
+    if is_sorted:
+        nl_obj_ls = sorted(nl_obj_ls)
+    if is_list:
+        return nl_obj_ls
+    return add_commas_and(nl_obj_ls)
 
 
 def question_name(q_id, prefix=None):
@@ -239,14 +244,11 @@ class QuestionGenerationHelpers:
         return by_object_name
 
     def nl_fluents(self, fluents, fluent_subs=None, is_sorted=True):
-        nl = asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs)
-        if is_sorted:
-            return nl
-        return nl
+        return asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs, is_sorted=is_sorted)
 
-    def nl_actions(self, actions, fluent_subs=None):
+    def nl_actions(self, actions, fluent_subs=None, is_sorted=False):
         actions = [a[len('action_'):] for a in actions]
-        return asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs)
+        return asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs, is_sorted=is_sorted)
 
     def nl_question_prefix(self, plan_length, is_planned=False):
         if is_planned:
@@ -312,7 +314,7 @@ class QuestionGenerationHelpers:
         while (len(pos_fluents) + len(neg_fluents)) < min_chosen_fluents and timeout > 0:
             obj = random.choice(self.all_objects)
             pos_fluents, neg_fluents = self.fluents_for_object_tracking(obj, plan_length, fluent_type)
-            if len(pos_fluents) and len(neg_fluents):
+            if len(pos_fluents) or len(neg_fluents):
                 return pos_fluents, neg_fluents, obj
             timeout -= 1
         return None, None, None
@@ -328,17 +330,19 @@ class QuestionGenerationHelpers:
         return self.corrupt_fluents(fluents)
 
     def fluent_helper(self, pos_fluents, neg_fluents, is_answer_true, is_pos_fluent_question=None):
-        # TODO add sampling
         if not pos_fluents and not neg_fluents:
             return None
 
         if is_answer_true:
+            if is_pos_fluent_question is None:
+                return pos_fluents + neg_fluents
             if is_pos_fluent_question is True:
                 return pos_fluents
             elif is_pos_fluent_question is False:
                 return neg_fluents
             else:
-                return pos_fluents + neg_fluents
+                raise ValueError('Undefined is_pos_fluent_question')
+
         else:
             if is_pos_fluent_question is None:
                 return self.corrupt_fluents(pos_fluents + neg_fluents)
@@ -424,7 +428,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
             return None
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {FLUENTS_NL} are correct for {obj}: {nl_fluents}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_1(self):
         counter = 0
@@ -445,14 +449,14 @@ class ObjectTrackingQuestions(QuestionGenerator):
         question = f"{self.nl_question_prefix(plan_length)} list all objects associated with type {random_object_type}. {NONE_STATEMENT}."
         answer = self.objects_by_type[random_object_type]
         nl_answer = asp_to_nl(sorted(answer), lambda x: x)
-        return self.qa_data_object(question, nl_answer, FREE_ANSWER, self.question_1.__name__, plan_length, fluent_type=None)
+        return self.qa_data_object(question, nl_answer, FREE_ANSWER_TYPE, self.question_1.__name__, plan_length, None)
 
     def question_2(self, plan_length):
         random_object_type = random.choice(list(self.objects_by_type.keys()))
         random_objects = random.sample(self.objects_by_type[random_object_type], random.randint(1, len(self.objects_by_type[random_object_type])))
         nl_random_objects = asp_to_nl(random_objects, lambda x: x)
         question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
-        return self.qa_data_object(question, random_object_type, FREE_ANSWER, self.question_2.__name__, plan_length, fluent_type=None)
+        return self.qa_data_object(question, random_object_type, FREE_ANSWER_TYPE, self.question_2.__name__, plan_length, None)
 
     def question_iterators(self):
         return chain(self.questions_iter_1(),
@@ -467,22 +471,18 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_pos_fluent_question, is_answer_true, question_name):
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
-        if len(pos_fluents) == 0 or len(neg_fluents) == 0:
+        if is_pos_fluent_question and is_answer_true and pos_fluents:
+            fluent = random.choice(pos_fluents)
+        elif is_pos_fluent_question and not is_answer_true and pos_fluents:
+            fluent = '-' + random.choice(pos_fluents)
+        elif not is_pos_fluent_question and is_answer_true and neg_fluents:
+            fluent = random.choice(neg_fluents)
+        elif not is_pos_fluent_question and is_answer_true and neg_fluents:
+            fluent = random.choice(neg_fluents)[1:]
+        else:
             return None
-        else:
-            pos_fluent = random.choice(pos_fluents)
-            neg_fluent = random.choice(neg_fluents)
-
-        if is_pos_fluent_question and is_answer_true:
-            fluent = pos_fluent
-        elif is_pos_fluent_question and not is_answer_true:
-            fluent = '-' + pos_fluent
-        elif not is_pos_fluent_question and is_answer_true:
-            fluent = neg_fluent
-        else:
-            fluent = neg_fluent[1:]
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_1(self):
         counter = 0
@@ -502,7 +502,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         if not fluents:
             return None
         question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS_NL} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_2(self):
         counter = 0
@@ -520,7 +520,7 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def questions_iter_3_helper(self, plan_length, fluent_type, is_pos_fluent_question, question_name):
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
-        if pos_fluents is None and neg_fluents is None:
+        if not pos_fluents and not neg_fluents:
             return None
 
         question = (f"{self.nl_question_prefix(plan_length)}. "
@@ -531,7 +531,7 @@ class FluentTrackingQuestions(QuestionGenerator):
             answer = 'None'
         else:
             answer = self.nl_fluents(fluents)
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_3(self):
         counter = 0
@@ -557,14 +557,14 @@ class StateTrackingQuestions(QuestionGenerator):
 
     def questions_iter_1_helper(self, plan_length, is_answer_true, question_name):
         pos_fluents, neg_fluents = self.pos_fluents_given_plan[plan_length], self.neg_fluents_given_plan[plan_length]
-        if exit_condition_on_fluents(pos_fluents, neg_fluents):
+        if not pos_fluents and not neg_fluents:
             return None
         fluents = pos_fluents + neg_fluents
         if not is_answer_true:
             fluents = self.corrupt_fluents(fluents)
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} are all of the following properties: {nl_fluents}, correct? Respond with {TRUE_OR_FALSE}."
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_1(self):
         counter = 0
@@ -583,7 +583,7 @@ class StateTrackingQuestions(QuestionGenerator):
             fluents = self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type_nl}. {NONE_STATEMENT}."
-        return self.qa_data_object(question, nl_fluents, FREE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, nl_fluents, FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_2(self):
         counter = 0
@@ -608,7 +608,7 @@ class ActionExecutabilityQuestions(QuestionGenerator):
         sequence_of_actions, _random_break_ind = self.sequence_of_actions(plan_length, is_answer_true)
         nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
         question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_1(self):
         counter = 0
@@ -624,9 +624,11 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
         nl_sequence_of_actions = self.nl_actions(sequence_of_actions)
         nl_selected_action = self.domain_class.action_to_natural_language(selected_action)
-        question = (f"{INITIAL_CONDITION_PREFIX}, for steps 1 through {plan_length} the following actions are planned to be performed: {nl_sequence_of_actions}. "
-                    f"Is the action: {nl_selected_action} executable at step {random_break_ind + 1}, {TRUE_OR_FALSE}?")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        question = (f"{INITIAL_CONDITION_PREFIX}, "
+                    f"for steps 1 through {plan_length} the following actions are planned to be performed: {nl_sequence_of_actions}. "
+                    f"Is the action: {nl_selected_action} executable at step {random_break_ind + 1}, "
+                    f"{TRUE_OR_FALSE}?")
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_2(self):
         counter = 0
@@ -638,37 +640,41 @@ class ActionExecutabilityQuestions(QuestionGenerator):
 
     #### FREE ANSWER QUESTIONS ####
 
-    def questions_iter_3_helper(self, plan_length, is_answer_true, question_name):
-        if not is_answer_true:
+    def questions_iter_3_helper(self, plan_length, is_answer_none, question_name):
+        if is_answer_none:
             question = (
                 f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. "
-                f"What is the first inexecutable action in the sequence? {NONE_STATEMENT}.")
-            return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER, question_name, plan_length, None)
+                f"What is the first inexecutable action in the sequence? "
+                f"{NONE_STATEMENT}.")
+            return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER_TYPE, question_name, plan_length, None)
         else:
             sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
             inexecutable_action = sequence_of_actions[random_break_ind]
             question = (
                 f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. "
-                f"What is the first inexecutable action in the sequence? {NONE_STATEMENT}.")
+                f"What is the first inexecutable action in the sequence? "
+                f"{NONE_STATEMENT}.")
             return self.qa_data_object(question, self.domain_class.action_to_natural_language(inexecutable_action),
-                                       FREE_ANSWER, question_name, plan_length, None)
+                                       FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_3(self):
         counter = 0
-        for is_answer_true in [True, False]:
+        for is_answer_none in [True, False]:
             counter += 1
             yield partial(self.questions_iter_3_helper,
-                          is_answer_true=is_answer_true,
+                          is_answer_none=is_answer_none,
                           question_name=question_name(counter, 'iter_3'))
 
     def question_4(self, plan_length):
-        question = f"{self.nl_question_prefix(plan_length)} list all executable actions. {NONE_STATEMENT}."
-        return self.qa_data_object(question, self.nl_actions(self.executable_actions[plan_length]), FREE_ANSWER,
+        question = (f"{self.nl_question_prefix(plan_length)} list all executable actions. "
+                    f"{NONE_STATEMENT}.")
+        return self.qa_data_object(question, self.nl_actions(self.executable_actions[plan_length]), FREE_ANSWER_TYPE,
                                    self.question_4.__name__, plan_length, None)
 
     def question_5(self, plan_length):
-        question = f"{self.nl_question_prefix(plan_length)} list all inexecutable actions. {NONE_STATEMENT}."
-        return self.qa_data_object(question, self.nl_actions(self.inexecutable_actions[plan_length]), FREE_ANSWER,
+        question = (f"{self.nl_question_prefix(plan_length)} list all inexecutable actions. "
+                    f"{NONE_STATEMENT}.")
+        return self.qa_data_object(question, self.nl_actions(self.inexecutable_actions[plan_length]), FREE_ANSWER_TYPE,
                                    self.question_5.__name__, plan_length, None)
 
     def question_iterators(self):
@@ -705,9 +711,14 @@ class EffectsQuestions(QuestionGenerator):
             if is_same_sample and fluents_new_minus_old:
                 fluents = self.corrupt_fluents(list(fluents_new_minus_old))
             else:
-                fluents_all = self.pos_fluents_given_plan + self.neg_fluents_given_plan
-                fluents = self.corrupt_fluents([l for ls in fluents_all for l in ls])
+                fluents_all = set()
+                for l in range(self.plan_length_max):
+                    pos_fluents, neg_fluents = self.fluents_for_fluent_type(l, fluent_type)
+                    fluents_all = fluents_all.union(set(pos_fluents).union(set(neg_fluents)))
+                fluents = self.corrupt_fluents(list(fluents_all))
                 fluents = list(set(fluents) - fluents_new_minus_old)
+                if len(fluents) < len(fluents_new_minus_old):
+                    return None
                 fluents = random.sample(fluents, len(fluents_new_minus_old))
         fluents = list(fluents)
         if not fluents:
@@ -715,7 +726,7 @@ class EffectsQuestions(QuestionGenerator):
         else:
             nl_fluents = self.nl_fluents(fluents)
         question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {nl_fluents}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_1(self):
         counter = 0
@@ -733,14 +744,19 @@ class EffectsQuestions(QuestionGenerator):
 
     def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
         action = self.given_plan_sequence[plan_length]
-        if is_pos_fluent_question:
+        if is_pos_fluent_question is None:
+            fluents_type_nl = FLUENTS_NL
+            fluents = self.pos_fluents_given_plan[plan_length + 1] + self.neg_fluents_given_plan[plan_length + 1]
+        elif is_pos_fluent_question:
             fluents_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
             fluents_type_nl = NEGATIVE_FLUENTS_NL
             fluents = self.neg_fluents_given_plan[plan_length + 1]
-        question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, what would be all of the {fluents_type_nl}? {NONE_STATEMENT}."
-        return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER, question_name, plan_length, None)
+        question = (f"{self.prefix(plan_length)} if {self.nl_actions([action])}, "
+                    f"what would be all of the {fluents_type_nl}? "
+                    f"{NONE_STATEMENT}.")
+        return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_2(self):
         counter = 0
@@ -764,7 +780,8 @@ class NumericalReasoningQuestions(QuestionGenerator):
     @staticmethod
     def random_count(original_count):
         bound = int(0.2 * original_count) + 1
-        return original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)])
+        number = original_count + random.choice([random.randrange(-bound, 0), random.randrange(1, bound + 1)]) # excluding the zero
+        return np.abs(number)
 
     def objects_count(self, plan_length):
         return {
@@ -786,7 +803,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
         else:
             total_count = self.random_count(count)
         question = f"{self.nl_question_prefix(plan_length)} is the number of {name_count} equal to {total_count}? {TRUE_OR_FALSE}"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_1(self):
         counter = 0
@@ -800,8 +817,10 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def questions_iter_2_helper(self, plan_length, name_count, question_name):
         count = self.objects_count(plan_length)[name_count]
-        question = f"{self.nl_question_prefix(plan_length, is_planned=False)} what is the total number of {name_count}? Write as a decimal. {NONE_STATEMENT}."
-        return self.qa_data_object(question, count, FREE_ANSWER, question_name, plan_length, None)
+        question = (f"{self.nl_question_prefix(plan_length, is_planned=False)} "
+                    f"what is the total number of {name_count}? "
+                    f"Write as an integer. {NONE_STATEMENT}.")
+        return self.qa_data_object(question, count, FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_2(self):
         counter = 0
@@ -818,7 +837,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
             total_count = self.random_count(plan_length)
         question = (f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. "
                     f"Is it {TRUE_OR_FALSE} that the number of actions that led to current state in the sequence is equal to {total_count}?")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_3(self):
         counter = 0
@@ -830,10 +849,10 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def question_4(self, plan_length):
         sequence_of_actions, random_break_ind = self.corrupt_action_sequence(plan_length)
-        question = (f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. In this state,"
-                    f"what is the number of actions that led to the current state in the sequence before the first inexecutable action? "
-                    f"Write as a decimal. {NONE_STATEMENT}.")
-        return self.qa_data_object(question, random_break_ind, FREE_ANSWER, self.question_4.__name__, plan_length, None)
+        question = (f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. "
+                    f"In this state, what is the number of actions that led to the current state in the sequence before the first inexecutable action? "
+                    f"Write as an integer. {NONE_STATEMENT}.")
+        return self.qa_data_object(question, random_break_ind, FREE_ANSWER_TYPE, self.question_4.__name__, plan_length, None)
 
     def question_iterators(self):
         return chain(self.questions_iter_1(),
@@ -868,19 +887,20 @@ class HallucinationQuestions(QuestionGenerator):
                 raise 'timeout'
         return hallucinated_object
 
-    def questions_iter_1_helper(self, plan_length, is_answer_true, question_name):
-        object = random.choice(self.all_objects)
-        if not is_answer_true:
-            object = self.hallucinated_object(object)
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. Is it {TRUE_OR_FALSE} that {object} is {PART_OF_THE_STATE}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+    def questions_iter_1_helper(self, plan_length, is_part_of_domain, question_name):
+        obj = random.choice(self.all_objects)
+        if not is_part_of_domain:
+            obj = self.hallucinated_object(obj)
+        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. "
+                    f"Is {obj} {PART_OF_THE_DOMAIN}? {TRUE_OR_FALSE}")
+        return self.qa_data_object(question, is_part_of_domain, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_1(self):
         counter = 0
-        for is_answer_true in [True, False]:
+        for is_part_of_domain in [True, False]:
             counter += 1
             yield partial(self.questions_iter_1_helper,
-                          is_answer_true=is_answer_true,
+                          is_part_of_domain=is_part_of_domain,
                           question_name=question_name(counter, 'iter_1'))
 
     def questions_iter_2_helper(self, plan_length, is_answer_true, is_pos_fluent_question, fluent_type, question_name):
@@ -898,8 +918,9 @@ class HallucinationQuestions(QuestionGenerator):
         else:
             nl_fluent = self.domain_class.fluent_to_natural_language(fluent, is_hallucinated=True)
 
-        question = f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS_NL)}. Is it {TRUE_OR_FALSE} that {nl_fluent}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS_NL)}. "
+                    f"Is {nl_fluent} {PART_OF_THE_STATE}? {TRUE_OR_FALSE}")
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_2(self):
         counter = 0
@@ -925,8 +946,8 @@ class HallucinationQuestions(QuestionGenerator):
             nl_action = self.domain_class.action_to_natural_language(action, is_hallucinated=True)
 
         question = (f"{self.nl_question_prefix(plan_length, is_planned=True)} "
-                    f"is it {TRUE_OR_FALSE} that action, {nl_action}, is defined?")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+                    f"is action, {nl_action}, {PART_OF_THE_DOMAIN}? {TRUE_OR_FALSE}")
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_3(self):
         counter = 0
@@ -950,8 +971,9 @@ class HallucinationQuestions(QuestionGenerator):
         random.shuffle(objects)
         nl_objects = asp_to_nl(objects, lambda x: x)
         question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. "
-                    f"Which of the following objects, {nl_objects}, is not defined? Write None if all are defined.")
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, None)
+                    f"Which of the following objects, {nl_objects}, is not {PART_OF_THE_DOMAIN}? "
+                    f"Write None if all are defined.")
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_4(self):
         counter = 0
@@ -987,11 +1009,11 @@ class HallucinationQuestions(QuestionGenerator):
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
         question = (f"{self.nl_question_prefix(plan_length)} {self. question_setup(f'{fluent_type_nl}')}. "
                     f"What {fluent_type_nl} out of, {nl_fluents}, is not defined? Write None if all are defined.")
-        return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_5(self):
         counter = 0
-        for is_pos_fluent_question in [True, False]:
+        for is_pos_fluent_question in [True, False, None]:
             for is_answer_true in [True, False]:
                 for fluent_type in FLUENT_TYPES_LIST:
                     counter += 1
@@ -1005,17 +1027,18 @@ class HallucinationQuestions(QuestionGenerator):
         postfix = 'to reach the current state. Given this sequence, what action is not defined? Write None if all are defined'
         if is_answer_true:
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} {postfix}."
-            answer = "None"
+            answer = NONE_ANSWER
         else:
             actions = self.given_plan_sequence[:plan_length]
             random_int = random.randint(0, len(actions) - 1)
-            nl_selected_action = self.domain_class.action_to_natural_language(actions[random_int])
-            nl_hallucinated_action = self.domain_class.action_to_natural_language(actions[random_int],
-                                                                                  is_hallucinated=True)
-            nl_actions = self.nl_actions(actions).replace(nl_selected_action, nl_hallucinated_action)
+            nl_hallucinated_action = self.domain_class.action_to_natural_language(actions[random_int], is_hallucinated=True)
+
+            nl_actions_ls = asp_to_nl([a[len('action_'):] for a in actions], self.domain_class.action_to_natural_language, is_sorted=False)
+            nl_actions_ls[random_int] = nl_hallucinated_action
+            nl_actions = add_commas_and(nl_actions_ls)
             question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_actions} {postfix}."
             answer = nl_hallucinated_action
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_6(self):
         counter = 0
@@ -1048,21 +1071,22 @@ class CompositeQuestions(QuestionGenerator):
         return f"{prefix} {nl_actions} to reach the current state."
 
     def questions_iter_1_helper(self, plan_length, fluent_type, is_answer_true, question_name):
-        is_correct_sequence = False  # random.choice([True, False])
+        is_correct_sequence = False
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
-        pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
+        #TODO double check
+        pos_fluents, neg_fluents = self.fluents_for_fluent_type(random_action_i+1, fluent_type)
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true)
         if not fluents:
             return None
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
-                    f"Are the following {FLUENTS_NL} true before the first infeasible action in the sequence? "
+                    f"Are the following {FLUENTS_NL} true before the first inexecutable action in the sequence? "
                     f"{self.nl_fluents(fluents)}. ")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_1(self):
         counter = 0
-        for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
+        for fluent_type in FLUENT_TYPES_LIST:
             for is_answer_true in [True, False]:
                 counter += 1
                 yield partial(self.questions_iter_1_helper,
@@ -1073,18 +1097,20 @@ class CompositeQuestions(QuestionGenerator):
     def questions_iter_2_helper(self, plan_length, fluent_type, is_answer_true, question_name):
         is_correct_sequence = False
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
-        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type)
+
+        #TODO double check random_action_i
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(random_action_i, fluent_type)
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true)
         if not fluents:
             return None
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
-                    f"Are the following {FLUENTS_NL} true for {obj} before the first infeasible action in the sequence? "
+                    f"Are the following {FLUENTS_NL} true for {obj} before the first inexecutable action in the sequence? "
                     f"{self.nl_fluents(fluents)}. ")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_2(self):
         counter = 0
-        for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
+        for fluent_type in FLUENT_TYPES_LIST:
             for is_answer_true in [True, False]:
                 counter += 1
                 yield partial(self.questions_iter_2_helper,
@@ -1103,11 +1129,11 @@ class CompositeQuestions(QuestionGenerator):
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     f"If I perform action {action_performed}, would the following {FLUENTS_NL} be true for {obj}? "
                     f"{self.nl_fluents(fluents)}. ")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_3(self):
         counter = 0
-        for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
+        for fluent_type in FLUENT_TYPES_LIST:
             for is_answer_true in [True, False]:
                 counter += 1
                 yield partial(self.questions_iter_3_helper,
@@ -1116,17 +1142,18 @@ class CompositeQuestions(QuestionGenerator):
                               question_name=question_name(counter, 'iter_3'))
 
     def questions_iter_4_helper(self, plan_length, is_answer_true, question_name):
-        is_correct_sequence = False  # random.choice([True, False])
+        is_correct_sequence = False
         actions, random_action_i = self.sequence_of_actions(plan_length, is_correct_sequence)
 
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)}. "
                     "Some of the actions may not be executable. "
-                    f"Is this the state before the first infeasible action in the sequence? {TRUE_OR_FALSE}")
+                    f"Is this the state before the first inexecutable action in the sequence? {TRUE_OR_FALSE}")
+        #TODO: check if this is correct, random_action_i
         state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
         if not is_answer_true:
             state = self.corrupt_fluents(state)
         question += self.nl_fluents(state)
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_4(self):
         counter = 0
@@ -1150,11 +1177,11 @@ class CompositeQuestions(QuestionGenerator):
         else:
             fluents = self.fluents_for_fluent_type(random_action_i, fluent_type)
             answer = self.nl_fluents(fluents)
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_5(self):
         counter = 0
-        for fluent_type in FLUENT_TYPES_LIST:  # STATIC_FLUENTS
+        for fluent_type in FLUENT_TYPES_LIST:
             counter += 1
             yield partial(self.questions_iter_5_helper,
                           fluent_type=fluent_type,
@@ -1164,7 +1191,8 @@ class CompositeQuestions(QuestionGenerator):
         is_answer_true = random.choice([True, False])
         actions, random_action_i = self.sequence_of_actions(plan_length, is_answer_true)
 
-        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
+        #TODO double check random_action_i
+        pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(random_action_i+1, fluent_type=fluent_type)
         if pos_fluents is None and neg_fluents is None:
             return None
 
@@ -1176,7 +1204,7 @@ class CompositeQuestions(QuestionGenerator):
         else:
             fluents = pos_fluents + pos_fluents
             answer = self.nl_fluents(fluents)
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_6(self):
         counter = 0
@@ -1200,7 +1228,7 @@ class CompositeQuestions(QuestionGenerator):
         pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluent_type)
         fluents = pos_fluents + pos_fluents
         answer = self.nl_fluents(fluents)
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_7(self):
         counter = 0
@@ -1219,9 +1247,10 @@ class CompositeQuestions(QuestionGenerator):
         if is_correct_sequence:
             answer = NONE_ANSWER
         else:
+            #TODO double check the correctness
             state = self.pos_fluents_given_plan[random_action_i] + self.neg_fluents_given_plan[random_action_i]
             answer = self.nl_fluents(state)
-        return self.qa_data_object(question, answer, FREE_ANSWER, question_name, plan_length, None)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, None)
 
     def questions_iter_8(self):
         counter = 0

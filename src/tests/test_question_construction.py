@@ -24,13 +24,13 @@ class TestHelpers(unittest.TestCase):
             self.assertIsNotNone(v)
 
         self.assertTrue(qa_object['question'])
-        if qa_object[OUT_OBJ_ANSWER_TYPE] == TRUE_FALSE_ANSWER:
+        if qa_object[OUT_OBJ_ANSWER_TYPE] == TRUE_FALSE_ANSWER_TYPE:
             self.assertTrue(qa_object['answer'] in ['True', 'False'], msg=qa_object['answer'])
 
         for forbidden_char in "[]()'_-":
             self.assertTrue(forbidden_char not in qa_object['question'],
                             f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
-            if qa_object[OUT_OBJ_ANSWER_TYPE] == FREE_ANSWER:
+            if qa_object[OUT_OBJ_ANSWER_TYPE] == FREE_ANSWER_TYPE:
                 self.assertTrue(forbidden_char not in qa_object['answer'],
                                 f"\n\n forbidden char: {forbidden_char}, \n question: {qa_object['question']}")
 
