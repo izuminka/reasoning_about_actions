@@ -1,3 +1,6 @@
+
+import sys
+sys.path.insert(0,'../../')
 from src.questions_construction.domains import *
 import unittest
 

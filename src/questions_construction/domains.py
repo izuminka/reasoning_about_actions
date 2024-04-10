@@ -1,9 +1,10 @@
 import re
 import random
 import string
+
+import sys
+sys.path.insert(0,'../../')
 from src.common import *
-
-
 
 
 def strip_action_prefix(action):

@@ -9,7 +9,9 @@ from functools import partial
 from itertools import chain
 import numpy as np
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+import sys
+sys.path.insert(0,'../../')
+from src.questions_construction.domains import *
 from src.common import *
 
 INITIAL_CONDITION_PREFIX = 'Given the initial condition'

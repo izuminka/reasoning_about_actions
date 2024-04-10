@@ -3,8 +3,8 @@ import sys
 import os
 from clyngor import ASP
 
-sys.path.append('..')
-sys.path.append('../../')
+import sys
+sys.path.insert(0,'../../')
 from src.common import *
 
 ASP_CODE_PATH = f'{CODE_PATH}/states_actions_generation/ASP'

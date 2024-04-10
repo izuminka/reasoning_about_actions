@@ -5,8 +5,11 @@ import re
 import numpy as np
 import pandas as pd
 import sys
+
 import sys
-sys.path.append('/data_4/data/shri/reasoning_about_actions/')
+sys.path.insert(0,'../../../')
+from src.common import *
+
 from src.common import *
 from src.questions_construction.domains import *
 from src.questions_construction.questions import *

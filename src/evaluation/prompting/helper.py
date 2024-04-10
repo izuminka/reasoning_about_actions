@@ -3,9 +3,9 @@ from pathlib import Path
 from promping_stencils import *
 import sys
 sys.path.append('../../')
-sys.path.append('../../../')
-from src.questions_construction.domains import *
-from src.common import *
+from questions_construction.domains import *
+from common import *
+
 
 # pip install -q -U google-generativeai
 import google.generativeai as genai

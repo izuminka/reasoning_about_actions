@@ -1,3 +1,6 @@
+
+import sys
+sys.path.insert(0,'../../')
 from src.states_actions_generation.states_actions_generation import *
 import unittest
 import shutil

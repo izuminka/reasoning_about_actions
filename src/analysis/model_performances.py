@@ -2,14 +2,14 @@ import os.path
 import sys
 import json
 
-sys.path.append('..')
-sys.path.append('../questions_construction')
-sys.path.append('../../')
+
 
 from sklearn.metrics import f1_score, accuracy_score
 from rouge_score import rouge_scorer
 import numpy as np
 
+import sys
+sys.path.insert(0,'../../')
 from src.questions_construction.main import *
 from src.common import *
 
