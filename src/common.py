@@ -43,7 +43,7 @@ RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 
 # random sub
 WITH_RANDOM_SUB = 'with_random_sub'
-WITHOUT_RANDOM_SUB= 'without_random_sub'
+WITHOUT_RANDOM_SUB = 'without_random_sub'
 
 
 # model and prompts
