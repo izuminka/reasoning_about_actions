@@ -1,6 +1,5 @@
 import os
 import jsonlines
-from clyngor import ASP
 
 CODE_PATH = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.dirname(CODE_PATH)
@@ -73,15 +72,6 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
     if additional_asp_code:
         asp_code += f"{separator}{additional_asp_code}"
     return asp_code
-
-
-def execute_asp_code(asp_code, time_limit=0):
-    answers = list(ASP(asp_code, time_limit=time_limit))
-    first = answers[0]
-    for a in answers:
-        if a != first:
-            raise 'Returned ASP sets are not the same!'
-    return first
 
 
 def open_jsonl(path):

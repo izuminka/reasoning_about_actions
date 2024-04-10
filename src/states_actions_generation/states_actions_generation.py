@@ -1,6 +1,7 @@
 import re
 import sys
 import os
+from clyngor import ASP
 
 sys.path.append('..')
 sys.path.append('../../')
@@ -9,6 +10,13 @@ from src.common import *
 ASP_CODE_PATH = f'{CODE_PATH}/states_actions_generation/ASP'
 ASP_CHECK_SEQUENCE_PATH = os.path.join(ASP_CODE_PATH, 'check_sequence.lp')
 
+def execute_asp_code(asp_code, time_limit=0):
+    answers = list(ASP(asp_code, time_limit=time_limit))
+    first = answers[0]
+    for a in answers:
+        if a != first:
+            raise 'Returned ASP sets are not the same!'
+    return first
 
 def open_asp_action_sequence(plan_path):
     with open(plan_path) as f:
