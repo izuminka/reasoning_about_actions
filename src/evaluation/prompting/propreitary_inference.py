@@ -1,0 +1,126 @@
+from tqdm import tqdm
+import json
+from pathlib import Path
+import argparse
+import google.generativeai as genai    # pip install -q -U google-generativeai
+from openai import OpenAI              # pip install openai
+
+GEMINI_MODEL_NAME = 'gemini-pro'
+GPT_MODEL_NAME = 'gpt-4-0125-preview'
+# CLAUDE_MODEL_NAME = 'claude-opus'
+
+def get_response(text, model_name, model=None, temp=0.0):
+    '''
+    Generates a response based on the given text using the specified model.
+
+    Args:
+        text (str): The input text for generating the response.
+        model_name (str): The name of the model to use for generating the response.
+        model (object, optional): The model object to use for generating the response. Defaults to None.
+        temp (float, optional): The temperature value for controlling the randomness of the response. Defaults to 0.0.
+
+    Returns:
+        str: The generated response. "NO RESPONSE" is returned if the model refuses to generate a response due to Recitation.
+
+    Raises:
+        Exception: If an invalid model name is provided.
+    '''
+    if model_name == GEMINI_MODEL_NAME:
+        response = model.generate_content(
+            text,
+            generation_config = genai.types.GenerationConfig(
+                candidate_count = 1,
+                temperature = temp
+            )
+        )
+        try:
+            return response.text
+        except:
+            return "NO RESPONSE"
+    elif model_name == GPT_MODEL_NAME:
+        response = client.chat.completions.create(
+            model = GPT_MODEL_NAME,
+            messages = [
+                {"role": "user", "content": text}
+            ],
+            temperature = temp
+        )
+        return response.choices[0].message.content
+    else:
+        raise Exception(f'{model_name} is an invalid model')
+
+def write_response(json_ele, file_path):
+    '''
+    Write the JSON element to a file.
+
+    Args:
+        json_ele (dict): The JSON element to write.
+        file_path (str): The path to the file.
+
+    Returns:
+        None
+    '''
+    with open(file_path, 'a+') as f:
+        f.write(json.dumps(json_ele)+'\n')
+
+def parse_args():
+    '''
+    Parse the arguments for the script
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
+    parser.add_argument('-f', '--file', type=str, required=True, help='Input file path')
+    parser.add_argument('-o', '--output', type=str, required=True, help='Output file path')
+    parser.add_argument('-k', '--model_api_key', type=str, required=True, help='API key')
+    parser.add_argument('-i', '--index', type=int, required=False, help='Starting zero-index for evaluation')
+    parser.add_argument('-t', '--temperature', type=float, required=False, default=0.0, help='Temperature for generation')
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    # Getting arguments
+    args = parse_args()
+
+    # Loading the Gemini-Pro and OpenAI API instances
+    if args.model.lower()=='gemini-pro' or args.model.lower()=='gemini':
+        genai.configure(api_key=args.model_api_key)
+        model_name = GEMINI_MODEL_NAME
+        model = genai.GenerativeModel(model_name)
+    elif args.model.lower()=='gpt4' or args.model.lower()=='gpt' or args.model.lower()=='gpt-4':
+        client = OpenAI(api_key=args.model_api_key)
+        model_name = GPT_MODEL_NAME
+    else:
+        raise Exception(f'{args.model} is an invalid model')
+
+    # Reading the instance
+    with open(args.file, 'r') as f:
+        if args.index:
+            data = [json.loads(jline) for jline in f.readlines()][args.index:]
+        else:
+            data = [json.loads(jline) for jline in f.readlines()]
+    
+    # Creating the directory where the files will be saved
+    dir_path = '/'.join(args.output.split('/')[:-1])
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
+
+    # Prompting the model
+    with tqdm(total=len(data)) as pbar:
+        for idx, ele in enumerate(data):
+            if model_name == GEMINI_MODEL_NAME:
+                response = get_response(
+                    text = ele['prompt'],
+                    model_name = model_name,
+                    model = model,
+                    temp = args.temperature
+                )
+            elif model_name == GPT_MODEL_NAME:
+                response = get_response(
+                    text = ele['prompt'],
+                    model_name = model_name,
+                    temp = args.temperature
+                )
+            
+            ele['response'] = response
+            print(response)
+            exit()
+            write_response(ele, args.output)
+            pbar.update(1)
