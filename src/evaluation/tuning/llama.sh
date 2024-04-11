@@ -20,9 +20,10 @@ source activate reasoning_about_actions
 TOKEN=$(cat ../prompting/huggingface.token.key)
 
 # python llama.py \
+            # -f ../../../data/tuning_data \
 accelerate launch llama.py \
             -m meta-llama/Llama-2-7b-hf \
-            -f ../../../data/tuning_data \
+            -f tuning_data \
             -o /scratch/dhanda/reasoning_about_actions/finetuned_llama_2 \
             -c 4096 \
             -d /scratch/dhanda/huggingface_cache \
