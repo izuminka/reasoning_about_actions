@@ -43,10 +43,14 @@ OUTPUT_FILE='../../../results'
 HUGGINGFACE_CACHE_DIR='/scratch/dhanda/huggingface_cache'
 HUGGINGFACE_TOKEN=$(cat huggingface.token.key)
 INDEX=0
-CONTEXT_LENGTH=4096
 
 
 for model in "${MODELS[@]}"; do
+    if [ "$model" == "mistralai/Mistral-7B-Instruct-v0.2" ]; then
+        CONTEXT_LENGTH=32768
+    else
+        CONTEXT_LENGTH=4096
+    fi
     for domain in "${DOMAINS[@]}"; do
         for prompt in "${PROMPTS[@]}"; do
             for substitutions in "${RANDOM_SUBSTITUTIONS[@]}"; do
