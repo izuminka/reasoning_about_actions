@@ -371,7 +371,7 @@ class QuestionGenerator(QuestionGenerationHelpers):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
 
-    def qa_data_object(self, question, answer, answer_type, question_name, plan_length, fluent_type):
+    def qa_data_object(self, question, answer, answer_type, question_name, plan_length, fluent_type, is_pos_fluent_question=None):
         return {OUT_OBJ_ID: str(uuid.uuid4()),
                 OUT_OBJ_DOMAIN_NAME: self.domain_class.DOMAIN_NAME,
                 OUT_OBJ_INSTANCE_ID: self.instance_id,
@@ -384,7 +384,8 @@ class QuestionGenerator(QuestionGenerationHelpers):
                 OUT_OBJ_PLAN_LENGTH: plan_length,
                 OUT_OBJ_INITIAL_STATE_ASP: self.init_state,
                 OUT_OBJ_INITIAL_STATE_NL: self.init_state_nl,
-                OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence}
+                OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence,
+                OUT_OBJ_IS_POS_FLUENT_QUESTION: is_pos_fluent_question}
         # OBOUT_OBJ_QUESTION_ID: question_id}
 
     @staticmethod
@@ -438,7 +439,7 @@ class ObjectTrackingQuestions(QuestionGenerator):
             return None
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that the following {FLUENTS_NL} are correct for {obj}: {nl_fluents}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type, is_pos_fluent_question)
 
     def questions_iter_1(self):
         counter = 0
@@ -492,7 +493,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         else:
             return None
         question = f"{self.nl_question_prefix(plan_length)} is it {TRUE_OR_FALSE} that {self.domain_class.fluent_to_natural_language(fluent)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type, is_pos_fluent_question)
 
     def questions_iter_1(self):
         counter = 0
@@ -512,7 +513,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         if not fluents:
             return None
         question = f"{self.nl_question_prefix(plan_length)} are all of the following {FLUENTS_NL} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, fluent_type, is_pos_fluent_question)
 
     def questions_iter_2(self):
         counter = 0
@@ -541,7 +542,7 @@ class FluentTrackingQuestions(QuestionGenerator):
             answer = 'None'
         else:
             answer = self.nl_fluents(fluents)
-        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
+        return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type, is_pos_fluent_question)
 
     def questions_iter_3(self):
         counter = 0
@@ -593,7 +594,7 @@ class StateTrackingQuestions(QuestionGenerator):
             fluents = self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         question = f"{self.nl_question_prefix(plan_length)} list all {fluent_type_nl}. {NONE_STATEMENT}."
-        return self.qa_data_object(question, nl_fluents, FREE_ANSWER_TYPE, question_name, plan_length, None)
+        return self.qa_data_object(question, nl_fluents, FREE_ANSWER_TYPE, question_name, plan_length, None, is_pos_fluent_question)
 
     def questions_iter_2(self):
         counter = 0
@@ -768,7 +769,7 @@ class EffectsQuestions(QuestionGenerator):
         question = (f"{self.prefix(plan_length)} if {self.nl_actions([action])}, "
                     f"what would be all of the {fluents_type_nl}? "
                     f"{NONE_STATEMENT}.")
-        return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER_TYPE, question_name, plan_length, None)
+        return self.qa_data_object(question, self.nl_fluents(fluents), FREE_ANSWER_TYPE, question_name, plan_length, None, is_pos_fluent_question)
 
     def questions_iter_2(self):
         counter = 0
@@ -932,7 +933,7 @@ class HallucinationQuestions(QuestionGenerator):
 
         question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup(FLUENTS_NL)}. "
                     f"Is {nl_fluent} {PART_OF_THE_STATE}? {TRUE_OR_FALSE}")
-        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None, is_pos_fluent_question)
 
     def questions_iter_2(self):
         counter = 0
@@ -1021,7 +1022,7 @@ class HallucinationQuestions(QuestionGenerator):
             nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
         question = (f"{self.nl_question_prefix(plan_length)} {self. question_setup(f'{fluent_type_nl}')}. "
                     f"What {fluent_type_nl} out of, {nl_fluents}, is not defined? Write None if all are defined.")
-        return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER_TYPE, question_name, plan_length, None)
+        return self.qa_data_object(question, nl_hallucinated_fluent, FREE_ANSWER_TYPE, question_name, plan_length, None, is_pos_fluent_question)
 
     def questions_iter_5(self):
         counter = 0
