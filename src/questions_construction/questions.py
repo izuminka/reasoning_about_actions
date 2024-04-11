@@ -393,26 +393,19 @@ class QuestionGenerator(QuestionGenerationHelpers):
         raise 'Implement it in the child class'
 
     @staticmethod
-    def unique_questions(question_constructor, plan_length, multiplicity, timeout_outer=20, timeout_inner=3):
+    def unique_questions(question_constructor, plan_length, multiplicity, timeout_outer=1, timeout_inner=10):
+        #Note: if is using multiplicty >1 increase the timeout_outer
         results = {}
         while (len(results) < multiplicity) and timeout_outer > 0:
-            try:
-                qa_object = question_constructor(plan_length)
-            except ValueError:
-                qa_object = None
+            qa_object = question_constructor(plan_length)
             while (qa_object is None) and timeout_inner > 0:
                 qa_object = question_constructor(plan_length)
                 timeout_inner -= 1
             if not qa_object:
                 return []
-
             qa_id = (qa_object['question'], qa_object['answer'])
             results[qa_id] = qa_object
             timeout_outer -= 1
-        if timeout_outer == 0:
-            pass
-            # warn_str = f'Timeout!!! {question_constructor} \n. plan_length: {plan_length} \n len(results): {len(results)}, \n multiplicity: {multiplicity} '
-            # warnings.warn(warn_str)
         return list(results.values())
 
     def create_questions(self, multiplicity=QUESTION_MULTIPLICITY, plan_lengths=PLAN_LENGTHS):

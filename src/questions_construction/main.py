@@ -53,7 +53,7 @@ if __name__ == '__main__':
     question_multiplicity = 1
     upper_instance = 11
     for is_random_sub in [False, True]:
-        for domain_class in  ALL_DOMAIN_CLASSES:
+        for domain_class in ALL_DOMAIN_CLASSES:
             domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
             for i in range(1, upper_instance):
                 instance_name = f'Instance_{i}'
