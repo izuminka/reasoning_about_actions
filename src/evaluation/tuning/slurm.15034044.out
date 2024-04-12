@@ -1,0 +1,31 @@
+4096 40964096 4096
+4096 
+4096
+8192
+8192
+8192
+4096 4096
+8192
+4096 4096
+8192
+4096 4096
+8192
+4096 4096
+4096 4096
+8192
+40968192 
+4096
+8192
+4096 4096
+8192
+4096 4096
+4096 4096
+8192
+8192
+[2024-04-11 23:24:00,810] [INFO] [real_accelerator.py:191:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2024-04-11 23:24:00,810] [INFO] [real_accelerator.py:191:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2024-04-11 23:24:00,810] [INFO] [real_accelerator.py:191:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2024-04-11 23:24:02,368] [INFO] [comm.py:637:init_distributed] cdb=None
+[2024-04-11 23:24:02,368] [INFO] [comm.py:637:init_distributed] cdb=None
+[2024-04-11 23:24:02,368] [INFO] [comm.py:637:init_distributed] cdb=None
+[2024-04-11 23:24:02,368] [INFO] [comm.py:668:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
