@@ -14,7 +14,7 @@ from src.common import *
 from src.questions_construction.domains import *
 from src.questions_construction.questions import *
 from collections import defaultdict
-from promping_stencils import Generate_prompting_template
+from reasoning_about_actions.src.evaluation.prompting.prompting_stencils import Generate_prompting_template
 from src.questions_construction.domains import *
 from src.questions_construction.domains import *
 
