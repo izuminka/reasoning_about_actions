@@ -14,14 +14,13 @@ from src.questions_construction.main import *
 from src.common import *
 
 # STATS dict keys
-SK_PLAN_LENGTH = OUT_OBJ_PLAN_LENGTH
-SK_CATEGORY = OUT_OBJ_QUESTION_CATEGORY
 SK_RAMIFICATION = 'ramification_type'
-SK_ANSWER_TYPE = OUT_OBJ_ANSWER_TYPE
 SK_MODEL = 'model'
 SK_PROMPT_TYPE = 'prompt_type'
-SK_RESULT = 'result'
 SK_DOMAIN = 'domain'
+SK_RESULT = 'result'
+SK_IS_RANDOM_SUB = 'is_random_sub'
+
 
 # Metrics & Metrics Related
 F1_SCORE_KEY = 'f1'
@@ -71,20 +70,24 @@ def gather_data():
 
 
 def filter_helper(data_ls, filter_by):
-    results = []
+    results = {}
     for d in data_ls:
         if all(d[k] == v for k, v in filter_by):
-            results.append(d)
+            if d[OUT_OBJ_ID] in results:
+                raise ValueError(f"Duplicate ID {d[OUT_OBJ_ID]}") # TODO rm after testing
+            results[d[OUT_OBJ_ID]] = d
     return results
 
 
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                          answer_type):
+                          answer_type, fluent_type, is_pos_fluent_question):
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
     filter_by = [(SK_RAMIFICATION, ramifications),
                  (SK_MODEL, model_name),
                  (SK_PROMPT_TYPE, prompt_type),
-                 (OUT_OBJ_ANSWER_TYPE, answer_type)]
+                 (OUT_OBJ_ANSWER_TYPE, answer_type),
+                 (OUT_OBJ_FLUENT_TYPE, fluent_type),
+                 (OUT_OBJ_IS_POS_FLUENT_QUESTION, is_pos_fluent_question)]
     if domain != ALL_DOMAINS_KEY:
         filter_by.append((SK_DOMAIN, domain))
     if question_category != ALL_CATEGORIES_KEY:
@@ -94,20 +97,20 @@ def filter_multi_selector(data_all, plan_length, question_category, ramification
     return filter_helper(data_all, filter_by)
 
 
-def filter_single_selector(results_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                           answer_type):
-    filter_by = [(SK_RAMIFICATION, ramifications),
-                 (SK_MODEL, model_name),
-                 (SK_PROMPT_TYPE, prompt_type),
-                 (OUT_OBJ_ANSWER_TYPE, answer_type),
-                 (SK_DOMAIN, domain),
-                 (OUT_OBJ_QUESTION_CATEGORY, question_category),
-                 (OUT_OBJ_PLAN_LENGTH, plan_length)]
-    return filter_helper(results_all, filter_by)
+# def filter_single_selector(results_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+#                            answer_type):
+#     filter_by = [(SK_RAMIFICATION, ramifications),
+#                  (SK_MODEL, model_name),
+#                  (SK_PROMPT_TYPE, prompt_type),
+#                  (OUT_OBJ_ANSWER_TYPE, answer_type),
+#                  (SK_DOMAIN, domain),
+#                  (OUT_OBJ_QUESTION_CATEGORY, question_category),
+#                  (OUT_OBJ_PLAN_LENGTH, plan_length)]
+#     return filter_helper(results_all, filter_by)
 
 
 class BaseStats:
-    def __init__(self, plan_length, question_category, ramifications, model_name, prompt_type, domain):
+    def __init__(self, plan_length, question_category, ramifications, model_name, prompt_type, domain, is_random_sub, fluent_type, is_pos_fluent_question):
         self.plan_length = plan_length
         self.question_category = question_category
         self.ramifications = ramifications
@@ -115,17 +118,25 @@ class BaseStats:
         self.prompt_type = prompt_type
         self.domain = domain
         self.result = None
+        self.fluent_type = fluent_type
+        self.is_pos_fluent_question = is_pos_fluent_question
         self.answer_type = None
+        self.is_random_sub = is_random_sub
 
     def out_object(self, result):
-        return {SK_PLAN_LENGTH: self.plan_length,
-                SK_CATEGORY: self.question_category,
-                SK_RAMIFICATION: self.ramifications,
+        return {SK_RESULT: result,
+
                 SK_MODEL: self.model_name,
                 SK_PROMPT_TYPE: self.prompt_type,
+                SK_RAMIFICATION: self.ramifications,
+                SK_IS_RANDOM_SUB: self.is_random_sub,
                 SK_DOMAIN: self.domain,
-                SK_ANSWER_TYPE: self.answer_type,
-                SK_RESULT: result}
+
+                OUT_OBJ_PLAN_LENGTH: self.plan_length,
+                OUT_OBJ_ANSWER_TYPE: self.answer_type,
+                OUT_OBJ_QUESTION_CATEGORY: self.question_category,
+                OUT_OBJ_FLUENT_TYPE: self.fluent_type,
+                OUT_OBJ_IS_POS_FLUENT_QUESTION: self.is_pos_fluent_question}
 
 
 class TrueFalseStats(BaseStats):
@@ -172,11 +183,11 @@ class TrueFalseStats(BaseStats):
 
 class FreeAnswerStats(BaseStats):
 
-    def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain):
-        super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain)
+    def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain, fluent_type, is_pos_fluent_question):
+        super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain, fluent_type, is_pos_fluent_question)
         self.answer_type = FREE_ANSWER_TYPE
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
-                                          prompt_type, domain, self.answer_type)
+                                          prompt_type, domain, self.answer_type, fluent_type, is_pos_fluent_question)
 
     def get_rouge_score(self):
         stats = []
