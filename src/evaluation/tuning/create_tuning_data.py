@@ -11,23 +11,23 @@ NO_INSTANCES_PER_DOMAIN = 10
 RANDOM_SEED = 21
 
 TRAINING_DOMAINS = [
-    'blocksworld',
-    'depots',
-    'goldminer',
-    'miconic',
-    'npuzzle',
-    'visitall',
-]
-VALIDATION_DOMAINS = [
-    'driverlog',
     'grippers',
-]
-TEST_DOMAINS = [
+    'blocksworld',
+    'zenotravel',
     'logistics',
     'mystery',
+    'npuzzle',
+]
+VALIDATION_DOMAINS = [
     'satellite',
+    'miconic',
+]
+TEST_DOMAINS = [
+    'depots',
     'spanner',
-    'zenotravel',
+    'driverlog',
+    'goldminer',
+    'visitall',
 ]
 
 def process_data():
