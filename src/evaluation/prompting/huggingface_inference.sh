@@ -49,6 +49,8 @@ INDEX=0
 for model in "${MODELS[@]}"; do
     if [ "$model" == "mistralai/Mistral-7B-Instruct-v0.2" ]; then
         CONTEXT_LENGTH=32768
+    elif [ "$model" == "google/gemma-7b-it" ] || [ "$model" == "google/gemma-2b-it" ]; then
+        CONTEXT_LENGTH=8192
     else
         CONTEXT_LENGTH=4096
     fi
