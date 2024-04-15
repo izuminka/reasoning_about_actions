@@ -5,7 +5,6 @@ import numpy as np
 from copy import deepcopy
 from tqdm import tqdm
 
-
 import sys
 
 sys.path.insert(0, '../../')
@@ -68,6 +67,7 @@ def gather_questions(questions_dir):
                         all_data[d[OUT_OBJ_ID]] = d
     return all_data
 
+
 def sanity_checks():
     def get_questions_ids(questions_dir):
         questions_ids = set()
@@ -91,7 +91,8 @@ def sanity_checks():
                         for prompt_type in PROMPT_TYPES:
                             for model in PROMPT_MODEL_NAMES:
                                 try:
-                                    for d in open_jsonl(f'{results_dir}/{model}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'):
+                                    for d in open_jsonl(
+                                            f'{results_dir}/{model}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'):
                                         results_ids.add(d[OUT_OBJ_ID])
                                 except:
                                     pass
@@ -111,6 +112,7 @@ def sanity_checks():
 def gather_data(questions_by_id):
     results_dir = RESULTS_PATH
     all_data = []
+    missing_data = []
     for substitutions in SUBSTITUTION_TYPES:
         for ramifications in RAMIFICATION_TYPES:
             for model_name in PROMPT_MODEL_NAMES:
@@ -119,7 +121,12 @@ def gather_data(questions_by_id):
                         for instance in [f'Instance_{i}' for i in range(1, 11)]:
                             results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
                             if not os.path.exists(results_domain_path):
-                                print("missing", results_domain_path)
+                                missing_data.append({SK_MODEL: model_name,
+                                                     SK_PROMPT_TYPE: prompt_type,
+                                                     SK_RAMIFICATION: ramifications,
+                                                     SK_SUBSTITUTION: substitutions,
+                                                     OUT_OBJ_DOMAIN_NAME: domain,
+                                                     OUT_OBJ_INSTANCE_ID: instance})
                             else:
                                 extra_kv = {SK_MODEL: model_name,
                                             SK_PROMPT_TYPE: prompt_type,
@@ -133,15 +140,14 @@ def gather_data(questions_by_id):
                                     d.update(deepcopy(extra_kv))
                                     d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
                                 all_data.extend(qa_objects)
-    return all_data
-
+    return all_data, missing_data
 
 
 def filter_helper(data_ls, filter_by):
     results = {}
     for d in data_ls:
         if all(d[k] == v for k, v in filter_by):
-            results[SK_UNIQUE_ID] = d # dedup if there was a screw up in the evaluations stage
+            results[d[SK_UNIQUE_ID]] = d  # dedup if there was a screw up in the evaluations stage
     return list(results.values())
 
 
@@ -219,7 +225,7 @@ class TrueFalseStats(BaseStats):
         # if the model response is unknown, set the response to the opposite of the ground truth
         response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
 
-        #TODO improve this
+        # TODO improve this
         if TRUE_ANSWER in model_response and FALSE_ANSWER in model_response:  # both T and F are present
             return response_to_unknown
         elif TRUE_ANSWER not in model_response and FALSE_ANSWER not in model_response:  # neither T or F are present
@@ -271,12 +277,12 @@ class FreeAnswerStats(BaseStats):
 
 def big_for_loop(data_all, answer_response, tf_score_key=F1_SCORE_KEY):
     results = []
-    with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY])*
-                    len(PLAN_LENGTHS + [ALL_LENGTHS_KEY])*
-                    len(QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY])*
-                    len(RAMIFICATION_TYPES)*
-                    len(SUBSTITUTION_TYPES)*
-                    len(PROMPT_MODEL_NAMES)*
+    with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY]) *
+                    len(PLAN_LENGTHS + [ALL_LENGTHS_KEY]) *
+                    len(QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]) *
+                    len(RAMIFICATION_TYPES) *
+                    len(SUBSTITUTION_TYPES) *
+                    len(PROMPT_MODEL_NAMES) *
                     len(PROMPT_TYPES)) as pbar:
         for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY]:
             for plan_length in PLAN_LENGTHS + [ALL_LENGTHS_KEY]:
@@ -320,16 +326,21 @@ if __name__ == '__main__':
 
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
-    data_all = gather_data(questions_by_id)
+    data_all, missing_data = gather_data(questions_by_id)
     print('data is gathered')
 
-    if not os.path.exists(STATISTICS_PATH):
-        os.makedirs(STATISTICS_PATH)
-    answer_response = TRUE_FALSE_ANSWER_TYPE
-    for score_key in SCORE_KEYS:
-        results = big_for_loop(data_all, answer_response, score_key)
-        save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)), mode='a+')
-        print('saved', answer_response, score_key)
+    stats = TrueFalseStats(data_all, 5, ALL_CATEGORIES_KEY, WITH_RAMIFICATIONS,
+                           'Llama-2-7b-chat-hf',
+                           'few_shot_1', 'blocksworld', WITHOUT_RANDOM_SUB, 'f1')
+    stats_out = stats.compute()
+
+    # if not os.path.exists(STATISTICS_PATH):
+    #     os.makedirs(STATISTICS_PATH)
+    # answer_response = TRUE_FALSE_ANSWER_TYPE
+    # for score_key in SCORE_KEYS:
+    #     results = big_for_loop(data_all, answer_response, score_key)
+    #     save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)), mode='a+')
+    #     print('saved', answer_response, score_key)
 
     # answer_response = FREE_ANSWER
     # results = big_for_loop(answer_response)
