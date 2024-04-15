@@ -3,6 +3,8 @@ from sklearn.metrics import f1_score, accuracy_score
 from rouge_score import rouge_scorer
 import numpy as np
 from copy import deepcopy
+from tqdm import tqdm
+
 
 import sys
 
@@ -15,9 +17,8 @@ SK_RAMIFICATION = 'ramification_type'
 SK_SUBSTITUTION = 'substitution_type'
 SK_MODEL = 'model'
 SK_PROMPT_TYPE = 'prompt_type'
-SK_DOMAIN = 'domain'
-SK_INSTANCE = 'instance'
 SK_RESULT = 'result'
+SK_UNIQUE_ID = 'unique_id'
 
 # Metrics & Metrics Related
 F1_SCORE_KEY = 'f1'
@@ -96,31 +97,15 @@ def sanity_checks():
                                     pass
         return results_ids
 
-    # def get_data_for_evaluation_ids(data_for_evaluation_dir):
-    #     data_for_evaluation_ids = set()
-    #     for substitutions in SUBSTITUTION_TYPES:
-    #         for domain in DOMAIN_NAMES:
-    #             for instance in [f'Instance_{i}' for i in range(1, 11)]:
-    #                 for ramifications in RAMIFICATION_TYPES:
-    #                     for prompt_type in PROMPT_TYPES:
-    #                         try:
-    #                             for d in open_jsonl(f'{data_for_evaluation_dir}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'):
-    #                                 data_for_evaluation_ids.add(d[OUT_OBJ_ID])
-    #                         except:
-    #                             pass
-    #     return data_for_evaluation_ids
-
-
     # data_for_evaluation_dir = f'{DATA_PATH}/data_for_evaluation'
 
     results_ids = get_results_ids(RESULTS_PATH)
-    questions_ids = get_questions_ids( f'{DATA_PATH}/questions_m1')
+    questions_ids = get_questions_ids(f'{DATA_PATH}/questions_m1')
     # print(len(data_for_eval_ids), len(questions_ids), len(results_ids))
     # print(len(results_ids), len(questions_ids), len(results_ids - questions_ids), len(questions_ids - results_ids))
     assert results_ids <= questions_ids
-
+    print('checks passed')
     return True
-
 
 
 def gather_data(questions_by_id):
@@ -136,18 +121,17 @@ def gather_data(questions_by_id):
                             if not os.path.exists(results_domain_path):
                                 print("missing", results_domain_path)
                             else:
-                                extra_kv = {SK_PROMPT_TYPE: prompt_type,
-                                            SK_MODEL: model_name,
+                                extra_kv = {SK_MODEL: model_name,
+                                            SK_PROMPT_TYPE: prompt_type,
                                             SK_RAMIFICATION: ramifications,
-                                            SK_SUBSTITUTION: substitutions,
-                                            SK_DOMAIN: domain,
-                                            SK_INSTANCE: instance}
+                                            SK_SUBSTITUTION: substitutions}
                                 qa_objects = open_jsonl(results_domain_path)
                                 for d in qa_objects:
                                     if d[OUT_OBJ_ID] not in questions_by_id:
                                         raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
                                     d.update(questions_by_id[d[OUT_OBJ_ID]])
                                     d.update(deepcopy(extra_kv))
+                                    d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
                                 all_data.extend(qa_objects)
     return all_data
 
@@ -157,10 +141,8 @@ def filter_helper(data_ls, filter_by):
     results = {}
     for d in data_ls:
         if all(d[k] == v for k, v in filter_by):
-            if d[OUT_OBJ_ID] in results:
-                raise ValueError(f"Duplicate ID {d[OUT_OBJ_ID]}")  # TODO rm after testing
-            results[d[OUT_OBJ_ID]] = d
-    return results
+            results[SK_UNIQUE_ID] = d # dedup if there was a screw up in the evaluations stage
+    return list(results.values())
 
 
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
@@ -172,7 +154,7 @@ def filter_multi_selector(data_all, plan_length, question_category, ramification
                  (SK_SUBSTITUTION, substitutions),
                  (OUT_OBJ_ANSWER_TYPE, answer_type)]
     if domain != ALL_DOMAINS_KEY:
-        filter_by.append((SK_DOMAIN, domain))
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, domain))
     if question_category != ALL_CATEGORIES_KEY:
         filter_by.append((OUT_OBJ_QUESTION_CATEGORY, question_category))
     if plan_length != ALL_LENGTHS_KEY:
@@ -214,11 +196,11 @@ class BaseStats:
                 SK_PROMPT_TYPE: self.prompt_type,
                 SK_RAMIFICATION: self.ramifications,
                 SK_SUBSTITUTION: self.substitutions,
-                SK_DOMAIN: self.domain,
 
+                OUT_OBJ_DOMAIN_NAME: self.domain,
                 OUT_OBJ_PLAN_LENGTH: self.plan_length,
-                OUT_OBJ_ANSWER_TYPE: self.answer_type,
-                OUT_OBJ_QUESTION_CATEGORY: self.question_category}
+                OUT_OBJ_QUESTION_CATEGORY: self.question_category,
+                OUT_OBJ_ANSWER_TYPE: self.answer_type}
 
 
 class TrueFalseStats(BaseStats):
@@ -237,6 +219,7 @@ class TrueFalseStats(BaseStats):
         # if the model response is unknown, set the response to the opposite of the ground truth
         response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
 
+        #TODO improve this
         if TRUE_ANSWER in model_response and FALSE_ANSWER in model_response:  # both T and F are present
             return response_to_unknown
         elif TRUE_ANSWER not in model_response and FALSE_ANSWER not in model_response:  # neither T or F are present
@@ -288,29 +271,43 @@ class FreeAnswerStats(BaseStats):
 
 def big_for_loop(data_all, answer_response, tf_score_key=F1_SCORE_KEY):
     results = []
-    for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY]:
-        for plan_length in PLAN_LENGTHS + [ALL_LENGTHS_KEY]:
-            for question_category in QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]:
-                for ramifications in RAMIFICATION_TYPES:
-                    for random_sub in SUBSTITUTION_TYPES:
-                        for model_name in PROMPT_MODEL_NAMES:
-                            for prompt_type in PROMPT_TYPES:
-                                if answer_response == TRUE_FALSE_ANSWER_TYPE:
-                                    stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
-                                                           model_name,
-                                                           prompt_type, domain, random_sub, tf_score_key)
-                                else:
-                                    stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
-                                                            model_name,
-                                                            prompt_type, domain, random_sub)
-                                stats_compute = stats.compute()
-                                if stats_compute[SK_RESULT]:
-                                    save_dir = os.path.join(STATISTICS_PATH, answer_response)
+    with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY])*
+                    len(PLAN_LENGTHS + [ALL_LENGTHS_KEY])*
+                    len(QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY])*
+                    len(RAMIFICATION_TYPES)*
+                    len(SUBSTITUTION_TYPES)*
+                    len(PROMPT_MODEL_NAMES)*
+                    len(PROMPT_TYPES)) as pbar:
+        for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY]:
+            for plan_length in PLAN_LENGTHS + [ALL_LENGTHS_KEY]:
+                for question_category in QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]:
+                    for ramifications in RAMIFICATION_TYPES:
+                        for random_sub in SUBSTITUTION_TYPES:
+                            for model_name in PROMPT_MODEL_NAMES:
+                                for prompt_type in PROMPT_TYPES:
+                                    if answer_response == TRUE_FALSE_ANSWER_TYPE:
+                                        stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
+                                                               model_name,
+                                                               prompt_type, domain, random_sub, tf_score_key)
+                                        save_dir = os.path.join(STATISTICS_PATH, answer_response, tf_score_key)
+                                    else:
+                                        stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
+                                                                model_name,
+                                                                prompt_type, domain, random_sub)
+                                        save_dir = os.path.join(STATISTICS_PATH, answer_response)
+                                    pbar.update(1)
+
                                     os.makedirs(save_dir, exist_ok=True)
-                                    file_name = f'{domain}.{prompt_type}.{question_category}.{ramifications}.{random_sub}.{model_name}.{answer_response}.{tf_score_key}.json'
-                                    with open(os.path.join(save_dir, file_name), 'w') as f:
-                                        json.dump(stats_compute, f)
-                                results.append(stats.compute())
+                                    file_name = f'{domain}.{plan_length}.{question_category}.{ramifications}.{random_sub}.{model_name}.{prompt_type}.{answer_response}.json'
+                                    file_path = os.path.join(save_dir, file_name)
+                                    if os.path.exists(file_path):
+                                        continue
+
+                                    stats_compute = stats.compute()
+                                    if stats_compute[SK_RESULT] is not None:
+                                        with open(file_path, 'w') as f:
+                                            json.dump(stats_compute, f)
+                                    results.append(stats.compute())
     return results
 
 
@@ -321,20 +318,17 @@ def save_stats_file(answer_response, score_key):
 if __name__ == '__main__':
     sanity_checks()
 
-
-    if not os.path.exists(STATISTICS_PATH):
-        os.makedirs(STATISTICS_PATH)
-
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
-
     data_all = gather_data(questions_by_id)
     print('data is gathered')
 
+    if not os.path.exists(STATISTICS_PATH):
+        os.makedirs(STATISTICS_PATH)
     answer_response = TRUE_FALSE_ANSWER_TYPE
     for score_key in SCORE_KEYS:
         results = big_for_loop(data_all, answer_response, score_key)
-        save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)))
+        save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)), mode='a+')
         print('saved', answer_response, score_key)
 
     # answer_response = FREE_ANSWER
