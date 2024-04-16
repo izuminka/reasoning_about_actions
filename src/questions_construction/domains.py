@@ -38,7 +38,7 @@ class BaseDomain:
         if is_with_fluent_info:
             self.domain_description += '\n\n' + self.fluent_info_for_domain
         if is_random_sub:
-            self.domain_description = self.replace_substrings(self.domain_description, self.SUBSTRINGS_TO_RAND)
+            self.domain_description = self.to_random_substring(self.domain_description)
 
     def asp_to_nl(self, obj_ls):
         if not obj_ls:
@@ -50,6 +50,10 @@ class BaseDomain:
             return nl_obj
         nl_obj_ls = [self.fluent_to_natural_language_helper(f, is_without_object=True)[0] for f in obj_ls]
         return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
+
+    def to_random_substring(self, text):
+        return self.replace_substrings(text, self.SUBSTRINGS_TO_RAND)
+
 
     def construct_fluent_info_for_domain(self):
         def add_fluents(fluent_ls, fluent_type_nl):
