@@ -140,6 +140,7 @@ def gather_data(questions_by_id):
                                     d.update(deepcopy(extra_kv))
                                     d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
                                 all_data.extend(qa_objects)
+    print('data is gathered')
     return all_data, missing_data
 
 
@@ -147,7 +148,7 @@ def filter_helper(data_ls, filter_by):
     results = {}
     for d in data_ls:
         if all(d[k] == v for k, v in filter_by):
-            results[d[SK_UNIQUE_ID]] = d  # dedup if there was a screw up in the evaluations stage
+            results[d[SK_UNIQUE_ID]] = d  # dedup if there was a screw up in the evaluations stage and things were computed >1 times
     return list(results.values())
 
 
@@ -208,6 +209,13 @@ class BaseStats:
                 OUT_OBJ_QUESTION_CATEGORY: self.question_category,
                 OUT_OBJ_ANSWER_TYPE: self.answer_type}
 
+    def remove_corrupted(self, message='NO RESPONSE'):
+        not_corrupted = []
+        for d in self.data:
+            if d[MODEL_RESPONSE_KEY] != message:
+                not_corrupted.append(d)
+        return not_corrupted
+
 
 class TrueFalseStats(BaseStats):
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
@@ -219,30 +227,37 @@ class TrueFalseStats(BaseStats):
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
                                           prompt_type, domain, self.answer_type, substitutions)
 
+
     @staticmethod
     def prediction_selection_criteria(d):
         model_response = d[MODEL_RESPONSE_KEY]
         # if the model response is unknown, set the response to the opposite of the ground truth
         response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
+        tokens_to_consider = model_response.split()
+        # tokens_to_consider = tokens_to_consider[:10]+tokens_to_consider[-10:]
+        tokens = set([token.strip(',."\':;?!\n ').lower() for token in tokens_to_consider])
 
-        # TODO improve this
-        if TRUE_ANSWER in model_response and FALSE_ANSWER in model_response:  # both T and F are present
+        if 'true' in tokens and 'false' in tokens:
             return response_to_unknown
-        elif TRUE_ANSWER not in model_response and FALSE_ANSWER not in model_response:  # neither T or F are present
+        elif 'true' not in tokens and 'false' in tokens:
             return response_to_unknown
-        elif TRUE_ANSWER in model_response:
+        elif 'true' in tokens:
             return TRUE_ANSWER
-        elif FALSE_ANSWER in model_response:
+        elif 'false' in tokens:
             return FALSE_ANSWER
         else:
-            raise f"Unknown model response {model_response}"
+            return response_to_unknown
 
     def compute(self):
         if not self.data:
             return self.out_object(None)
 
-        true = [d[OUT_OBJ_ANSWER] for d in self.data]
-        pred = [self.prediction_selection_criteria(d) for d in self.data]
+        not_corrupted_data = self.remove_corrupted()
+        if not not_corrupted_data:
+            return self.out_object(None)
+
+        true = [d[OUT_OBJ_ANSWER] for d in not_corrupted_data]
+        pred = [self.prediction_selection_criteria(d) for d in not_corrupted_data]
 
         if self.score_type == F1_SCORE_KEY:
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
