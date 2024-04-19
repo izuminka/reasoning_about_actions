@@ -7,7 +7,8 @@ QUESTION_CLASSES = [ObjectTrackingQuestions,
                     ActionExecutabilityQuestions,
                     EffectsQuestions,
                     NumericalReasoningQuestions,
-                    HallucinationQuestions]
+                    HallucinationQuestions,
+                    CompositeQuestions]
 QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES]
 
 
@@ -25,15 +26,7 @@ class AllQuestions:
         self.question_multiplicity = question_multiplicity
         self.plan_lengths = plan_lengths
         self.all_questions = []
-        self.q_types = [
-            ObjectTrackingQuestions(jsonl_instance, domain_class, instance_id),
-            FluentTrackingQuestions(jsonl_instance, domain_class, instance_id),
-            StateTrackingQuestions(jsonl_instance, domain_class, instance_id),
-            ActionExecutabilityQuestions(jsonl_instance, domain_class, instance_id),
-            EffectsQuestions(jsonl_instance, domain_class, instance_id),
-            NumericalReasoningQuestions(jsonl_instance, domain_class, instance_id),
-            HallucinationQuestions(jsonl_instance, domain_class, instance_id)
-        ]
+        self.q_types = [q_class(jsonl_instance, domain_class, instance_id) for q_class in QUESTION_CLASSES]
 
     def generate_all_questions(self):
         for q_type in self.q_types:
