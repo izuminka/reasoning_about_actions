@@ -10,3 +10,5 @@ src/tests/__pycache__/
 
 *.key
 /data/
+/stats/
+/results/
