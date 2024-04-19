@@ -39,13 +39,15 @@ ALL_CATEGORIES_KEY = 'all_categories'
 DOMAIN_NAMES = ['blocksworld', 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics', 'miconic', 'mystery',
                 'npuzzle', 'satellite', 'spanner', 'visitall', 'zenotravel']
 
-PROMPT_MODEL_NAMES = ['Mistral-7B-Instruct-v0.2', 'gemini', 'Llama-2-7b-chat-hf']  # TODO add , 'gpt4'
+PROMPT_MODEL_NAMES = ['gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'gpt4', 'Mistral-7B-Instruct-v0.2',
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 FLUENT_TYPES = [POSITIVE_FLUENT_NL, NEGATIVE_FLUENT_NL, POSITIVE_FLUENTS_NL, NEGATIVE_FLUENTS_NL, None]
 IS_POS_FLUENT_TYPES = [True, False, None]
+
+RESULTS_FILE_NAME = 'results.json'
 
 
 def gather_questions(questions_dir):
@@ -109,8 +111,9 @@ def sanity_checks():
     return True
 
 
-def gather_data(questions_by_id):
-    results_dir = RESULTS_PATH
+def gather_data(questions_by_id, results_dir = RESULTS_PATH):
+    sanity_checks()
+
     all_data = []
     missing_data = []
     for substitutions in SUBSTITUTION_TYPES:
@@ -145,11 +148,11 @@ def gather_data(questions_by_id):
 
 
 def filter_helper(data_ls, filter_by):
-    results = {}
+    results = []
     for d in data_ls:
         if all(d[k] == v for k, v in filter_by):
-            results[d[SK_UNIQUE_ID]] = d  # dedup if there was a screw up in the evaluations stage and things were computed >1 times
-    return list(results.values())
+            results.append(d)  # dedup if there was a screw up in the evaluations stage and things were computed >1 times
+    return results
 
 
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
@@ -169,16 +172,17 @@ def filter_multi_selector(data_all, plan_length, question_category, ramification
     return filter_helper(data_all, filter_by)
 
 
-# def filter_single_selector(results_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-#                            answer_type):
-#     filter_by = [(SK_RAMIFICATION, ramifications),
-#                  (SK_MODEL, model_name),
-#                  (SK_PROMPT_TYPE, prompt_type),
-#                  (OUT_OBJ_ANSWER_TYPE, answer_type),
-#                  (SK_DOMAIN, domain),
-#                  (OUT_OBJ_QUESTION_CATEGORY, question_category),
-#                  (OUT_OBJ_PLAN_LENGTH, plan_length)]
-#     return filter_helper(results_all, filter_by)
+def filter_single_selector(results_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                           answer_type, substitutions):
+    filter_by = [(SK_RAMIFICATION, ramifications),
+                 (SK_MODEL, model_name),
+                 (SK_PROMPT_TYPE, prompt_type),
+                 (OUT_OBJ_ANSWER_TYPE, answer_type),
+                 (OUT_OBJ_DOMAIN_NAME, domain),
+                 (OUT_OBJ_QUESTION_CATEGORY, question_category),
+                 (OUT_OBJ_PLAN_LENGTH, plan_length),
+                 (SK_SUBSTITUTION, substitutions)]
+    return filter_helper(results_all, filter_by)
 
 
 class BaseStats:
@@ -290,8 +294,39 @@ class FreeAnswerStats(BaseStats):
         return self.out_object(self.result)
 
 
-def big_for_loop(data_all, answer_response, tf_score_key=F1_SCORE_KEY):
-    results = []
+def results_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type):
+    return os.path.join(STATISTICS_PATH, answer_response_type, domain, str(plan_length), question_category, ramifications, random_sub, model_name, prompt_type)
+
+
+def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type):
+    save_dir = results_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
+                                 random_sub, model_name, prompt_type)
+    file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
+    if os.path.exists(file_path):
+        return False
+
+    if answer_response_type == FREE_ANSWER_TYPE:
+        stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
+                                model_name, prompt_type, domain, random_sub)
+    else:
+        tf_score_key = answer_response_type.split('.')[1]
+        stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
+                               model_name, prompt_type, domain, random_sub, tf_score_key)
+
+    stats_compute = stats.compute()
+    if stats_compute[SK_RESULT] is not None:
+        os.makedirs(save_dir, exist_ok=True)
+        with open(file_path, 'w') as f:
+            json.dump(stats_compute, f)
+    return True
+
+
+
+def calculate_stats_all(data_all, answer_response_type):
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
+        calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type)
+
+def for_loop_it():
     with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY]) *
                     len(PLAN_LENGTHS + [ALL_LENGTHS_KEY]) *
                     len(QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]) *
@@ -306,56 +341,38 @@ def big_for_loop(data_all, answer_response, tf_score_key=F1_SCORE_KEY):
                         for random_sub in SUBSTITUTION_TYPES:
                             for model_name in PROMPT_MODEL_NAMES:
                                 for prompt_type in PROMPT_TYPES:
-                                    if answer_response == TRUE_FALSE_ANSWER_TYPE:
-                                        stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
-                                                               model_name,
-                                                               prompt_type, domain, random_sub, tf_score_key)
-                                        save_dir = os.path.join(STATISTICS_PATH, answer_response, tf_score_key)
-                                    else:
-                                        stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
-                                                                model_name,
-                                                                prompt_type, domain, random_sub)
-                                        save_dir = os.path.join(STATISTICS_PATH, answer_response)
                                     pbar.update(1)
+                                    yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
-                                    os.makedirs(save_dir, exist_ok=True)
-                                    file_name = f'{domain}.{plan_length}.{question_category}.{ramifications}.{random_sub}.{model_name}.{prompt_type}.{answer_response}.json'
-                                    file_path = os.path.join(save_dir, file_name)
-                                    if os.path.exists(file_path):
-                                        continue
-
-                                    stats_compute = stats.compute()
-                                    if stats_compute[SK_RESULT] is not None:
-                                        with open(file_path, 'w') as f:
-                                            json.dump(stats_compute, f)
-                                    results.append(stats.compute())
-    return results
-
+def results_all(answer_response_type):
+    results_all = []
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
+        path = results_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type)
+        if os.path.exists(path):
+            results_all.append(open_jsonl(os.path.join(path, RESULTS_FILE_NAME)))
+    return results_all
 
 def save_stats_file(answer_response, score_key):
     return f'{answer_response}.{score_key}.jsonl'
 
+def tf_answer_type(score_key = F1_SCORE_KEY):
+    return f'{TRUE_FALSE_ANSWER_TYPE}.{score_key}'
 
 if __name__ == '__main__':
-    sanity_checks()
-
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
     data_all, missing_data = gather_data(questions_by_id)
-    print('data is gathered')
 
-    stats = TrueFalseStats(data_all, 5, ALL_CATEGORIES_KEY, WITH_RAMIFICATIONS,
-                           'Llama-2-7b-chat-hf',
-                           'few_shot_1', 'blocksworld', WITHOUT_RANDOM_SUB, 'f1')
-    stats_out = stats.compute()
+    # stats = TrueFalseStats(data_all, 5, ALL_CATEGORIES_KEY, WITH_RAMIFICATIONS,
+    #                        'Llama-2-7b-chat-hf',
+    #                        'few_shot_1', 'blocksworld', WITHOUT_RANDOM_SUB, 'f1')
+    # stats_out = stats.compute()
 
-    # if not os.path.exists(STATISTICS_PATH):
-    #     os.makedirs(STATISTICS_PATH)
-    # answer_response = TRUE_FALSE_ANSWER_TYPE
-    # for score_key in SCORE_KEYS:
-    #     results = big_for_loop(data_all, answer_response, score_key)
-    #     save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)), mode='a+')
-    #     print('saved', answer_response, score_key)
+    if not os.path.exists(STATISTICS_PATH):
+        os.makedirs(STATISTICS_PATH)
+    answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
+    calculate_stats_all(data_all, answer_response)
+    print('saved', answer_response)
 
     # answer_response = FREE_ANSWER
     # results = big_for_loop(answer_response)
