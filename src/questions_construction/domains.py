@@ -5,7 +5,7 @@ import string
 import sys
 sys.path.insert(0,'../../')
 from src.common import *
-
+from copy import deepcopy
 
 def strip_action_prefix(action):
     if action.startswith('action_'):
@@ -90,21 +90,29 @@ class BaseDomain:
 
     @staticmethod
     def replace_substring(text, old_sub, new_sub):
+        def case_preserving_replace(new_sub):
+            def replace(match):
+                original = match.group()
+                if original.islower():
+                    return new_sub.lower()
+                elif original.isupper():
+                    return new_sub.upper()
+                elif original.istitle():
+                    return new_sub.title()
+                else:
+                    return new_sub  # default to the original new_sub case
+            return replace
+
         pattern = BaseDomain.REPLACE_REGEX_PREFIX + re.escape(old_sub) + BaseDomain.REPLACE_REGEX_POSTFIX
-        return re.sub(pattern, new_sub, text)
+        regex = re.compile(pattern, re.IGNORECASE)
+        return re.sub(regex, case_preserving_replace(new_sub), text)
 
     @staticmethod
     def replace_substrings(text, obj_dict, sentence_split_token='. '):
-        result = []
-        sentences = text.split(sentence_split_token)
-        for sentence in sentences:
-            if sentence:
-                sentence = sentence.lower()
-                for old_word, new_word in obj_dict.items():
-                    sentence = BaseDomain.replace_substring(sentence, old_word, new_word)
-                sentence = sentence[0].upper() + sentence[1:]
-            result.append(sentence)
-        return sentence_split_token.join(result)
+        text_new = deepcopy(text)
+        for old_word, new_word in obj_dict.items():
+            text_new = BaseDomain.replace_substring(text_new, old_word, new_word)
+        return text_new
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         raise Exception('Implement in child class')

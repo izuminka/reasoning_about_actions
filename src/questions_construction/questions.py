@@ -390,9 +390,10 @@ class QuestionGenerator(QuestionGenerationHelpers):
                   OUT_OBJ_INITIAL_STATE_NL: self.init_state_nl,
                   OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence,
                   OUT_OBJ_IS_POS_FLUENT_QUESTION: is_pos_fluent_question}
-        if self.domain_class.is_random_sub and answer_type == FREE_ANSWER_TYPE:
+        if self.domain_class.is_random_sub:
             result[OUT_OBJ_QUESTION] = self.domain_class.to_random_substring(result[OUT_OBJ_QUESTION])
-            result[OUT_OBJ_ANSWER] = self.domain_class.to_random_substring(result[OUT_OBJ_ANSWER])
+            if answer_type == FREE_ANSWER_TYPE:
+                result[OUT_OBJ_ANSWER] = self.domain_class.to_random_substring(result[OUT_OBJ_ANSWER])
         return result
 
     @staticmethod
