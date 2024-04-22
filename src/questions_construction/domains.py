@@ -16,6 +16,7 @@ def strip_action_prefix(action):
 def gen_random_str(length=10):
     return ''.join(random.choices(string.ascii_lowercase, k=length))
 
+REGEX_CACHE = {}
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -103,9 +104,10 @@ class BaseDomain:
                     return new_sub  # default to the original new_sub case
             return replace
 
-        pattern = BaseDomain.REPLACE_REGEX_PREFIX + re.escape(old_sub) + BaseDomain.REPLACE_REGEX_POSTFIX
-        regex = re.compile(pattern, re.IGNORECASE)
-        return re.sub(regex, case_preserving_replace(new_sub), text)
+        if old_sub not in REGEX_CACHE:
+            pattern = BaseDomain.REPLACE_REGEX_PREFIX + re.escape(old_sub) + BaseDomain.REPLACE_REGEX_POSTFIX
+            REGEX_CACHE[old_sub] = re.compile(pattern, re.IGNORECASE)
+        return re.sub(REGEX_CACHE[old_sub], case_preserving_replace(new_sub), text)
 
     @staticmethod
     def replace_substrings(text, obj_dict):
