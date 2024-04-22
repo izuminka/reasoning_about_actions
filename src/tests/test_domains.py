@@ -49,13 +49,13 @@ class TestDomains(unittest.TestCase):
         self.assertEqual('sdnfjkdsnfkj', res)
 
     def test_replace_substrings(self):
-        text = ('picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
+        text = ('picking up a block is \n\n only possible if that block is clear, on the table, and the hand is empty. '
                 'Unstacking the first block from the second causes first block to be held A block is said to be clear if it is not being held and there are no blocks that are on top of it. '
                 'The hand is said to be empty if and only if it is not holding any block. The block can only be at one place at a time.')
 
         obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
         res = self.bd.replace_substrings(text, obj_dict)
-        expected = ('ovyuecllio a qbyyxzqvdh is only possible if that qbyyxzqvdh is clear, '
+        expected = ('ovyuecllio a qbyyxzqvdh is \n\n only possible if that qbyyxzqvdh is clear, '
                     'wtuwjwbuja the gcbwvwyvkv, and the egpbpdtalq is empty. Wxqdwukszo the first '
                     'qbyyxzqvdh from the second causes first qbyyxzqvdh to be casqqrrojp A '
                     'qbyyxzqvdh is said to be clear if it is not being casqqrrojp and there are '

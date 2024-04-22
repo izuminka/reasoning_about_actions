@@ -108,7 +108,7 @@ class BaseDomain:
         return re.sub(regex, case_preserving_replace(new_sub), text)
 
     @staticmethod
-    def replace_substrings(text, obj_dict, sentence_split_token='. '):
+    def replace_substrings(text, obj_dict):
         text_new = deepcopy(text)
         for old_word, new_word in obj_dict.items():
             text_new = BaseDomain.replace_substring(text_new, old_word, new_word)
