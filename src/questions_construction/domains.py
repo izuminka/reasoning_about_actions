@@ -4667,6 +4667,7 @@ class Visitall(BaseDomain):
 ALL_DOMAIN_CLASSES = [Blocksworld, Depots, Driverlog, Goldminer, Grippers, Logistics, Miconic, Mystery, Npuzzle,
                       Satellite, Spanner, Visitall, Zenotravel]
 ALL_DOMAIN_CLASSES_BY_NAME = {d.DOMAIN_NAME: d for d in ALL_DOMAIN_CLASSES}
+DOMAIN_NAMES = [d.DOMAIN_NAME for d in ALL_DOMAIN_CLASSES]
 
 if __name__ == '__main__':
     dom = Blocksworld(is_random_sub=False, is_ramifications=True)

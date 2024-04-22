@@ -9,6 +9,7 @@ import sys
 
 sys.path.insert(0, '../../')
 from src.questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
+from src.questions_construction.domains import DOMAIN_NAMES
 from src.common import *
 
 # STATS dict keys
@@ -33,14 +34,16 @@ FALSE_ANSWER = 'False'
 ANSWER_RESPONSES = [TRUE_FALSE_ANSWER_TYPE, FREE_ANSWER_TYPE]
 
 ALL_LENGTHS_KEY = 'all_lengths'
-ALL_DOMAINS_KEY = 'all_domains'
-ALL_CATEGORIES_KEY = 'all_categories'
+ALL_QUESTION_CATEGORIES_KEY = 'all_categories'
 
-DOMAIN_NAMES = ['blocksworld', 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics', 'miconic', 'mystery',
-                'npuzzle', 'satellite', 'spanner', 'visitall', 'zenotravel']
+ALL_DOMAINS_KEY = 'ALL_DOMAINS'
+TRANSPORTATION_DOMAIN_KEY = 'TRANSPORTATION'
+TRANSPORTATION_DOMAINS = ['logistics', 'depots', 'driverlog', 'grippers', 'miconic', 'mystery', 'zenotravel']
+NON_TRANSPORTATION_DOMAIN_KEY = 'NON_TRANSPORTATION'
+NON_TRANSPORTATION_DOMAINS = ['blocksworld', 'goldminer', 'npuzzle', 'satellite', 'spanner', 'visitall']
 
 PROMPT_MODEL_NAMES = ['gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'gpt4', 'Mistral-7B-Instruct-v0.2',
-PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot
+PROMPT_TYPES = ['few_shot_1', 'few_shot_3']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
@@ -150,7 +153,7 @@ def gather_data(questions_by_id, results_dir = RESULTS_PATH):
 def filter_helper(data_ls, filter_by):
     results = []
     for d in data_ls:
-        if all(d[k] == v for k, v in filter_by):
+        if all(d[k] in v for k, v in filter_by):
             results.append(d)  # dedup if there was a screw up in the evaluations stage and things were computed >1 times
     return results
 
@@ -158,21 +161,31 @@ def filter_helper(data_ls, filter_by):
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                           answer_type, substitutions):
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
-    filter_by = [(SK_RAMIFICATION, ramifications),
-                 (SK_MODEL, model_name),
-                 (SK_PROMPT_TYPE, prompt_type),
-                 (SK_SUBSTITUTION, substitutions),
-                 (OUT_OBJ_ANSWER_TYPE, answer_type)]
-    if domain != ALL_DOMAINS_KEY:
-        filter_by.append((OUT_OBJ_DOMAIN_NAME, domain))
-    if question_category != ALL_CATEGORIES_KEY:
-        filter_by.append((OUT_OBJ_QUESTION_CATEGORY, question_category))
+    filter_by = [(SK_RAMIFICATION, {ramifications}),
+                 (SK_MODEL, {model_name}),
+                 (SK_PROMPT_TYPE, {prompt_type}),
+                 (SK_SUBSTITUTION, {substitutions}),
+                 (OUT_OBJ_ANSWER_TYPE, {answer_type})]
+    if domain == TRANSPORTATION_DOMAIN_KEY:
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, set(TRANSPORTATION_DOMAINS)))
+    elif domain == NON_TRANSPORTATION_DOMAIN_KEY:
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, set(NON_TRANSPORTATION_DOMAINS)))
+    elif domain != ALL_DOMAINS_KEY:
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, {domain}))
+
+    if question_category != ALL_QUESTION_CATEGORIES_KEY:
+        filter_by.append((OUT_OBJ_QUESTION_CATEGORY, {question_category}))
     if plan_length != ALL_LENGTHS_KEY:
-        filter_by.append((OUT_OBJ_PLAN_LENGTH, plan_length))
-    return filter_helper(data_all, filter_by)
+        filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
+
+    results = []
+    for d in data_all:
+        if all(d[k] in v for k, v in filter_by):
+            results.append(d)  # dedup if there was a screw up in the evaluations stage and things were computed >1 times
+    return results
 
 
-def filter_single_selector(results_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+def filter_single_selector(stats_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                            answer_type, substitutions):
     filter_by = [(SK_RAMIFICATION, ramifications),
                  (SK_MODEL, model_name),
@@ -182,7 +195,11 @@ def filter_single_selector(results_all, plan_length, question_category, ramifica
                  (OUT_OBJ_QUESTION_CATEGORY, question_category),
                  (OUT_OBJ_PLAN_LENGTH, plan_length),
                  (SK_SUBSTITUTION, substitutions)]
-    return filter_helper(results_all, filter_by)
+    results = []
+    for d in stats_all:
+        if all(d[k] == v for k, v in filter_by):
+            results.append(d)  # dedup if there was a screw up in the evaluations stage and things were computed >1 times
+    return results
 
 
 class BaseStats:
@@ -294,13 +311,13 @@ class FreeAnswerStats(BaseStats):
         return self.out_object(self.result)
 
 
-def results_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type):
+def stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type):
     return os.path.join(STATISTICS_PATH, answer_response_type, domain, str(plan_length), question_category, ramifications, random_sub, model_name, prompt_type)
 
 
 def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type):
-    save_dir = results_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
-                                 random_sub, model_name, prompt_type)
+    save_dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
+                               random_sub, model_name, prompt_type)
     file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
     if os.path.exists(file_path):
         return False
@@ -327,36 +344,37 @@ def calculate_stats_all(data_all, answer_response_type):
         calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type)
 
 def for_loop_it():
-    with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY]) *
-                    len(PLAN_LENGTHS + [ALL_LENGTHS_KEY]) *
-                    len(QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]) *
+    with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
+                    len(PLAN_LENGTHS) *
+                    len(QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]) *
                     len(RAMIFICATION_TYPES) *
                     len(SUBSTITUTION_TYPES) *
                     len(PROMPT_MODEL_NAMES) *
                     len(PROMPT_TYPES)) as pbar:
-        for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY]:
-            for plan_length in PLAN_LENGTHS + [ALL_LENGTHS_KEY]:
-                for question_category in QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]:
+        for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
+            for plan_length in PLAN_LENGTHS: #+ [ALL_LENGTHS_KEY]
+                for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
                     for ramifications in RAMIFICATION_TYPES:
                         for random_sub in SUBSTITUTION_TYPES:
                             for model_name in PROMPT_MODEL_NAMES:
                                 for prompt_type in PROMPT_TYPES:
                                     pbar.update(1)
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
-
-def results_all(answer_response_type):
-    results_all = []
-    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
-        path = results_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type)
-        if os.path.exists(path):
-            results_all.append(open_jsonl(os.path.join(path, RESULTS_FILE_NAME)))
-    return results_all
-
 def save_stats_file(answer_response, score_key):
     return f'{answer_response}.{score_key}.jsonl'
 
 def tf_answer_type(score_key = F1_SCORE_KEY):
     return f'{TRUE_FALSE_ANSWER_TYPE}.{score_key}'
+
+def collect_stats_all(answer_response_type):
+    stats_all = []
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
+        dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type)
+        path = os.path.join(dir, RESULTS_FILE_NAME)
+        if os.path.exists(path):
+            with open(path) as f:
+                stats_all.append(json.load(f))
+    return stats_all
 
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
