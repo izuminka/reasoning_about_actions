@@ -25,7 +25,7 @@ BASE_FLUENTS = 'base_fluents'
 DERIVED_FLUENTS = 'derived_fluents'
 PERSISTENT_FLUENTS = 'persistent_fluents'
 STATIC_FLUENTS = 'static_fluents'
-FLUENT_TYPES_ALL = 'all_fluents'
+FLUENT_TYPES_ALL = None
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
 PART_OF_THE_STATE = 'part of the state'
