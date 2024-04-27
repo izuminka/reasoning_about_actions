@@ -18,6 +18,7 @@ SK_SUBSTITUTION = 'substitution_type'
 SK_MODEL = 'model'
 SK_PROMPT_TYPE = 'prompt_type'
 SK_RESULT = 'result'
+SK_STATS = 'stats'
 SK_UNIQUE_ID = 'unique_id'
 
 # Metrics & Metrics Related
@@ -141,8 +142,7 @@ def gather_data(questions_by_id, results_dir=RESULTS_PATH):
                                         raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
                                     d.update(questions_by_id[d[OUT_OBJ_ID]])
                                     d.update(deepcopy(extra_kv))
-                                    d[
-                                        SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
+                                    d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
                                 all_data.extend(qa_objects)
     print('data is gathered')
     return all_data, missing_data
@@ -199,6 +199,7 @@ def filter_single_selector(stats_all, plan_length, question_category, ramificati
     else:
         return results[0][SK_RESULT]
 
+
 class BaseStats:
     def __init__(self, plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions):
         self.plan_length = plan_length
@@ -212,10 +213,11 @@ class BaseStats:
         self.answer_type = None
         self.result = None
 
-    def out_object(self, result):
+    def out_object(self, result, stats=None):
         '''returns a dictionary with the stats of the object,
         result is a float'''
         return {SK_RESULT: result,
+                SK_STATS: stats,
 
                 SK_MODEL: self.model_name,
                 SK_PROMPT_TYPE: self.prompt_type,
@@ -236,6 +238,9 @@ class BaseStats:
 
 
 class TrueFalseStats(BaseStats):
+    BOTH_ARE_PRESENT_KEY = 'both_present'
+    BOTH_ARE_ABSENT_KEY = 'both_absent'
+
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                  substitutions,
                  score_type=F1_SCORE_KEY):
@@ -248,33 +253,53 @@ class TrueFalseStats(BaseStats):
     @staticmethod
     def prediction_selection_criteria(d):
         model_response = d[MODEL_RESPONSE_KEY]
-        # if the model response is unknown, set the response to the opposite of the ground truth
-        response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
         tokens_to_consider = model_response.split()
         # tokens_to_consider = tokens_to_consider[:10]+tokens_to_consider[-10:]
         tokens = set([token.strip(',."\':;?!\n ').lower() for token in tokens_to_consider])
 
         if 'true' in tokens and 'false' in tokens:
-            return response_to_unknown
-        elif 'true' not in tokens and 'false' in tokens:
-            return response_to_unknown
+            return TrueFalseStats.BOTH_ARE_PRESENT_KEY
+        elif 'true' not in tokens and 'false' not in tokens:
+            return TrueFalseStats.BOTH_ARE_ABSENT_KEY
         elif 'true' in tokens:
             return TRUE_ANSWER
         elif 'false' in tokens:
             return FALSE_ANSWER
         else:
-            return response_to_unknown
+            return ValueError(f"Unknown prediction {model_response}")
 
     def compute(self):
         if not self.data:
-            return self.out_object(None)
+            return self.out_object(None, None)
 
         not_corrupted_data = self.remove_corrupted()
         if not not_corrupted_data:
-            return self.out_object(None)
+            return self.out_object(None, None)
+        stats = {'num_original': len(self.data),
+                 'num_corrupted': len(self.data) - len(not_corrupted_data),
+                 'num_not_corrupted': len(not_corrupted_data)}
 
-        true = [d[OUT_OBJ_ANSWER] for d in not_corrupted_data]
-        pred = [self.prediction_selection_criteria(d) for d in not_corrupted_data]
+        true = []
+        pred = []
+        both_present = 0
+        both_absent = 0
+        for d in not_corrupted_data:
+            true.append(d[OUT_OBJ_ANSWER])
+            prediction = self.prediction_selection_criteria(d)
+            # if the model response is unknown, set the response to the opposite of the ground truth
+            response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
+            if prediction == self.BOTH_ARE_PRESENT_KEY:
+                both_present += 1
+                pred.append(response_to_unknown)
+            elif prediction == self.BOTH_ARE_ABSENT_KEY:
+                both_absent += 1
+                pred.append(response_to_unknown)
+            else:
+                pred.append(prediction)
+        stats |= {self.BOTH_ARE_PRESENT_KEY: both_present,
+                  self.BOTH_ARE_ABSENT_KEY: both_absent,
+                  self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
+                  self.BOTH_ARE_ABSENT_KEY + '_%': both_absent / len(not_corrupted_data)}
 
         if self.score_type == F1_SCORE_KEY:
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
@@ -282,7 +307,7 @@ class TrueFalseStats(BaseStats):
             self.result = accuracy_score(true, pred)
         else:
             raise f"Unknown score_type {self.score_type}"
-        return self.out_object(self.result)
+        return self.out_object(self.result, stats)
 
 
 class FreeAnswerStats(BaseStats):
@@ -355,7 +380,7 @@ def for_loop_it():
             for plan_length in PLAN_LENGTHS:
                 for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
                     for ramifications in RAMIFICATION_TYPES:
-                        for random_sub in SUBSTITUTION_TYPES:
+                        for random_sub in SUBSTITUTION_TYPES[1:]:
                             for model_name in PROMPT_MODEL_NAMES:
                                 for prompt_type in PROMPT_TYPES:
                                     pbar.update(1)
@@ -391,9 +416,9 @@ if __name__ == '__main__':
     if not os.path.exists(STATISTICS_PATH):
         os.makedirs(STATISTICS_PATH)
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
+    # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS,
+    #                 WITHOUT_RANDOM_SUB, 'gemma-2b-it', 'few_shot_1')
     calculate_stats_all(data_all, answer_response)
-    # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS, WITHOUT_RANDOM_SUB,
-    # 'gemini', 'few_shot_5')
 
     print('saved', answer_response)
 
