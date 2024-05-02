@@ -34,8 +34,8 @@ TRUE_ANSWER = 'True'
 FALSE_ANSWER = 'False'
 ANSWER_RESPONSES = [TRUE_FALSE_ANSWER_TYPE, FREE_ANSWER_TYPE]
 
-ALL_LENGTHS_KEY = 'all_lengths'
-ALL_QUESTION_CATEGORIES_KEY = 'all_categories'
+ALL_LENGTHS_KEY = 'ALL_LENGTHS'
+ALL_QUESTION_CATEGORIES_KEY = 'ALL_CATEGORIES'
 
 ALL_DOMAINS_KEY = 'ALL_DOMAINS'
 TRANSPORTATION_DOMAIN_KEY = 'TRANSPORTATION'
@@ -43,7 +43,7 @@ TRANSPORTATION_DOMAINS = ['logistics', 'depots', 'driverlog', 'grippers', 'micon
 NON_TRANSPORTATION_DOMAIN_KEY = 'NON_TRANSPORTATION'
 NON_TRANSPORTATION_DOMAINS = ['blocksworld', 'goldminer', 'npuzzle', 'satellite', 'spanner', 'visitall']
 
-PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'gpt4', 'Mistral-7B-Instruct-v0.2',
+PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
@@ -157,6 +157,13 @@ def base_filter(ramifications, model_name, prompt_type, answer_type, substitutio
             (OUT_OBJ_ANSWER_TYPE, {answer_type})]
 
 
+def filter_gather(data_all, filter_by):
+    results = []
+    for d in data_all:
+        if all(d[k] in v for k, v in filter_by):
+            results.append(d)
+    return results
+
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                           answer_type, substitutions):
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
@@ -173,25 +180,17 @@ def filter_multi_selector(data_all, plan_length, question_category, ramification
     if plan_length != ALL_LENGTHS_KEY:
         filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
 
-    results = []
-    for d in data_all:
-        if all(d[k] in v for k, v in filter_by):
-            results.append(d)
-    return results
+    return filter_gather(data_all, filter_by)
 
 
 def filter_single_selector(stats_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                            answer_type, substitutions):
     filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
-    filter_by.extend([(OUT_OBJ_QUESTION_CATEGORY, question_category),
-                      (OUT_OBJ_DOMAIN_NAME, domain),
-                      (OUT_OBJ_PLAN_LENGTH, plan_length),
-                      (SK_SUBSTITUTION, substitutions)])
-    results = []
-    for d in stats_all:
-        if all(d[k] == v for k, v in filter_by):
-            results.append(d)
+    filter_by.extend([(OUT_OBJ_QUESTION_CATEGORY, {question_category}),
+                      (OUT_OBJ_DOMAIN_NAME, {domain}),
+                      (OUT_OBJ_PLAN_LENGTH, {plan_length})])
 
+    results = filter_gather(stats_all, filter_by)
     if len(results) == 0:
         return None
     elif not len(results) == 1:
@@ -333,17 +332,19 @@ class FreeAnswerStats(BaseStats):
 
 
 def stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name,
-                    prompt_type):
-    return os.path.join(STATISTICS_PATH, answer_response_type, domain, str(plan_length), question_category,
+                    prompt_type, save_main_dir = STATISTICS_PATH):
+    return os.path.join(save_main_dir, answer_response_type, domain, str(plan_length), question_category,
                         ramifications, random_sub, model_name, prompt_type)
 
 
 def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
-                    model_name, prompt_type):
+                    model_name, prompt_type, override=False):
+    if not os.path.exists(STATISTICS_PATH):
+        os.makedirs(STATISTICS_PATH)
     save_dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
-                               random_sub, model_name, prompt_type)
+                               random_sub, model_name, prompt_type, save_main_dir=STATISTICS_PATH)
     file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
-    if os.path.exists(file_path):
+    if os.path.exists(file_path) and not override:
         return False
 
     if answer_response_type == FREE_ANSWER_TYPE:
@@ -362,10 +363,10 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
     return True
 
 
-def calculate_stats_all(data_all, answer_response_type):
+def calculate_stats_all(data_all, answer_response_type, override=False):
     for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
         calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
-                        random_sub, model_name, prompt_type)
+                        random_sub, model_name, prompt_type, override=override)
 
 
 def for_loop_it():
@@ -380,7 +381,7 @@ def for_loop_it():
             for plan_length in PLAN_LENGTHS:
                 for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
                     for ramifications in RAMIFICATION_TYPES:
-                        for random_sub in SUBSTITUTION_TYPES[1:]:
+                        for random_sub in SUBSTITUTION_TYPES:
                             for model_name in PROMPT_MODEL_NAMES:
                                 for prompt_type in PROMPT_TYPES:
                                     pbar.update(1)
@@ -413,12 +414,10 @@ if __name__ == '__main__':
     # sanity_checks()
     data_all, missing_data = gather_data(questions_by_id)
 
-    if not os.path.exists(STATISTICS_PATH):
-        os.makedirs(STATISTICS_PATH)
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
     # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS,
     #                 WITHOUT_RANDOM_SUB, 'gemma-2b-it', 'few_shot_1')
-    calculate_stats_all(data_all, answer_response)
+    calculate_stats_all(data_all, answer_response, override=True)
 
     print('saved', answer_response)
 
