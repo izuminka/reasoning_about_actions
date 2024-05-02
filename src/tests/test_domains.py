@@ -11,58 +11,85 @@ class TestDomains(unittest.TestCase):
     bd = BaseDomain(False, True)
 
     def test_replace_substring_no_replacement(self):
-        res = self.bd.replace_substring('unstacking more blocks', 'stacking', 'REPL')
+        res = self.bd.replace_substring('unstacking more blocks', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('unstacking more blocks', res)
 
-        res = self.bd.replace_substring('stuff unstacking more blocks', 'stacking', 'REPL')
+        res = self.bd.replace_substring('stuff unstacking more blocks', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('stuff unstacking more blocks', res)
 
-        res = self.bd.replace_substring('stuff more blocks unstacking', 'stacking', 'REPL')
+        res = self.bd.replace_substring('stuff more blocks unstacking', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('stuff more blocks unstacking', res)
 
-        res = self.bd.replace_substring('stackingzz more blocks', 'stacking', 'REPL')
+        res = self.bd.replace_substring('stackingzz more blocks', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('stackingzz more blocks', res)
 
-        res = self.bd.replace_substring('stuff stackingzz more blocks', 'stacking', 'REPL')
+        res = self.bd.replace_substring('stuff stackingzz more blocks', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('stuff stackingzz more blocks', res)
 
-        res = self.bd.replace_substring('stuff more blocks stackingzz', 'stacking', 'REPL')
+        res = self.bd.replace_substring('stuff more blocks stackingzz', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('stuff more blocks stackingzz', res)
 
     def test_replace_substring_replacement(self):
-        res = self.bd.replace_substring('stacking more blocks', 'stacking', 'REPL')
-        self.assertEqual('REPL more blocks', res)
+        res = self.bd.replace_substring('Stacking more blocks', 'stacking', 'sdnfjkdsnfkj')
+        self.assertEqual('Sdnfjkdsnfkj more blocks', res)
 
-        res = self.bd.replace_substring('stacking. more blocks', 'stacking', 'REPL')
-        self.assertEqual('REPL. more blocks', res)
+        res = self.bd.replace_substring('STACKING. more blocks', 'stacking', 'ghsks')
+        self.assertEqual('GHSKS. more blocks', res)
 
-        res = self.bd.replace_substring('stacking, more blocks', 'stacking', 'REPL')
-        self.assertEqual('REPL, more blocks', res)
+        res = self.bd.replace_substring('stacking, more blocks', 'stacking', 'sdnfjkdsnfkj')
+        self.assertEqual('sdnfjkdsnfkj, more blocks', res)
 
-        res = self.bd.replace_substring('stacking" more blocks', 'stacking', 'REPL')
-        self.assertEqual('REPL" more blocks', res)
+        res = self.bd.replace_substring('stacking" more blocks', 'stacking', 'sdnfjkdsnfkj')
+        self.assertEqual('sdnfjkdsnfkj" more blocks', res)
 
-        res = self.bd.replace_substring('stacking!', 'stacking', 'REPL')
-        self.assertEqual('REPL!', res)
+        res = self.bd.replace_substring('stacking!', 'stacking', 'sdnfjkdsnfkj')
+        self.assertEqual('sdnfjkdsnfkj!', res)
 
-        res = self.bd.replace_substring('stacking', 'stacking', 'REPL')
-        self.assertEqual('REPL', res)
+        res = self.bd.replace_substring('stacking', 'stacking', 'sdnfjkdsnfkj')
+        self.assertEqual('sdnfjkdsnfkj', res)
 
     def test_replace_substrings(self):
-        text = ('Picking up a block is only possible if that block is clear, on the table, and the hand is empty. '
+        text = ('picking up a block is \n\n only possible if that block is clear, on the table, and the hand is empty. '
                 'Unstacking the first block from the second causes first block to be held A block is said to be clear if it is not being held and there are no blocks that are on top of it. '
                 'The hand is said to be empty if and only if it is not holding any block. The block can only be at one place at a time.')
 
         obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
         res = self.bd.replace_substrings(text, obj_dict)
-        print(res)
-        expected = ('Ovyuecllio a qbyyxzqvdh is only possible if that qbyyxzqvdh is clear, '
+        expected = ('ovyuecllio a qbyyxzqvdh is \n\n only possible if that qbyyxzqvdh is clear, '
                     'wtuwjwbuja the gcbwvwyvkv, and the egpbpdtalq is empty. Wxqdwukszo the first '
-                    'qbyyxzqvdh from the second causes first qbyyxzqvdh to be casqqrrojp a '
+                    'qbyyxzqvdh from the second causes first qbyyxzqvdh to be casqqrrojp A '
                     'qbyyxzqvdh is said to be clear if it is not being casqqrrojp and there are '
                     'no qbyyxzqvdhs that are wtuwjwbuja top of it. The egpbpdtalq is said to be '
                     'empty if and only if it is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can '
                     'only be at one place at a time.')
+        self.assertEqual(expected, res)
+
+    def test_replace_many_times_substrings(self):
+        text = ('[[ picking up a block is \n\n only possible if that block is clear, on the table, and the hand is empty. '
+                'Unstacking the first block from the second causes first block to be held A block is said to be clear if it is not being held and there are no blocks that are on top of it. '
+                'The hand is said to be empty if and only if it is not holding any block. The block can only be at one place at a time. ]]')
+
+        obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
+        res = self.bd.replace_substrings(text, obj_dict)
+        res = self.bd.replace_substrings(res, obj_dict)
+        res = self.bd.replace_substrings(res, obj_dict)
+        res = self.bd.replace_substrings(res, obj_dict)
+        expected = ('[[ ovyuecllio a qbyyxzqvdh is \n\n only possible if that qbyyxzqvdh is clear, '
+                    'wtuwjwbuja the gcbwvwyvkv, and the egpbpdtalq is empty. Wxqdwukszo the first '
+                    'qbyyxzqvdh from the second causes first qbyyxzqvdh to be casqqrrojp A '
+                    'qbyyxzqvdh is said to be clear if it is not being casqqrrojp and there are '
+                    'no qbyyxzqvdhs that are wtuwjwbuja top of it. The egpbpdtalq is said to be '
+                    'empty if and only if it is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can '
+                    'only be at one place at a time. ]]')
+        self.assertEqual(expected, res)
+
+    def test_upper_lower_substrings(self):
+        text = 'picking up a block is OnlY possible if that block is CLEAr, on the table, and the hand is empty. '
+
+        obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
+        res = self.bd.replace_substrings(text, obj_dict)
+        print(res)
+        expected = 'ovyuecllio a qbyyxzqvdh is OnlY possible if that qbyyxzqvdh is CLEAr, wtuwjwbuja the gcbwvwyvkv, and the egpbpdtalq is empty. '
         self.assertEqual(expected, res)
 
     def test_domains_init(self):

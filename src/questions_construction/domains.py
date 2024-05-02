@@ -5,7 +5,7 @@ import string
 import sys
 sys.path.insert(0,'../../')
 from src.common import *
-
+from copy import deepcopy
 
 def strip_action_prefix(action):
     if action.startswith('action_'):
@@ -16,6 +16,7 @@ def strip_action_prefix(action):
 def gen_random_str(length=10):
     return ''.join(random.choices(string.ascii_lowercase, k=length))
 
+REGEX_CACHE = {}
 
 class BaseDomain:
     OBJ_IN_PAREN_REGEX = r'\((.*?)\)'
@@ -38,7 +39,7 @@ class BaseDomain:
         if is_with_fluent_info:
             self.domain_description += '\n\n' + self.fluent_info_for_domain
         if is_random_sub:
-            self.domain_description = self.replace_substrings(self.domain_description, self.SUBSTRINGS_TO_RAND)
+            self.domain_description = self.to_random_substring(self.domain_description)
 
     def asp_to_nl(self, obj_ls):
         if not obj_ls:
@@ -50,6 +51,10 @@ class BaseDomain:
             return nl_obj
         nl_obj_ls = [self.fluent_to_natural_language_helper(f, is_without_object=True)[0] for f in obj_ls]
         return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
+
+    def to_random_substring(self, text):
+        return self.replace_substrings(text, self.SUBSTRINGS_TO_RAND)
+
 
     def construct_fluent_info_for_domain(self):
         def add_fluents(fluent_ls, fluent_type_nl):
@@ -86,21 +91,30 @@ class BaseDomain:
 
     @staticmethod
     def replace_substring(text, old_sub, new_sub):
-        pattern = BaseDomain.REPLACE_REGEX_PREFIX + re.escape(old_sub) + BaseDomain.REPLACE_REGEX_POSTFIX
-        return re.sub(pattern, new_sub, text)
+        def case_preserving_replace(new_sub):
+            def replace(match):
+                original = match.group()
+                if original.islower():
+                    return new_sub.lower()
+                elif original.isupper():
+                    return new_sub.upper()
+                elif original.istitle():
+                    return new_sub.title()
+                else:
+                    return new_sub  # default to the original new_sub case
+            return replace
+
+        if old_sub not in REGEX_CACHE:
+            pattern = BaseDomain.REPLACE_REGEX_PREFIX + re.escape(old_sub) + BaseDomain.REPLACE_REGEX_POSTFIX
+            REGEX_CACHE[old_sub] = re.compile(pattern, re.IGNORECASE)
+        return re.sub(REGEX_CACHE[old_sub], case_preserving_replace(new_sub), text)
 
     @staticmethod
-    def replace_substrings(text, obj_dict, sentence_split_token='. '):
-        result = []
-        sentences = text.split(sentence_split_token)
-        for sentence in sentences:
-            if sentence:
-                sentence = sentence.lower()
-                for old_word, new_word in obj_dict.items():
-                    sentence = BaseDomain.replace_substring(sentence, old_word, new_word)
-                sentence = sentence[0].upper() + sentence[1:]
-            result.append(sentence)
-        return sentence_split_token.join(result)
+    def replace_substrings(text, obj_dict):
+        text_new = deepcopy(text)
+        for old_word, new_word in obj_dict.items():
+            text_new = BaseDomain.replace_substring(text_new, old_word, new_word)
+        return text_new
 
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         raise Exception('Implement in child class')
