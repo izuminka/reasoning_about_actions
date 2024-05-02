@@ -1,27 +1,25 @@
-import os.path
-import sys
 import json
-
-
-
 from sklearn.metrics import f1_score, accuracy_score
 from rouge_score import rouge_scorer
 import numpy as np
+from copy import deepcopy
+from tqdm import tqdm
 
 import sys
-sys.path.insert(0,'../../')
-from src.questions_construction.main import *
+
+sys.path.insert(0, '../../')
+from src.questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
+from src.questions_construction.domains import DOMAIN_NAMES
 from src.common import *
 
 # STATS dict keys
-SK_PLAN_LENGTH = OUT_OBJ_PLAN_LENGTH
-SK_CATEGORY = OUT_OBJ_QUESTION_CATEGORY
 SK_RAMIFICATION = 'ramification_type'
-SK_ANSWER_TYPE = OUT_OBJ_ANSWER_TYPE
+SK_SUBSTITUTION = 'substitution_type'
 SK_MODEL = 'model'
 SK_PROMPT_TYPE = 'prompt_type'
 SK_RESULT = 'result'
-SK_DOMAIN = 'domain'
+SK_STATS = 'stats'
+SK_UNIQUE_ID = 'unique_id'
 
 # Metrics & Metrics Related
 F1_SCORE_KEY = 'f1'
@@ -36,130 +34,271 @@ TRUE_ANSWER = 'True'
 FALSE_ANSWER = 'False'
 ANSWER_RESPONSES = [TRUE_FALSE_ANSWER_TYPE, FREE_ANSWER_TYPE]
 
+ALL_LENGTHS_KEY = 'ALL_LENGTHS'
+ALL_QUESTION_CATEGORIES_KEY = 'ALL_CATEGORIES'
 
-ALL_LENGTHS_KEY = 'all_lengths'
-ALL_DOMAINS_KEY = 'all_domains'
-ALL_CATEGORIES_KEY = 'all_categories'
+ALL_DOMAINS_KEY = 'ALL_DOMAINS'
+TRANSPORTATION_DOMAIN_KEY = 'TRANSPORTATION'
+TRANSPORTATION_DOMAINS = ['logistics', 'depots', 'driverlog', 'grippers', 'miconic', 'mystery', 'zenotravel']
+NON_TRANSPORTATION_DOMAIN_KEY = 'NON_TRANSPORTATION'
+NON_TRANSPORTATION_DOMAINS = ['blocksworld', 'goldminer', 'npuzzle', 'satellite', 'spanner', 'visitall']
 
-DOMAIN_NAMES = ['blocksworld', 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics', 'miconic', 'mystery',
-                'npuzzle', 'satellite', 'spanner', 'visitall', 'zenotravel']
+PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
+PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
+SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
-PROMPT_MODEL_NAMES = ['gemini', 'llama-2-7b', 'mistral_7b_instruct']  # TODO add , 'gpt4'
-PROMPT_TYPES = ['zero_shot_data', 'few_shot_4', 'few_shot_4_cot']  # TODO clean up dirs
+RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
+IS_POS_FLUENT_TYPES = [True, False, None]
 
-def gather_data():
-    all_data = []
-    for ramifications in RAMIFICATION_TYPES:
-        if ramifications == WITH_RAMIFICATIONS:
-            results_dir = f'{PROJECT_PATH}/results_ramifications'  # todo rn to results dir
-        elif ramifications == WITHOUT_RAMIFICATIONS:
-            results_dir = RESULTS_PATH
-        else:
-            raise f"{ramifications} is not defined"
-        for model_name in PROMPT_MODEL_NAMES:
-            for prompt_type in PROMPT_TYPES:
-                for domain in DOMAIN_NAMES:
-                    results_domain_path = f'{results_dir}/{model_name}/{prompt_type}/{domain}.jsonl'
-                    if not os.path.exists(results_domain_path):
-                        print("missing", results_domain_path)
-                    else:
-                        extra_kv = {SK_PROMPT_TYPE: prompt_type, SK_MODEL: model_name, SK_RAMIFICATION: ramifications,
-                                    SK_DOMAIN: domain}
-                        qa_objects = open_jsonl(results_domain_path)
-                        all_data.extend([d | deepcopy(extra_kv) for d in qa_objects])
+RESULTS_FILE_NAME = 'results.json'
+
+
+def gather_questions(questions_dir):
+    all_data = {}
+    for substitutions in SUBSTITUTION_TYPES:
+        for domain in DOMAIN_NAMES:
+            for instance in [f'Instance_{i}' for i in range(1, 11)]:
+                results_domain_path = f'{questions_dir}/{substitutions}/{domain}/{instance}.jsonl'
+                if not os.path.exists(results_domain_path):
+                    print("missing", results_domain_path)
+                else:
+                    qa_objects = open_jsonl(results_domain_path)
+                    for d in qa_objects:
+                        if d[OUT_OBJ_ID] in all_data:
+                            raise ValueError(f"Duplicate ID {d[OUT_OBJ_ID]}")
+                        del d[OUT_OBJ_INITIAL_STATE_ASP]
+                        del d[OUT_OBJ_INITIAL_STATE_NL]
+                        del d[OUT_OBJ_ACTION_SEQUENCE]
+                        all_data[d[OUT_OBJ_ID]] = d
     return all_data
 
 
-def filter_helper(data_ls, filter_by):
+def sanity_checks():
+    def get_questions_ids(questions_dir):
+        questions_ids = set()
+        for substitutions in SUBSTITUTION_TYPES:
+            for domain in DOMAIN_NAMES:
+                for instance in [f'Instance_{i}' for i in range(1, 11)]:
+                    try:
+                        for d in open_jsonl(f'{questions_dir}/{substitutions}/{domain}/{instance}.jsonl'):
+                            questions_ids.add(d[OUT_OBJ_ID])
+                    except:
+                        pass
+
+        return questions_ids
+
+    def get_results_ids(results_dir):
+        results_ids = set()
+        for substitutions in SUBSTITUTION_TYPES:
+            for domain in DOMAIN_NAMES:
+                for instance in [f'Instance_{i}' for i in range(1, 11)]:
+                    for ramifications in RAMIFICATION_TYPES:
+                        for prompt_type in PROMPT_TYPES:
+                            for model in PROMPT_MODEL_NAMES:
+                                try:
+                                    for d in open_jsonl(
+                                            f'{results_dir}/{model}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'):
+                                        results_ids.add(d[OUT_OBJ_ID])
+                                except:
+                                    pass
+        return results_ids
+
+    # data_for_evaluation_dir = f'{DATA_PATH}/data_for_evaluation'
+
+    results_ids = get_results_ids(RESULTS_PATH)
+    questions_ids = get_questions_ids(f'{DATA_PATH}/questions_m1')
+    # print(len(data_for_eval_ids), len(questions_ids), len(results_ids))
+    # print(len(results_ids), len(questions_ids), len(results_ids - questions_ids), len(questions_ids - results_ids))
+    assert results_ids <= questions_ids
+    print('checks passed')
+    return True
+
+
+def gather_data(questions_by_id, results_dir=RESULTS_PATH):
+    all_data = []
+    missing_data = []
+    for substitutions in SUBSTITUTION_TYPES:
+        for ramifications in RAMIFICATION_TYPES:
+            for model_name in PROMPT_MODEL_NAMES:
+                for prompt_type in PROMPT_TYPES:
+                    for domain in DOMAIN_NAMES:
+                        for instance in [f'Instance_{i}' for i in range(1, 11)]:
+                            results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
+                            if not os.path.exists(results_domain_path):
+                                missing_data.append({SK_MODEL: model_name,
+                                                     SK_PROMPT_TYPE: prompt_type,
+                                                     SK_RAMIFICATION: ramifications,
+                                                     SK_SUBSTITUTION: substitutions,
+                                                     OUT_OBJ_DOMAIN_NAME: domain,
+                                                     OUT_OBJ_INSTANCE_ID: instance})
+                            else:
+                                extra_kv = {SK_MODEL: model_name,
+                                            SK_PROMPT_TYPE: prompt_type,
+                                            SK_RAMIFICATION: ramifications,
+                                            SK_SUBSTITUTION: substitutions}
+                                qa_objects = open_jsonl(results_domain_path)
+                                for d in qa_objects:
+                                    if d[OUT_OBJ_ID] not in questions_by_id:
+                                        raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
+                                    d.update(questions_by_id[d[OUT_OBJ_ID]])
+                                    d.update(deepcopy(extra_kv))
+                                    d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
+                                all_data.extend(qa_objects)
+    print('data is gathered')
+    return all_data, missing_data
+
+
+def base_filter(ramifications, model_name, prompt_type, answer_type, substitutions):
+    """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
+    return [(SK_RAMIFICATION, {ramifications}),
+            (SK_MODEL, {model_name}),
+            (SK_PROMPT_TYPE, {prompt_type}),
+            (SK_SUBSTITUTION, {substitutions}),
+            (OUT_OBJ_ANSWER_TYPE, {answer_type})]
+
+
+def filter_gather(data_all, filter_by):
     results = []
-    for d in data_ls:
-        if all(d[k] == v for k, v in filter_by):
+    for d in data_all:
+        if all(d[k] in v for k, v in filter_by):
             results.append(d)
     return results
 
-
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                          answer_type):
+                          answer_type, substitutions):
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
-    filter_by = [(SK_RAMIFICATION, ramifications),
-                 (SK_MODEL, model_name),
-                 (SK_PROMPT_TYPE, prompt_type),
-                 (OUT_OBJ_ANSWER_TYPE, answer_type)]
-    if domain != ALL_DOMAINS_KEY:
-        filter_by.append((SK_DOMAIN, domain))
-    if question_category != ALL_CATEGORIES_KEY:
-        filter_by.append((OUT_OBJ_QUESTION_CATEGORY, question_category))
+    filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
+    if domain == TRANSPORTATION_DOMAIN_KEY:
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, set(TRANSPORTATION_DOMAINS)))
+    elif domain == NON_TRANSPORTATION_DOMAIN_KEY:
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, set(NON_TRANSPORTATION_DOMAINS)))
+    elif domain != ALL_DOMAINS_KEY:
+        filter_by.append((OUT_OBJ_DOMAIN_NAME, {domain}))
+
+    if question_category != ALL_QUESTION_CATEGORIES_KEY:
+        filter_by.append((OUT_OBJ_QUESTION_CATEGORY, {question_category}))
     if plan_length != ALL_LENGTHS_KEY:
-        filter_by.append((OUT_OBJ_PLAN_LENGTH, plan_length))
-    return filter_helper(data_all, filter_by)
+        filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
+
+    return filter_gather(data_all, filter_by)
 
 
-def filter_single_selector(results_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                           answer_type):
-    filter_by = [(SK_RAMIFICATION, ramifications),
-                 (SK_MODEL, model_name),
-                 (SK_PROMPT_TYPE, prompt_type),
-                 (OUT_OBJ_ANSWER_TYPE, answer_type),
-                 (SK_DOMAIN, domain),
-                 (OUT_OBJ_QUESTION_CATEGORY, question_category),
-                 (OUT_OBJ_PLAN_LENGTH, plan_length)]
-    return filter_helper(results_all, filter_by)
+def filter_single_selector(stats_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                           answer_type, substitutions):
+    filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
+    filter_by.extend([(OUT_OBJ_QUESTION_CATEGORY, {question_category}),
+                      (OUT_OBJ_DOMAIN_NAME, {domain}),
+                      (OUT_OBJ_PLAN_LENGTH, {plan_length})])
+
+    results = filter_gather(stats_all, filter_by)
+    if len(results) == 0:
+        return None
+    elif not len(results) == 1:
+        raise ValueError(f'len(instance) == {len(results)}')
+    else:
+        return results[0][SK_RESULT]
 
 
 class BaseStats:
-    def __init__(self, plan_length, question_category, ramifications, model_name, prompt_type, domain):
+    def __init__(self, plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions):
         self.plan_length = plan_length
         self.question_category = question_category
         self.ramifications = ramifications
         self.model_name = model_name
         self.prompt_type = prompt_type
         self.domain = domain
-        self.result = None
-        self.answer_type = None
+        self.substitutions = substitutions
 
-    def out_object(self, result):
-        return {SK_PLAN_LENGTH: self.plan_length,
-                SK_CATEGORY: self.question_category,
-                SK_RAMIFICATION: self.ramifications,
+        self.answer_type = None
+        self.result = None
+
+    def out_object(self, result, stats=None):
+        '''returns a dictionary with the stats of the object,
+        result is a float'''
+        return {SK_RESULT: result,
+                SK_STATS: stats,
+
                 SK_MODEL: self.model_name,
                 SK_PROMPT_TYPE: self.prompt_type,
-                SK_DOMAIN: self.domain,
-                SK_ANSWER_TYPE: self.answer_type,
-                SK_RESULT: result}
+                SK_RAMIFICATION: self.ramifications,
+                SK_SUBSTITUTION: self.substitutions,
+
+                OUT_OBJ_DOMAIN_NAME: self.domain,
+                OUT_OBJ_PLAN_LENGTH: self.plan_length,
+                OUT_OBJ_QUESTION_CATEGORY: self.question_category,
+                OUT_OBJ_ANSWER_TYPE: self.answer_type}
+
+    def remove_corrupted(self, message='NO RESPONSE'):
+        not_corrupted = []
+        for d in self.data:
+            if d[MODEL_RESPONSE_KEY] != message:
+                not_corrupted.append(d)
+        return not_corrupted
 
 
 class TrueFalseStats(BaseStats):
+    BOTH_ARE_PRESENT_KEY = 'both_present'
+    BOTH_ARE_ABSENT_KEY = 'both_absent'
+
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                 substitutions,
                  score_type=F1_SCORE_KEY):
-        super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain)
+        super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions)
         self.answer_type = TRUE_FALSE_ANSWER_TYPE
         self.score_type = score_type
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
-                                          prompt_type, domain, self.answer_type)
+                                          prompt_type, domain, self.answer_type, substitutions)
 
     @staticmethod
     def prediction_selection_criteria(d):
         model_response = d[MODEL_RESPONSE_KEY]
-        # if the model response is unknown, set the response to the opposite of the ground truth
-        response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
+        tokens_to_consider = model_response.split()
+        # tokens_to_consider = tokens_to_consider[:10]+tokens_to_consider[-10:]
+        tokens = set([token.strip(',."\':;?!\n ').lower() for token in tokens_to_consider])
 
-        if TRUE_ANSWER in model_response and FALSE_ANSWER in model_response:  # both T and F are present
-            return response_to_unknown
-        elif TRUE_ANSWER not in model_response and FALSE_ANSWER not in model_response:  # neither T or F are present
-            return response_to_unknown
-        elif TRUE_ANSWER in model_response:
+        if 'true' in tokens and 'false' in tokens:
+            return TrueFalseStats.BOTH_ARE_PRESENT_KEY
+        elif 'true' not in tokens and 'false' not in tokens:
+            return TrueFalseStats.BOTH_ARE_ABSENT_KEY
+        elif 'true' in tokens:
             return TRUE_ANSWER
-        elif FALSE_ANSWER in model_response:
+        elif 'false' in tokens:
             return FALSE_ANSWER
         else:
-            raise f"Unknown model response {model_response}"
+            return ValueError(f"Unknown prediction {model_response}")
 
     def compute(self):
         if not self.data:
-            return self.out_object(None)
+            return self.out_object(None, None)
 
-        true = [d[OUT_OBJ_ANSWER] for d in self.data]
-        pred = [self.prediction_selection_criteria(d) for d in self.data]
+        not_corrupted_data = self.remove_corrupted()
+        if not not_corrupted_data:
+            return self.out_object(None, None)
+        stats = {'num_original': len(self.data),
+                 'num_corrupted': len(self.data) - len(not_corrupted_data),
+                 'num_not_corrupted': len(not_corrupted_data)}
+
+        true = []
+        pred = []
+        both_present = 0
+        both_absent = 0
+        for d in not_corrupted_data:
+            true.append(d[OUT_OBJ_ANSWER])
+            prediction = self.prediction_selection_criteria(d)
+            # if the model response is unknown, set the response to the opposite of the ground truth
+            response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
+            if prediction == self.BOTH_ARE_PRESENT_KEY:
+                both_present += 1
+                pred.append(response_to_unknown)
+            elif prediction == self.BOTH_ARE_ABSENT_KEY:
+                both_absent += 1
+                pred.append(response_to_unknown)
+            else:
+                pred.append(prediction)
+        stats |= {self.BOTH_ARE_PRESENT_KEY: both_present,
+                  self.BOTH_ARE_ABSENT_KEY: both_absent,
+                  self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
+                  self.BOTH_ARE_ABSENT_KEY + '_%': both_absent / len(not_corrupted_data)}
 
         if self.score_type == F1_SCORE_KEY:
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
@@ -167,16 +306,17 @@ class TrueFalseStats(BaseStats):
             self.result = accuracy_score(true, pred)
         else:
             raise f"Unknown score_type {self.score_type}"
-        return self.out_object(self.result)
+        return self.out_object(self.result, stats)
 
 
 class FreeAnswerStats(BaseStats):
 
-    def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain):
-        super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain)
+    def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                 substitutions):
+        super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions)
         self.answer_type = FREE_ANSWER_TYPE
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
-                                          prompt_type, domain, self.answer_type)
+                                          prompt_type, domain, self.answer_type, substitutions)
 
     def get_rouge_score(self):
         stats = []
@@ -191,41 +331,95 @@ class FreeAnswerStats(BaseStats):
         return self.out_object(self.result)
 
 
-def big_for_loop(data_all, answer_response, tf_score_key=F1_SCORE_KEY):
-    results = []
-    for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY]:
-        for plan_length in PLAN_LENGTHS + [ALL_LENGTHS_KEY]:
-            for question_category in QUESTION_CATEGORIES + [ALL_CATEGORIES_KEY]:
-                for ramifications in RAMIFICATION_TYPES:
-                    for model_name in PROMPT_MODEL_NAMES:
-                        for prompt_type in PROMPT_TYPES:
-                            if answer_response == TRUE_FALSE_ANSWER_TYPE:
-                                stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
-                                                       model_name,
-                                                       prompt_type, domain, tf_score_key)
-                            else:
-                                stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
-                                                        model_name,
-                                                        prompt_type, domain)
-                            results.append(stats.compute())
-    return results
+def stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name,
+                    prompt_type, save_main_dir = STATISTICS_PATH):
+    return os.path.join(save_main_dir, answer_response_type, domain, str(plan_length), question_category,
+                        ramifications, random_sub, model_name, prompt_type)
+
+
+def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
+                    model_name, prompt_type, override=False):
+    if not os.path.exists(STATISTICS_PATH):
+        os.makedirs(STATISTICS_PATH)
+    save_dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
+                               random_sub, model_name, prompt_type, save_main_dir=STATISTICS_PATH)
+    file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
+    if os.path.exists(file_path) and not override:
+        return False
+
+    if answer_response_type == FREE_ANSWER_TYPE:
+        stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
+                                model_name, prompt_type, domain, random_sub)
+    else:
+        tf_score_key = answer_response_type.split('.')[1]
+        stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
+                               model_name, prompt_type, domain, random_sub, tf_score_key)
+
+    stats_compute = stats.compute()
+    if stats_compute[SK_RESULT] is not None:
+        os.makedirs(save_dir, exist_ok=True)
+        with open(file_path, 'w') as f:
+            json.dump(stats_compute, f)
+    return True
+
+
+def calculate_stats_all(data_all, answer_response_type, override=False):
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
+        calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
+                        random_sub, model_name, prompt_type, override=override)
+
+
+def for_loop_it():
+    with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
+                    len(PLAN_LENGTHS) *
+                    len(QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]) *
+                    len(RAMIFICATION_TYPES) *
+                    len(SUBSTITUTION_TYPES) *
+                    len(PROMPT_MODEL_NAMES) *
+                    len(PROMPT_TYPES)) as pbar:
+        for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
+            for plan_length in PLAN_LENGTHS:
+                for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
+                    for ramifications in RAMIFICATION_TYPES:
+                        for random_sub in SUBSTITUTION_TYPES:
+                            for model_name in PROMPT_MODEL_NAMES:
+                                for prompt_type in PROMPT_TYPES:
+                                    pbar.update(1)
+                                    yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
 
 def save_stats_file(answer_response, score_key):
     return f'{answer_response}.{score_key}.jsonl'
 
 
-if __name__ == '__main__':
-    if not os.path.exists(STATISTICS_PATH):
-        os.makedirs(STATISTICS_PATH)
-    data_all = gather_data()
-    print('data is gathered')
+def tf_answer_type(score_key=F1_SCORE_KEY):
+    return f'{TRUE_FALSE_ANSWER_TYPE}.{score_key}'
 
-    answer_response = TRUE_FALSE_ANSWER_TYPE
-    for score_key in SCORE_KEYS:
-        results = big_for_loop(data_all, answer_response, score_key)
-        save_jsonl(results, os.path.join(STATISTICS_PATH, save_stats_file(answer_response, score_key)))
-        print('saved', answer_response, score_key)
+
+def collect_stats_all(answer_response_type):
+    stats_all = []
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
+        dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
+                              model_name, prompt_type)
+        path = os.path.join(dir, RESULTS_FILE_NAME)
+        if os.path.exists(path):
+            with open(path) as f:
+                stats_all.append(json.load(f))
+    return stats_all
+
+
+if __name__ == '__main__':
+    questions_dir = f'{DATA_PATH}/questions_m1'
+    questions_by_id = gather_questions(questions_dir)
+    # sanity_checks()
+    data_all, missing_data = gather_data(questions_by_id)
+
+    answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
+    # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS,
+    #                 WITHOUT_RANDOM_SUB, 'gemma-2b-it', 'few_shot_1')
+    calculate_stats_all(data_all, answer_response, override=True)
+
+    print('saved', answer_response)
 
     # answer_response = FREE_ANSWER
     # results = big_for_loop(answer_response)

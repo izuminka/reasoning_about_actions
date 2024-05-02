@@ -9,3 +9,6 @@ src/tests/__pycache__/
 /data/questions_older/
 
 *.key
+/data/
+/stats/
+/results/

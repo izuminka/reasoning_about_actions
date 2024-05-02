@@ -81,7 +81,7 @@ def open_jsonl(path):
     return data
 
 
-def save_jsonl(data, save_path):
+def save_jsonl(data, save_path, mode='w'):
     with jsonlines.open(save_path, 'w') as w:
         w.write_all(data)
 
