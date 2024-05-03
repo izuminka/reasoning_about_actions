@@ -4,6 +4,8 @@ from src.questions_construction.questions import *
 from src.common import *
 import base64
 import hashlib
+import zipfile
+
 import json
 
 # answer = self.nl_fluents(fluents)
@@ -37,7 +39,7 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             tmp = deepcopy(data_dict[ASP_DATA])
             random.shuffle(tmp)
             perturbed_fluents.add(tuple(tmp))
-        return perturbed_fluents
+        return list(perturbed_fluents)
 
     def variations_helper(self, fluents, num_variations):
         nl_vatiations = set()
@@ -54,16 +56,20 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             nl_vatiations = self.variations_helper(perturbed_fluents, num_variations)
             return list(nl_vatiations)
 
-    def corrupt_nl_variations(self, data_dict, num_shuffles=10, num_corruptions=100, num_nl_variations=100):
+    def corrupt_nl_variations(self, data_dict, num_shuffles=10, num_corruptions=100, num_nl_variations=10):
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
             perturbed_fluents = self.purturb_helper(data_dict, num_shuffles)
 
             corrupted_fluents = set()
             for fluents in perturbed_fluents:
                 while num_corruptions > 0:
-                    corrupted_fluents.add(tuple(self.corrupt_fluents(fluents)))
+                    corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents))))
                     num_corruptions -= 1
-            # TODO: consider adding, +- # of fluents
+                    if int(len(fluents)/2) > 0:
+                        rand_i = random.randint(int(len(fluents)/2), len(fluents))
+                        corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents)[:rand_i])))
+                        num_corruptions -= 1
+                    # TODO: consider adding, + # of fluents
 
             nl_vatiations = self.variations_helper(corrupted_fluents, num_nl_variations)
             return list(nl_vatiations)
@@ -129,25 +135,64 @@ class FluentTrackingPairs(AnswerPairGeneratorHelper):
     def question_iterators(self):
         return chain(self.questions_iter_3())
 
+class StateTrackingPairs(AnswerPairGeneratorHelper):
+    QUESTION_CATEGORY = 'state_tracking'
+
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
+
+    def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
+        if is_pos_fluent_question:
+            fluent_type_nl = POSITIVE_FLUENTS_NL
+            fluents = self.pos_fluents_given_plan[plan_length]
+        else:
+            fluent_type_nl = NEGATIVE_FLUENTS_NL
+            fluents = self.neg_fluents_given_plan[plan_length]
+        nl_fluents = self.nl_fluents(fluents)
+        if fluents:
+            return {ASP_ID: unique_id(fluents),
+                    ASP_DATA: fluents,
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_FLUENTS} | self.qa_data_object(None, nl_fluents, FREE_ANSWER_TYPE, question_name, plan_length, None,
+                                   is_pos_fluent_question)
+        return None
+
+    def questions_iter_2(self):
+        counter = 0
+        for is_pos_fluent_question in [True, False, None]:
+            counter += 1
+            yield partial(self.questions_iter_2_helper,
+                          is_pos_fluent_question=is_pos_fluent_question,
+                          question_name=question_name(counter, 'iter_2'))
+
+    def question_iterators(self):
+        return chain(self.questions_iter_2())
+
 
 if __name__ == '__main__':
     question_multiplicity = 1
     upper_instance = 11
     is_random_sub = False
-    domain_class = ALL_DOMAIN_CLASSES[0]
-    domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
-    pairs = set()
-    for i in range(1, upper_instance):
-        instance_name = f'Instance_{i}'
+    for domain_class in ALL_DOMAIN_CLASSES:
+        pairs_all = []
+        domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
+        for i in range(1, upper_instance):
+            instance_name = f'Instance_{i}'
 
-        jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
-        save_dir = '.'
-        # save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
-        # if os.path.exists(save_dir):
-        #     continue
+            jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
+            save_dir = '.'
+            # save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
+            # if os.path.exists(save_dir):
+            #     continue
 
-        all_questions = FluentTrackingPairs(jsonl_instance, domain, instance_name)
-        for p in all_questions.pairs_pipeline():
-            pairs.add(p)
-        save_jsonl(list(pairs), 'pairs.jsonl')
-        print(domain.DOMAIN_NAME, is_random_sub, instance_name, 'done')
+            for pair_class in [StateTrackingPairs, FluentTrackingPairs]:
+                pairs = set()
+                all_questions = pair_class(jsonl_instance, domain, instance_name)
+                for p in all_questions.pairs_pipeline():
+                    pairs.add(p)
+                pairs_all.extend(list(pairs))
+                print(domain.DOMAIN_NAME, is_random_sub, instance_name, 'done')
+            save_jsonl(list(pairs_all), f'./pairs/{domain.DOMAIN_NAME}.jsonl')
+
+    # print('saving')
+    # save_jsonl(list(pairs_all), f'pairs_all.jsonl')
+    # print('saved')
