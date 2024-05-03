@@ -184,7 +184,6 @@ if __name__ == '__main__':
                 all_questions = pair_class(jsonl_instance, domain, instance_name)
                 for p in all_questions.pairs_pipeline():
                     pairs_over_instances.add(p)
-                print(domain.DOMAIN_NAME, is_random_sub, instance_name, 'done')
 
         pairs_all = [{'s1': s1, 's2': s2, 'label': label} for s1, s2, label in pairs_over_instances]
         save_jsonl(pairs_all, f'{save_dir}/{domain.DOMAIN_NAME}.jsonl')
