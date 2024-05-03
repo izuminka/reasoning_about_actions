@@ -169,30 +169,24 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
 
 
 if __name__ == '__main__':
-    question_multiplicity = 1
     upper_instance = 11
     is_random_sub = False
     for domain_class in ALL_DOMAIN_CLASSES:
-        pairs_all = []
         domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
+        pairs = set()
         for i in range(1, upper_instance):
             instance_name = f'Instance_{i}'
-
             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
             save_dir = '.'
-            # save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
-            # if os.path.exists(save_dir):
-            #     continue
 
             for pair_class in [StateTrackingPairs, FluentTrackingPairs]:
-                pairs = set()
                 all_questions = pair_class(jsonl_instance, domain, instance_name)
                 for p in all_questions.pairs_pipeline():
                     pairs.add(p)
-                pairs_all.extend(list(pairs))
                 print(domain.DOMAIN_NAME, is_random_sub, instance_name, 'done')
+
+            pairs_all = []
+            for s1, s2, label in pairs:
+                pairs_all.append({'s1': s1, 's2': s2, 'label': label})
             save_jsonl(list(pairs_all), f'./pairs/{domain.DOMAIN_NAME}.jsonl')
 
-    # print('saving')
-    # save_jsonl(list(pairs_all), f'pairs_all.jsonl')
-    # print('saved')
