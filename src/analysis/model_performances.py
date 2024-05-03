@@ -363,12 +363,6 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
     return True
 
 
-def calculate_stats_all(data_all, answer_response_type, override=False):
-    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
-        calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
-                        random_sub, model_name, prompt_type, override=override)
-
-
 def for_loop_it():
     with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
                     len(PLAN_LENGTHS) *
@@ -386,6 +380,15 @@ def for_loop_it():
                                 for prompt_type in PROMPT_TYPES:
                                     pbar.update(1)
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
+
+
+def calculate_stats_all(data_all, answer_response_type, data_params_iterator=None,override=False):
+    if data_params_iterator is None:
+        data_params_iterator = for_loop_it
+
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in data_params_iterator():
+        calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
+                        random_sub, model_name, prompt_type, override=override)
 
 
 def save_stats_file(answer_response, score_key):
@@ -417,7 +420,27 @@ if __name__ == '__main__':
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
     # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS,
     #                 WITHOUT_RANDOM_SUB, 'gemma-2b-it', 'few_shot_1')
-    calculate_stats_all(data_all, answer_response, override=True)
+
+    def data_params_iterator():
+        with tqdm(
+                total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
+                      len(PLAN_LENGTHS) *
+                      len(QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]) *
+                      len(RAMIFICATION_TYPES) *
+                      len(SUBSTITUTION_TYPES) *
+                      len(PROMPT_MODEL_NAMES) *
+                      len(PROMPT_TYPES)) as pbar:
+            for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
+                for plan_length in PLAN_LENGTHS:
+                    for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
+                        for ramifications in [WITHOUT_RAMIFICATIONS]:  # RAMIFICATION_TYPES:
+                            for random_sub in [WITHOUT_RANDOM_SUB]:  # SUBSTITUTION_TYPES:
+                                for model_name in ['gemini']:  # PROMPT_MODEL_NAMES:
+                                    for prompt_type in ['few_shot_5']:  # PROMPT_TYPES:
+                                        pbar.update(1)
+                                        yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
+
+    calculate_stats_all(data_all, answer_response, data_params_iterator=data_params_iterator,override=True)
 
     print('saved', answer_response)
 
