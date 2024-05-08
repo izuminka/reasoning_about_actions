@@ -43,7 +43,7 @@ TRANSPORTATION_DOMAINS = ['logistics', 'depots', 'driverlog', 'grippers', 'micon
 NON_TRANSPORTATION_DOMAIN_KEY = 'NON_TRANSPORTATION'
 NON_TRANSPORTATION_DOMAINS = ['blocksworld', 'goldminer', 'npuzzle', 'satellite', 'spanner', 'visitall']
 
-PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
+PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-13b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
@@ -433,10 +433,10 @@ if __name__ == '__main__':
             for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
                 for plan_length in PLAN_LENGTHS:
                     for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
-                        for ramifications in [WITHOUT_RAMIFICATIONS]:  # RAMIFICATION_TYPES:
-                            for random_sub in [WITHOUT_RANDOM_SUB]:  # SUBSTITUTION_TYPES:
+                        for ramifications in [WITH_RAMIFICATIONS]:  # RAMIFICATION_TYPES:
+                            for random_sub in [WITH_RANDOM_SUB]:  # SUBSTITUTION_TYPES:
                                 for model_name in ['gemini']:  # PROMPT_MODEL_NAMES:
-                                    for prompt_type in ['few_shot_5']:  # PROMPT_TYPES:
+                                    for prompt_type in ['few_shot_1']:  # PROMPT_TYPES:
                                         pbar.update(1)
                                         yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
