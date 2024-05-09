@@ -42,6 +42,9 @@ TRANSPORTATION_DOMAIN_KEY = 'TRANSPORTATION'
 TRANSPORTATION_DOMAINS = ['logistics', 'depots', 'driverlog', 'grippers', 'miconic', 'mystery', 'zenotravel']
 NON_TRANSPORTATION_DOMAIN_KEY = 'NON_TRANSPORTATION'
 NON_TRANSPORTATION_DOMAINS = ['blocksworld', 'goldminer', 'npuzzle', 'satellite', 'spanner', 'visitall']
+BY_DOMAIN_KEY = {TRANSPORTATION_DOMAIN_KEY: TRANSPORTATION_DOMAINS,
+                 NON_TRANSPORTATION_DOMAIN_KEY: NON_TRANSPORTATION_DOMAINS,
+                 ALL_DOMAINS_KEY: DOMAIN_NAMES}
 
 PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-13b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
