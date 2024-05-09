@@ -411,6 +411,32 @@ def collect_stats_all(answer_response_type):
     return stats_all
 
 
+###### Custom class for fluents ######
+class TrueFalseStatsCustom(TrueFalseStats):
+    def __init__(self, filtered_data, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                 substitutions, score_type=F1_SCORE_KEY):
+        super().__init__(filtered_data, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                         substitutions, score_type=F1_SCORE_KEY)
+        self.answer_type = TRUE_FALSE_ANSWER_TYPE
+        self.score_type = score_type
+        self.data = filtered_data
+
+
+def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_type, answer_type, substitutions,
+                                   plan_length, other_keys_ls):
+    """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
+    filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
+    filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
+
+
+    results = []
+    for d in data_all:
+        if all(d[k] in v for k, v in filter_by):
+            results.append(d)
+    return results
+
+###### Custom class for fluents  end ######
+
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
