@@ -41,35 +41,98 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             perturbed_fluents.add(tuple(tmp))
         return list(perturbed_fluents)
 
-    def variations_helper(self, fluents, num_variations):
+    def variations_helper(self, fluents_ls, num_variations):
         nl_vatiations = set()
-        for fluent in fluents:
+        for fluents in fluents_ls:
             while num_variations > 0:
-                nl_vatiations.add(self.nl_fluents(fluent))
+                try:
+                    nl_vatiations.add(self.nl_fluents(fluents))
+                except Exception as e:
+                    print(e)
                 num_variations -= 1
         return list(nl_vatiations)
 
 
-    def all_nl_variations(self, data_dict, num_shuffles=100, num_variations=100):
+
+    def corrupt_stuff_in_fluents(self, fluents, stuff1, stuff2):
+        r1 = deepcopy(stuff1)
+        random.shuffle(r1)
+        r2 = deepcopy(stuff2)
+        random.shuffle(r2)
+        corrupted_fluents_replaced = []
+        num_fluents_to_corrupt = random.randint(1, len(fluents))
+        for fluent in fluents[:num_fluents_to_corrupt]:
+            for o1, o2 in zip(r1, r2):
+                if o1 in fluent:
+                    corrupted_fluents_replaced.append(fluent.replace(o1, o2))
+                    break
+        return corrupted_fluents_replaced + fluents[num_fluents_to_corrupt:]
+
+    def corrupt_objects_in_fluents(self, fluents):
+        stuff1 = deepcopy(self.all_objects)
+        stuff2 = deepcopy(self.all_objects)
+        return self.corrupt_stuff_in_fluents(fluents, stuff1, stuff2)
+
+    def corrupt_object_types_in_fluents(self, fluents):
+        stuff1 = deepcopy(list(self.objects_by_type.keys()))
+        stuff2 = deepcopy(list(self.objects_by_type.keys()))
+        return self.corrupt_stuff_in_fluents(fluents, stuff1, stuff2)
+
+    def all_nl_variations(self, data_dict, num_shuffles=100, num_variations=50):
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
             perturbed_fluents = self.purturb_helper(data_dict, num_shuffles)
             nl_vatiations = self.variations_helper(perturbed_fluents, num_variations)
             return list(nl_vatiations)
 
-    def corrupt_nl_variations(self, data_dict, num_shuffles=10, num_corruptions=100, num_nl_variations=10):
+
+    def corrupt_nl_variations(self, data_dict, num_corruptions=100, num_nl_variations=50):
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
-            perturbed_fluents = self.purturb_helper(data_dict, num_shuffles)
+            fluents = deepcopy(data_dict[ASP_DATA])
 
             corrupted_fluents = set()
-            for fluents in perturbed_fluents:
-                while num_corruptions > 0:
-                    corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents))))
+            while num_corruptions > 0:
+                # Case1.1 flip the negations of some fluents
+                fluents = deepcopy(fluents)
+                random.shuffle(fluents)
+                corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents))))
+                num_corruptions -= 1
+
+                # Case1.2 flip the negations of some fluents and remove some fluents
+                fluents = deepcopy(fluents)
+                random.shuffle(fluents)
+                if int(len(fluents)/2) > 0:
+                    rand_i = random.randint(int(len(fluents)/2), len(fluents))
+                    corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents)[:rand_i])))
                     num_corruptions -= 1
-                    if int(len(fluents)/2) > 0:
-                        rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                        corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents)[:rand_i])))
-                        num_corruptions -= 1
-                    # TODO: consider adding, + # of fluents
+                # TODO: consider adding, + # of fluents
+
+                # Case2.1 swap the numbers in the fluents
+                fluents = deepcopy(fluents)
+                random.shuffle(fluents)
+                corrupted_fluents.add(tuple(self.corrupt_objects_in_fluents(fluents)))
+                num_corruptions -= 1
+
+                # Case2.2 swap the numbers in the fluents
+                fluents = deepcopy(fluents)
+                random.shuffle(fluents)
+                if int(len(fluents)/2) > 0:
+                    rand_i = random.randint(int(len(fluents)/2), len(fluents))
+                    corrupted_fluents.add(tuple(self.corrupt_objects_in_fluents(fluents)[:rand_i]))
+                    num_corruptions -= 1
+
+                # Case3.1 swap the numbers in the fluents
+                fluents = deepcopy(fluents)
+                random.shuffle(fluents)
+                corrupted_fluents.add(tuple(self.corrupt_object_types_in_fluents(fluents)))
+                num_corruptions -= 1
+
+                # Case3.2 swap the numbers in the fluents
+                fluents = deepcopy(fluents)
+                random.shuffle(fluents)
+                if int(len(fluents)/2) > 0:
+                    rand_i = random.randint(int(len(fluents)/2), len(fluents))
+                    corrupted_fluents.add(tuple(self.corrupt_object_types_in_fluents(fluents)[:rand_i]))
+                    num_corruptions -= 1
 
             nl_vatiations = self.variations_helper(corrupted_fluents, num_nl_variations)
             return list(nl_vatiations)
@@ -171,7 +234,7 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
 if __name__ == '__main__':
     upper_instance = 11
     is_random_sub = False
-    save_dir = './pairs'
+    save_dir = './pairs_new'
     os.makedirs(save_dir, exist_ok=True)
     for domain_class in ALL_DOMAIN_CLASSES:
         domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
