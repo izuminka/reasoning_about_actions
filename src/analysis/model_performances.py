@@ -42,8 +42,11 @@ TRANSPORTATION_DOMAIN_KEY = 'TRANSPORTATION'
 TRANSPORTATION_DOMAINS = ['logistics', 'depots', 'driverlog', 'grippers', 'miconic', 'mystery', 'zenotravel']
 NON_TRANSPORTATION_DOMAIN_KEY = 'NON_TRANSPORTATION'
 NON_TRANSPORTATION_DOMAINS = ['blocksworld', 'goldminer', 'npuzzle', 'satellite', 'spanner', 'visitall']
+BY_DOMAIN_KEY = {TRANSPORTATION_DOMAIN_KEY: TRANSPORTATION_DOMAINS,
+                 NON_TRANSPORTATION_DOMAIN_KEY: NON_TRANSPORTATION_DOMAINS,
+                 ALL_DOMAINS_KEY: DOMAIN_NAMES}
 
-PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-7b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
+PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-13b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
@@ -363,12 +366,6 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
     return True
 
 
-def calculate_stats_all(data_all, answer_response_type, override=False):
-    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
-        calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
-                        random_sub, model_name, prompt_type, override=override)
-
-
 def for_loop_it():
     with tqdm(total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
                     len(PLAN_LENGTHS) *
@@ -386,6 +383,15 @@ def for_loop_it():
                                 for prompt_type in PROMPT_TYPES:
                                     pbar.update(1)
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
+
+
+def calculate_stats_all(data_all, answer_response_type, data_params_iterator=None,override=False):
+    if data_params_iterator is None:
+        data_params_iterator = for_loop_it
+
+    for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in data_params_iterator():
+        calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
+                        random_sub, model_name, prompt_type, override=override)
 
 
 def save_stats_file(answer_response, score_key):
@@ -408,6 +414,32 @@ def collect_stats_all(answer_response_type):
     return stats_all
 
 
+###### Custom class for fluents ######
+class TrueFalseStatsCustom(TrueFalseStats):
+    def __init__(self, filtered_data, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                 substitutions, score_type=F1_SCORE_KEY):
+        super().__init__(filtered_data, plan_length, question_category, ramifications, model_name, prompt_type, domain,
+                         substitutions, score_type=F1_SCORE_KEY)
+        self.answer_type = TRUE_FALSE_ANSWER_TYPE
+        self.score_type = score_type
+        self.data = filtered_data
+
+
+def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_type, answer_type, substitutions,
+                                   plan_length, other_keys_ls):
+    """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
+    filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
+    filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
+
+
+    results = []
+    for d in data_all:
+        if all(d[k] in v for k, v in filter_by):
+            results.append(d)
+    return results
+
+###### Custom class for fluents  end ######
+
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
@@ -417,7 +449,27 @@ if __name__ == '__main__':
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
     # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS,
     #                 WITHOUT_RANDOM_SUB, 'gemma-2b-it', 'few_shot_1')
-    calculate_stats_all(data_all, answer_response, override=True)
+
+    def data_params_iterator():
+        with tqdm(
+                total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
+                      len(PLAN_LENGTHS) *
+                      len(QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]) *
+                      len(RAMIFICATION_TYPES) *
+                      len(SUBSTITUTION_TYPES) *
+                      len(PROMPT_MODEL_NAMES) *
+                      len(PROMPT_TYPES)) as pbar:
+            for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
+                for plan_length in PLAN_LENGTHS:
+                    for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
+                        for ramifications in [WITH_RAMIFICATIONS]:  # RAMIFICATION_TYPES:
+                            for random_sub in [WITH_RANDOM_SUB]:  # SUBSTITUTION_TYPES:
+                                for model_name in ['gemini']:  # PROMPT_MODEL_NAMES:
+                                    for prompt_type in ['few_shot_1']:  # PROMPT_TYPES:
+                                        pbar.update(1)
+                                        yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
+
+    calculate_stats_all(data_all, answer_response, data_params_iterator=data_params_iterator,override=True)
 
     print('saved', answer_response)
 
