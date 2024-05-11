@@ -18,8 +18,10 @@ import json
 ASP_ID ='asp_id'
 ASP_DATA = 'asp_data'
 ASP_DATA_TYPE = 'asp_data_type'
-
 ASP_DATA_TYPE_FLUENTS = 'fluents'
+
+MAX_SENT_LEN = 2000
+
 def unique_id(data):
     hasher = hashlib.sha1(str(data).encode('ascii'))
     return base64.urlsafe_b64encode(hasher.digest())
@@ -41,28 +43,37 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             perturbed_fluents.add(tuple(tmp))
         return list(perturbed_fluents)
 
-    def variations_helper(self, fluents_ls, num_variations):
+    def variations_helper(self, fluents_ls, num_variations, max_len=MAX_SENT_LEN):
         nl_vatiations = set()
         for fluents in fluents_ls:
             while num_variations > 0:
                 try:
-                    nl_vatiations.add(self.nl_fluents(fluents))
+                    nl_flunets = self.nl_fluents(fluents)
+                    if len(nl_flunets) < max_len:
+                        nl_vatiations.add(nl_flunets)
                 except Exception as e:
                     print(e)
                 num_variations -= 1
         return list(nl_vatiations)
 
+    def derange(self, ls):
+        # sattolo_cycle
+        result = deepcopy(ls)
+        for i in range(len(ls) - 1, 0, -1):
+            # Pick a random index from 0 to i-1 (not picking i itself)
+            j = random.randint(0, i - 1)
+            result[i], result[j] = result[j], result[i]
+        return result
 
 
     def corrupt_stuff_in_fluents(self, fluents, stuff1, stuff2):
-        r1 = deepcopy(stuff1)
-        random.shuffle(r1)
-        r2 = deepcopy(stuff2)
-        random.shuffle(r2)
+        fluents = deepcopy(fluents)
+        if len(stuff1) == 1 and len(stuff2) == 1:
+            return []
         corrupted_fluents_replaced = []
         num_fluents_to_corrupt = random.randint(1, len(fluents))
         for fluent in fluents[:num_fluents_to_corrupt]:
-            for o1, o2 in zip(r1, r2):
+            for o1, o2 in zip(stuff1, stuff2):
                 if o1 in fluent:
                     corrupted_fluents_replaced.append(fluent.replace(o1, o2))
                     break
@@ -70,12 +81,12 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
 
     def corrupt_objects_in_fluents(self, fluents):
         stuff1 = deepcopy(self.all_objects)
-        stuff2 = deepcopy(self.all_objects)
+        stuff2 = self.derange(deepcopy(self.all_objects))
         return self.corrupt_stuff_in_fluents(fluents, stuff1, stuff2)
 
     def corrupt_object_types_in_fluents(self, fluents):
         stuff1 = deepcopy(list(self.objects_by_type.keys()))
-        stuff2 = deepcopy(list(self.objects_by_type.keys()))
+        stuff2 = self.derange(deepcopy(list(self.objects_by_type.keys())))
         return self.corrupt_stuff_in_fluents(fluents, stuff1, stuff2)
 
     def all_nl_variations(self, data_dict, num_shuffles=100, num_variations=50):
@@ -87,54 +98,60 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
 
     def corrupt_nl_variations(self, data_dict, num_corruptions=100, num_nl_variations=50):
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
-            fluents = deepcopy(data_dict[ASP_DATA])
+            og_fluents = deepcopy(data_dict[ASP_DATA])
 
-            corrupted_fluents = set()
+            corrupted_fluents_set = set()
             while num_corruptions > 0:
                 # Case1.1 flip the negations of some fluents
-                fluents = deepcopy(fluents)
+                fluents = deepcopy(og_fluents)
                 random.shuffle(fluents)
-                corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents))))
+                corrupted_fluents_set.add(tuple(self.corrupt_fluents(list(fluents))))
                 num_corruptions -= 1
 
                 # Case1.2 flip the negations of some fluents and remove some fluents
-                fluents = deepcopy(fluents)
+                fluents = deepcopy(og_fluents)
                 random.shuffle(fluents)
                 if int(len(fluents)/2) > 0:
                     rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                    corrupted_fluents.add(tuple(self.corrupt_fluents(list(fluents)[:rand_i])))
+                    corrupted_fluents_set.add(tuple(self.corrupt_fluents(list(fluents)[:rand_i])))
                     num_corruptions -= 1
                 # TODO: consider adding, + # of fluents
 
                 # Case2.1 swap the numbers in the fluents
-                fluents = deepcopy(fluents)
+                fluents = deepcopy(og_fluents)
                 random.shuffle(fluents)
-                corrupted_fluents.add(tuple(self.corrupt_objects_in_fluents(fluents)))
+                corrupted_fluents_set.add(tuple(self.corrupt_objects_in_fluents(fluents)))
                 num_corruptions -= 1
 
                 # Case2.2 swap the numbers in the fluents
-                fluents = deepcopy(fluents)
+                fluents = deepcopy(og_fluents)
                 random.shuffle(fluents)
                 if int(len(fluents)/2) > 0:
                     rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                    corrupted_fluents.add(tuple(self.corrupt_objects_in_fluents(fluents)[:rand_i]))
+                    corrupted_fluents_set.add(tuple(self.corrupt_objects_in_fluents(fluents)[:rand_i]))
                     num_corruptions -= 1
 
                 # Case3.1 swap the numbers in the fluents
-                fluents = deepcopy(fluents)
+                fluents = deepcopy(og_fluents)
                 random.shuffle(fluents)
-                corrupted_fluents.add(tuple(self.corrupt_object_types_in_fluents(fluents)))
+                fluents = self.corrupt_fluents(list(fluents), 0.1)
+                currupted = self.corrupt_object_types_in_fluents(fluents)
+                corrupted_fluents_set.add(tuple(currupted))
                 num_corruptions -= 1
 
                 # Case3.2 swap the numbers in the fluents
-                fluents = deepcopy(fluents)
+                fluents = deepcopy(og_fluents)
                 random.shuffle(fluents)
+                fluents = self.corrupt_fluents(list(fluents), 0.1)
                 if int(len(fluents)/2) > 0:
                     rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                    corrupted_fluents.add(tuple(self.corrupt_object_types_in_fluents(fluents)[:rand_i]))
+                    corrupted = self.corrupt_object_types_in_fluents(fluents)[:rand_i]
+                    corrupted_fluents_set.add(tuple(corrupted))
                     num_corruptions -= 1
 
-            nl_vatiations = self.variations_helper(corrupted_fluents, num_nl_variations)
+            if () in corrupted_fluents_set:
+                corrupted_fluents_set.remove(())
+            nl_vatiations = self.variations_helper(corrupted_fluents_set, num_nl_variations)
             return list(nl_vatiations)
     def create_pairs(self, good, bad=None):
         if not bad:
@@ -234,7 +251,7 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
 if __name__ == '__main__':
     upper_instance = 11
     is_random_sub = False
-    save_dir = './pairs_new'
+    save_dir = './pairs_new3'
     os.makedirs(save_dir, exist_ok=True)
     for domain_class in ALL_DOMAIN_CLASSES:
         domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
@@ -250,5 +267,5 @@ if __name__ == '__main__':
 
         pairs_all = [{'s1': s1, 's2': s2, 'label': label} for s1, s2, label in pairs_over_instances]
         save_jsonl(pairs_all, f'{save_dir}/{domain.DOMAIN_NAME}.jsonl')
-        print(domain.DOMAIN_NAME, is_random_sub, 'saved')
+        print(domain.DOMAIN_NAME, f'is_random_sub: {is_random_sub}', 'saved')
 

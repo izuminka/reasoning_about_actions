@@ -282,7 +282,7 @@ class QuestionGenerationHelpers:
             return [corrupt_fluent(fluents[0])]
         else:
             corrupted_fluents = copy.deepcopy(fluents)
-            num_samples_to_corrupt = int(fraction_to_corrupt * len(fluents))
+            num_samples_to_corrupt = int(fraction_to_corrupt * len(fluents)) or 1
             samples_to_corrupt_inds = random.sample(range(0, len(fluents)), num_samples_to_corrupt)
             for i in samples_to_corrupt_inds:
                 corrupted_fluents[i] = corrupt_fluent(fluents[i])
