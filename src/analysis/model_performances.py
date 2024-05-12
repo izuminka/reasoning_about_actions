@@ -117,7 +117,7 @@ def sanity_checks():
     return True
 
 
-def gather_data(questions_by_id, results_dir=RESULTS_PATH):
+def gather_data(questions_by_id, selected_ids=None, results_dir=RESULTS_PATH):
     all_data = []
     missing_data = []
     for substitutions in SUBSTITUTION_TYPES:
@@ -141,6 +141,8 @@ def gather_data(questions_by_id, results_dir=RESULTS_PATH):
                                             SK_SUBSTITUTION: substitutions}
                                 qa_objects = open_jsonl(results_domain_path)
                                 for d in qa_objects:
+                                    if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
+                                        continue
                                     if d[OUT_OBJ_ID] not in questions_by_id:
                                         raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
                                     d.update(questions_by_id[d[OUT_OBJ_ID]])
