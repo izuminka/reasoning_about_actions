@@ -18,6 +18,7 @@ SK_SUBSTITUTION = 'substitution_type'
 SK_MODEL = 'model'
 SK_PROMPT_TYPE = 'prompt_type'
 SK_RESULT = 'result'
+SK_RESULT_OTHER = 'result_other'
 SK_STATS = 'stats'
 SK_UNIQUE_ID = 'unique_id'
 
@@ -118,6 +119,9 @@ def sanity_checks():
 
 
 def gather_data(questions_by_id, selected_ids=None, results_dir=RESULTS_PATH):
+    if selected_ids and set(selected_ids).intersection(set(questions_by_id.keys())) != set(selected_ids):
+        raise ValueError(f"Missing questions {set(selected_ids).difference(set(questions_by_id.keys()))}")
+
     all_data = []
     missing_data = []
     for substitutions in SUBSTITUTION_TYPES:
@@ -140,9 +144,9 @@ def gather_data(questions_by_id, selected_ids=None, results_dir=RESULTS_PATH):
                                             SK_RAMIFICATION: ramifications,
                                             SK_SUBSTITUTION: substitutions}
                                 qa_objects = open_jsonl(results_domain_path)
+                                if selected_ids:
+                                    qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
                                 for d in qa_objects:
-                                    if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
-                                        continue
                                     if d[OUT_OBJ_ID] not in questions_by_id:
                                         raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
                                     d.update(questions_by_id[d[OUT_OBJ_ID]])
@@ -217,11 +221,12 @@ class BaseStats:
         self.answer_type = None
         self.result = None
 
-    def out_object(self, result, stats=None):
+    def out_object(self, result, stats=None, result_other=None):
         '''returns a dictionary with the stats of the object,
         result is a float'''
         return {SK_RESULT: result,
                 SK_STATS: stats,
+                SK_RESULT_OTHER: result_other,
 
                 SK_MODEL: self.model_name,
                 SK_PROMPT_TYPE: self.prompt_type,
@@ -305,13 +310,16 @@ class TrueFalseStats(BaseStats):
                   self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
                   self.BOTH_ARE_ABSENT_KEY + '_%': both_absent / len(not_corrupted_data)}
 
+        result_other=None
         if self.score_type == F1_SCORE_KEY:
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
         elif self.score_type == ACCURACY_SCORE_KEY:
             self.result = accuracy_score(true, pred)
+            std = np.std([1 if t == p else 0 for t, p in zip(true, pred)])
+            result_other = {'std': std, 'sem': std / np.sqrt(len(true))}
         else:
             raise f"Unknown score_type {self.score_type}"
-        return self.out_object(self.result, stats)
+        return self.out_object(self.result, stats, result_other)
 
 
 class FreeAnswerStats(BaseStats):
@@ -343,11 +351,10 @@ def stats_data_path(answer_response_type, domain, plan_length, question_category
 
 
 def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
-                    model_name, prompt_type, override=False):
-    if not os.path.exists(STATISTICS_PATH):
-        os.makedirs(STATISTICS_PATH)
+                    model_name, prompt_type, save_main_dir=STATISTICS_PATH, override=False):
+    os.makedirs(save_main_dir, exist_ok=True)
     save_dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
-                               random_sub, model_name, prompt_type, save_main_dir=STATISTICS_PATH)
+                               random_sub, model_name, prompt_type, save_main_dir=save_main_dir)
     file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
     if os.path.exists(file_path) and not override:
         return False
@@ -387,13 +394,13 @@ def for_loop_it():
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
 
-def calculate_stats_all(data_all, answer_response_type, data_params_iterator=None,override=False):
+def calculate_stats_all(data_all, answer_response_type, save_main_dir=STATISTICS_PATH, data_params_iterator=None,override=False):
     if data_params_iterator is None:
         data_params_iterator = for_loop_it
 
     for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in data_params_iterator():
         calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
-                        random_sub, model_name, prompt_type, override=override)
+                        random_sub, model_name, prompt_type, save_main_dir=save_main_dir, override=override)
 
 
 def save_stats_file(answer_response, score_key):
@@ -404,11 +411,11 @@ def tf_answer_type(score_key=F1_SCORE_KEY):
     return f'{TRUE_FALSE_ANSWER_TYPE}.{score_key}'
 
 
-def collect_stats_all(answer_response_type):
+def collect_stats_all(answer_response_type, save_main_dir=STATISTICS_PATH):
     stats_all = []
     for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_it():
         dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
-                              model_name, prompt_type)
+                              model_name, prompt_type, save_main_dir=save_main_dir)
         path = os.path.join(dir, RESULTS_FILE_NAME)
         if os.path.exists(path):
             with open(path) as f:
@@ -432,7 +439,8 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
     filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
     filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
-
+    if other_keys_ls:
+        filter_by.extend(other_keys_ls)
 
     results = []
     for d in data_all:
@@ -442,38 +450,46 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
 
 ###### Custom class for fluents  end ######
 
+def data_params_iterator():
+    domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
+    plan_lengths = [1] #PLAN_LENGTHS
+    question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
+    ramification_types = RAMIFICATION_TYPES
+    substitution_types = SUBSTITUTION_TYPES
+    model_names = ['gemini'] #PROMPT_MODEL_NAMES
+    prompt_types = ['few_shot_1'] #PROMPT_TYPES
+
+    with tqdm(total=len(domains) * len(plan_lengths) * len(question_categories) * len(ramification_types) *
+                  len(substitution_types) * len(model_names) * len(prompt_types)) as pbar:
+        for domain in domains:
+            for plan_length in plan_lengths:
+                for question_category in question_categories:
+                    for ramifications in ramification_types:
+                        for random_sub in substitution_types:
+                            for model_name in model_names:
+                                for prompt_type in prompt_types:
+                                    pbar.update(1)
+                                    yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
+
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
     # sanity_checks()
-    data_all, missing_data = gather_data(questions_by_id)
 
-    answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
-    # calculate_stats(data_all, answer_response, 'blocksworld', 1, ALL_QUESTION_CATEGORIES_KEY, WITHOUT_RAMIFICATIONS,
-    #                 WITHOUT_RANDOM_SUB, 'gemma-2b-it', 'few_shot_1')
 
-    def data_params_iterator():
-        with tqdm(
-                total=len(DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]) *
-                      len(PLAN_LENGTHS) *
-                      len(QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]) *
-                      len(RAMIFICATION_TYPES) *
-                      len(SUBSTITUTION_TYPES) *
-                      len(PROMPT_MODEL_NAMES) *
-                      len(PROMPT_TYPES)) as pbar:
-            for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
-                for plan_length in PLAN_LENGTHS:
-                    for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
-                        for ramifications in [WITH_RAMIFICATIONS]:  # RAMIFICATION_TYPES:
-                            for random_sub in [WITH_RANDOM_SUB]:  # SUBSTITUTION_TYPES:
-                                for model_name in ['gemini']:  # PROMPT_MODEL_NAMES:
-                                    for prompt_type in ['few_shot_1']:  # PROMPT_TYPES:
-                                        pbar.update(1)
-                                        yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
+    for s in [100, 200, 700, 'inf']:
+        ids_file_name = f'small_dataset_ids.{s}.pl-1'  # None
+        if ids_file_name:
+            selected_ids = open_jsonl(f'{CODE_PATH}/other/{ids_file_name}.jsonl')
+            data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
+            save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
+        else:
+            data_all, missing_data = gather_data(questions_by_id)
+            save_main_dir = STATISTICS_PATH
 
-    calculate_stats_all(data_all, answer_response, data_params_iterator=data_params_iterator,override=True)
-
-    print('saved', answer_response)
+        answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
+        calculate_stats_all(data_all, answer_response, save_main_dir=save_main_dir, data_params_iterator=data_params_iterator,override=True)
+        print('saved', answer_response)
 
     # answer_response = FREE_ANSWER
     # results = big_for_loop(answer_response)

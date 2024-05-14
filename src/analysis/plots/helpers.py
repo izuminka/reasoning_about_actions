@@ -3,6 +3,7 @@ import numpy as np
 
 NAME_KEY = 'name'
 DATA_KEY = 'data'
+ERROR_KEY = 'error'
 
 
 def plt_n_bars(categories, groups):
@@ -18,12 +19,17 @@ def plt_n_bars(categories, groups):
 
     for i, group in enumerate(groups):
         data = [0 if x is None else x for x in group[DATA_KEY]]
-
-        plt.bar(ind + i * bar_width, data, width=bar_width, label=group[NAME_KEY])
+        if ERROR_KEY in group:
+            plt.bar(ind + i * bar_width, data, width=bar_width, label=group[NAME_KEY], yerr=group[ERROR_KEY][i], capsize=5)
+        else:
+            plt.bar(ind + i * bar_width, data, width=bar_width, label=group[NAME_KEY])
 
     # Set the x-axis labels in the middle of the groups of bars
     plt.xticks(ind + offset, categories, rotation=30)
     plt.legend()
+
+
+
 # #
 # # Example usage
 # categories = ['Category 1', 'Category 2', 'Category 3']
