@@ -88,7 +88,6 @@ def sanity_checks():
                             questions_ids.add(d[OUT_OBJ_ID])
                     except:
                         pass
-
         return questions_ids
 
     def get_results_ids(results_dir):
@@ -205,7 +204,7 @@ def filter_single_selector(stats_all, plan_length, question_category, ramificati
     elif not len(results) == 1:
         raise ValueError(f'len(instance) == {len(results)}')
     else:
-        return results[0][SK_RESULT]
+        return results[0]#[SK_RESULT]
 
 
 class BaseStats:
@@ -452,12 +451,12 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
 
 def data_params_iterator():
     domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
-    plan_lengths = [1] #PLAN_LENGTHS
+    plan_lengths = [1, 10, 19] #PLAN_LENGTHS
     question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
     ramification_types = RAMIFICATION_TYPES
     substitution_types = SUBSTITUTION_TYPES
     model_names = ['gemini'] #PROMPT_MODEL_NAMES
-    prompt_types = ['few_shot_1'] #PROMPT_TYPES
+    prompt_types = ['few_shot_5', 'few_shot_1'] #PROMPT_TYPES
 
     with tqdm(total=len(domains) * len(plan_lengths) * len(question_categories) * len(ramification_types) *
                   len(substitution_types) * len(model_names) * len(prompt_types)) as pbar:
@@ -474,22 +473,22 @@ def data_params_iterator():
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
-    # sanity_checks()
+    sanity_checks()
 
 
-    for s in [100, 200, 700, 'inf']:
-        ids_file_name = f'small_dataset_ids.{s}.pl-1'  # None
-        if ids_file_name:
-            selected_ids = open_jsonl(f'{CODE_PATH}/other/{ids_file_name}.jsonl')
-            data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
-            save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
-        else:
-            data_all, missing_data = gather_data(questions_by_id)
-            save_main_dir = STATISTICS_PATH
+    ids_file_name = f'small_dataset_ids.20'  # None
+    if ids_file_name:
+        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
+        data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
+        save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
+    else:
+        data_all, missing_data = gather_data(questions_by_id)
+        save_main_dir = STATISTICS_PATH
 
-        answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{F1_SCORE_KEY}'
-        calculate_stats_all(data_all, answer_response, save_main_dir=save_main_dir, data_params_iterator=data_params_iterator,override=True)
-        print('saved', answer_response)
+    answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
+    calculate_stats_all(data_all, answer_response, save_main_dir=save_main_dir, data_params_iterator=data_params_iterator,
+                        override=True)
+    print('saved', answer_response)
 
     # answer_response = FREE_ANSWER
     # results = big_for_loop(answer_response)
