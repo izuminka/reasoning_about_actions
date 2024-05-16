@@ -47,7 +47,8 @@ BY_DOMAIN_KEY = {TRANSPORTATION_DOMAIN_KEY: TRANSPORTATION_DOMAINS,
                  NON_TRANSPORTATION_DOMAIN_KEY: NON_TRANSPORTATION_DOMAINS,
                  ALL_DOMAINS_KEY: DOMAIN_NAMES}
 
-PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it', 'Llama-2-13b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
+PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it',
+                      'Llama-2-13b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
@@ -145,6 +146,8 @@ def gather_data(questions_by_id, selected_ids=None, results_dir=RESULTS_PATH):
                                 qa_objects = open_jsonl(results_domain_path)
                                 if selected_ids:
                                     qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
+                                    if not qa_objects:
+                                        print(f"Missing questions, {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
                                 for d in qa_objects:
                                     if d[OUT_OBJ_ID] not in questions_by_id:
                                         raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
@@ -171,6 +174,7 @@ def filter_gather(data_all, filter_by):
         if all(d[k] in v for k, v in filter_by):
             results.append(d)
     return results
+
 
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                           answer_type, substitutions):
@@ -204,7 +208,7 @@ def filter_single_selector(stats_all, plan_length, question_category, ramificati
     elif not len(results) == 1:
         raise ValueError(f'len(instance) == {len(results)}')
     else:
-        return results[0]#[SK_RESULT]
+        return results[0]  # [SK_RESULT]
 
 
 class BaseStats:
@@ -309,7 +313,7 @@ class TrueFalseStats(BaseStats):
                   self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
                   self.BOTH_ARE_ABSENT_KEY + '_%': both_absent / len(not_corrupted_data)}
 
-        result_other=None
+        result_other = None
         if self.score_type == F1_SCORE_KEY:
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
         elif self.score_type == ACCURACY_SCORE_KEY:
@@ -344,7 +348,7 @@ class FreeAnswerStats(BaseStats):
 
 
 def stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name,
-                    prompt_type, save_main_dir = STATISTICS_PATH):
+                    prompt_type, save_main_dir=STATISTICS_PATH):
     return os.path.join(save_main_dir, answer_response_type, domain, str(plan_length), question_category,
                         ramifications, random_sub, model_name, prompt_type)
 
@@ -393,7 +397,8 @@ def for_loop_it():
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
 
-def calculate_stats_all(data_all, answer_response_type, save_main_dir=STATISTICS_PATH, data_params_iterator=None,override=False):
+def calculate_stats_all(data_all, answer_response_type, save_main_dir=STATISTICS_PATH, data_params_iterator=None,
+                        override=False):
     if data_params_iterator is None:
         data_params_iterator = for_loop_it
 
@@ -447,19 +452,20 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
             results.append(d)
     return results
 
+
 ###### Custom class for fluents  end ######
 
 def data_params_iterator():
     domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
-    plan_lengths = [1, 10, 19] #PLAN_LENGTHS
+    plan_lengths = [1, 10, 19]  # PLAN_LENGTHS
     question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
     ramification_types = RAMIFICATION_TYPES
     substitution_types = SUBSTITUTION_TYPES
-    model_names = ['gemini'] #PROMPT_MODEL_NAMES
-    prompt_types = ['few_shot_5', 'few_shot_1'] #PROMPT_TYPES
+    model_names = ['gemini']  # PROMPT_MODEL_NAMES
+    prompt_types = ['few_shot_1']  # PROMPT_TYPES 'few_shot_5',
 
     with tqdm(total=len(domains) * len(plan_lengths) * len(question_categories) * len(ramification_types) *
-                  len(substitution_types) * len(model_names) * len(prompt_types)) as pbar:
+                    len(substitution_types) * len(model_names) * len(prompt_types)) as pbar:
         for domain in domains:
             for plan_length in plan_lengths:
                 for question_category in question_categories:
@@ -470,13 +476,13 @@ def data_params_iterator():
                                     pbar.update(1)
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
+
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
     sanity_checks()
 
-
-    ids_file_name = f'small_dataset_ids.20'  # None
+    ids_file_name = 'dataset_ids.test'  # f'small_dataset_ids.20'  # None
     if ids_file_name:
         selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
@@ -486,7 +492,8 @@ if __name__ == '__main__':
         save_main_dir = STATISTICS_PATH
 
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
-    calculate_stats_all(data_all, answer_response, save_main_dir=save_main_dir, data_params_iterator=data_params_iterator,
+    calculate_stats_all(data_all, answer_response, save_main_dir=save_main_dir,
+                        data_params_iterator=data_params_iterator,
                         override=True)
     print('saved', answer_response)
 
