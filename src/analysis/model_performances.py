@@ -47,9 +47,8 @@ BY_DOMAIN_KEY = {TRANSPORTATION_DOMAIN_KEY: TRANSPORTATION_DOMAINS,
                  NON_TRANSPORTATION_DOMAIN_KEY: NON_TRANSPORTATION_DOMAINS,
                  ALL_DOMAINS_KEY: DOMAIN_NAMES}
 
-PROMPT_MODEL_NAMES = ['gemini', 'gemma-2b-it',
-                      'Llama-2-13b-chat-hf']  # TODO add , 'Llama-2-7b-chat-hf', 'gpt4', 'Mistral-7B-Instruct-v0.2',
-PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']  # TODO clean up dirs, few_shot_5_cot 'few_shot_5'
+PROMPT_MODEL_NAMES = ['gemma-2b', 'llama2-7b', 'llama2-13b', 'gemini']  # TODO add 'gpt4'
+PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
@@ -457,22 +456,22 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
 
 def data_params_iterator():
     domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
-    plan_lengths = [1, 10, 19]  # PLAN_LENGTHS
-    question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
     ramification_types = RAMIFICATION_TYPES
     substitution_types = SUBSTITUTION_TYPES
-    model_names = ['gemini']  # PROMPT_MODEL_NAMES
-    prompt_types = ['few_shot_1']  # PROMPT_TYPES 'few_shot_5',
+    model_names = PROMPT_MODEL_NAMES
+    prompt_types = PROMPT_TYPES
+    plan_lengths = [1, 10, 19]  # PLAN_LENGTHS
+    question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
 
     with tqdm(total=len(domains) * len(plan_lengths) * len(question_categories) * len(ramification_types) *
                     len(substitution_types) * len(model_names) * len(prompt_types)) as pbar:
         for domain in domains:
-            for plan_length in plan_lengths:
-                for question_category in question_categories:
-                    for ramifications in ramification_types:
-                        for random_sub in substitution_types:
-                            for model_name in model_names:
-                                for prompt_type in prompt_types:
+            for ramifications in ramification_types:
+                for random_sub in substitution_types:
+                    for model_name in model_names:
+                        for prompt_type in prompt_types:
+                            for plan_length in plan_lengths:
+                                for question_category in question_categories:
                                     pbar.update(1)
                                     yield domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type
 
@@ -484,7 +483,7 @@ if __name__ == '__main__':
 
     ids_file_name = 'dataset_ids.test'  # f'small_dataset_ids.20'  # None
     if ids_file_name:
-        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
+        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl') + open_jsonl(f'{DATA_PATH}/{WITH_RANDOM_SUB}.{ids_file_name}.jsonl')
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
         save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
     else:
