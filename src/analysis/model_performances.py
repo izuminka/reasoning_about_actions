@@ -47,7 +47,7 @@ BY_DOMAIN_KEY = {TRANSPORTATION_DOMAIN_KEY: TRANSPORTATION_DOMAINS,
                  NON_TRANSPORTATION_DOMAIN_KEY: NON_TRANSPORTATION_DOMAINS,
                  ALL_DOMAINS_KEY: DOMAIN_NAMES}
 
-PROMPT_MODEL_NAMES = ['gemma-2b', 'llama2-7b', 'llama2-13b', 'gemini']  # TODO add 'gpt4'
+PROMPT_MODEL_NAMES = ['gemma-2b', 'llama2-7b-chat', 'llama2-13b-chat', 'gemini']  # TODO add 'gpt4'
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 
