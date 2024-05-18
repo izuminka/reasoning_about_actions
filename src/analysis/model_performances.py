@@ -492,8 +492,7 @@ if __name__ == '__main__':
 
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
     calculate_stats_all(data_all, answer_response, save_main_dir=save_main_dir,
-                        data_params_iterator=data_params_iterator,
-                        override=True)
+                        data_params_iterator=data_params_iterator, override=False)
     print('saved', answer_response)
 
     # answer_response = FREE_ANSWER
