@@ -45,17 +45,17 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             perturbed_fluents.add(tuple(tmp))
         return list(perturbed_fluents)
 
-    def nl_variations_helper(self, fluents_ls, to_nl_function, num_variations, max_len=MAX_SENT_LEN):
+    def nl_variations_helper(self, asp_ls, to_nl_function, num_variations, max_len=MAX_SENT_LEN):
         nl_vatiations = set()
-        for fluents in fluents_ls:
-            while num_variations > 0:
-                try:
-                    nl_flunets = to_nl_function(fluents)
-                    if len(nl_flunets) < max_len:
-                        nl_vatiations.add(nl_flunets)
-                except Exception as e:
-                    print(e)
-                num_variations -= 1
+        while num_variations > 0:
+            for asp in asp_ls:
+                # try:
+                nl = to_nl_function(asp)
+                if len(nl) < max_len:
+                    nl_vatiations.add(nl)
+                # except Exception as e:
+                #     print(e)
+            num_variations -= 1
         return list(nl_vatiations)
 
     def derange(self, ls):
@@ -76,6 +76,7 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
         num_fluents_to_corrupt = random.randint(1, len(fluents))
         for fluent in fluents[:num_fluents_to_corrupt]:
             for o1, o2 in zip(stuff1, stuff2):
+                o1, o2 = str(o1), str(o2)
                 if o1 in fluent:
                     corrupted_fluents_replaced.append(fluent.replace(o1, o2))
                     break
@@ -109,6 +110,12 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             perturbed_fluents = self.purturb_helper(data_dict, num_shuffles)
             nl_vatiations = self.nl_variations_helper(perturbed_fluents, self.nl_fluents, num_variations)
             return list(nl_vatiations)
+        elif data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_OBJ:
+            perturbed_fluents = self.purturb_helper(data_dict, num_shuffles)
+            nl_vatiations = self.nl_variations_helper(perturbed_fluents, partial(self.nl_objects, is_sorted=False), num_variations)
+            return list(nl_vatiations)
+
+
 
 
     def general_asp_corrution(self, og_asp_obj_ls, function_corruption):
@@ -163,9 +170,6 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
         elif data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_OBJ:
             og_objects = deepcopy(data_dict[ASP_DATA])
             while num_corruptions > 0:
-                res = self.general_asp_corrution(og_objects, self.corrupt_numbers)
-                num_corruptions -= len(res)
-                corrupted_set.update(res)
 
                 res = self.general_asp_corrution(og_objects, self.remove_numbers_in_objects)
                 num_corruptions -= len(res)
@@ -175,28 +179,26 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
                 num_corruptions -= len(res)
                 corrupted_set.update(res)
 
-
                 # TODO add random new objects
-
-                to_nl_function = lambda x: x
-        elif data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_ACTIONS:
-            og_actions = deepcopy(data_dict[ASP_DATA])
-            while num_corruptions > 0:
-                res = self.general_asp_corrution(og_actions, self.corrupt_numbers)
-                num_corruptions -= len(res)
-                corrupted_set.update(res)
-
-                res = self.general_asp_corrution(og_actions, self.remove_numbers_in_objects)
-                num_corruptions -= len(res)
-                corrupted_set.update(res)
-
-                res = self.general_asp_corrution(og_actions, self.corrupt_object_types)
-                num_corruptions -= len(res)
-                corrupted_set.update(res)
-
-                # TODO add random new actions
-
-                to_nl_function = self.nl_actions
+                to_nl_function = partial(self.nl_objects, is_sorted=False)
+        # elif data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_ACTIONS:
+        #     og_actions = deepcopy(data_dict[ASP_DATA])
+        #     while num_corruptions > 0:
+        #         res = self.general_asp_corrution(og_actions, self.corrupt_numbers)
+        #         num_corruptions -= len(res)
+        #         corrupted_set.update(res)
+        #
+        #         res = self.general_asp_corrution(og_actions, self.remove_numbers_in_objects)
+        #         num_corruptions -= len(res)
+        #         corrupted_set.update(res)
+        #
+        #         res = self.general_asp_corrution(og_actions, self.corrupt_object_types)
+        #         num_corruptions -= len(res)
+        #         corrupted_set.update(res)
+        #
+        #         # TODO add random new actions
+        #
+        #         to_nl_function = self.nl_actions
         else:
             return []
 
@@ -554,19 +556,11 @@ class HallucinationPairs(AnswerPairGeneratorHelper):
                                   fluent_type=fluent_type,
                                   question_name=question_name(counter, 'iter_5'))
 
-    def questions_iter_6(self):
-        counter = 0
-        for is_answer_true in [True, False]:
-            counter += 1
-            yield partial(self.questions_iter_6_helper,
-                          is_answer_true=is_answer_true,
-                          question_name=question_name(counter, 'iter_6'))
 
     def question_iterators(self):
         return chain(
                      self.questions_iter_4(),
-                     self.questions_iter_5(),
-                     self.questions_iter_6())
+                     self.questions_iter_5())
 
 
 
@@ -582,12 +576,13 @@ if __name__ == '__main__':
             instance_name = f'Instance_{i}'
             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
 
-            for pair_class in [ObjectTrackingPairs, StateTrackingPairs, FluentTrackingPairs, EffectsPairs, ActionExecutabilityPairs, HallucinationPairs]:
+            # not working: HallucinationPairs
+            for pair_class in [ObjectTrackingPairs]: #[StateTrackingPairs, FluentTrackingPairs, EffectsPairs]:#,ObjectTrackingPairs, ActionExecutabilityPairs]: #
                 all_questions = pair_class(jsonl_instance, domain, instance_name)
                 for p in all_questions.pairs_pipeline():
                     pairs_over_instances.add(p)
 
         pairs_all = [{'s1': s1, 's2': s2, 'label': label} for s1, s2, label in pairs_over_instances]
-        save_jsonl(pairs_all, f'{save_dir}/{domain.DOMAIN_NAME}.jsonl')
+        # save_jsonl(pairs_all, f'{save_dir}/{domain.DOMAIN_NAME}.jsonl')
         print(domain.DOMAIN_NAME, f'is_random_sub: {is_random_sub}', 'saved')
 

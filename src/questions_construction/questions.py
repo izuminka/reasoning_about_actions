@@ -69,19 +69,19 @@ def add_commas_and(nl_obj_ls):
     return comma_str.join(nl_obj_ls[:-1]) + and_str + nl_obj_ls[-1]
 
 
-def asp_to_nl(obj_ls, converter, fluent_subs=None, is_sorted=True, is_list=False):
+def asp_to_nl(obj_ls, converter, subs=None, is_sorted=True, is_list=False):
     if not obj_ls:
         raise 'Empty list'
     if len(obj_ls) == 1:
         nl_obj = converter(obj_ls[0])
-        if fluent_subs:
-            nl_obj = nl_obj.replace(fluent_subs[0], fluent_subs[1])
+        if subs:
+            nl_obj = nl_obj.replace(subs[0], subs[1])
         if is_list:
             return [nl_obj]
         return nl_obj
     nl_obj_ls = [converter(f) for f in obj_ls]
-    if fluent_subs:
-        nl_obj_ls = [f.replace(fluent_subs[0], fluent_subs[1]) for f in nl_obj_ls]
+    if subs:
+        nl_obj_ls = [f.replace(subs[0], subs[1]) for f in nl_obj_ls]
     if is_sorted:
         nl_obj_ls = sorted(nl_obj_ls)
     if is_list:
@@ -249,16 +249,19 @@ class QuestionGenerationHelpers:
                 by_object_name[obj] = obj_type
         return by_object_name
 
+    def nl_objects(self, objects, is_sorted=True):
+        return asp_to_nl(objects, lambda x: x, is_sorted=is_sorted)
+
     def nl_fluents(self, fluents, fluent_subs=None, is_sorted=True, is_capitalized=False):
-        nl = asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs,
+        nl = asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, subs=fluent_subs,
                        is_sorted=is_sorted)
         if is_capitalized:
             return capitalize_first_letter(nl)
         return nl
 
-    def nl_actions(self, actions, fluent_subs=None, is_sorted=False):
+    def nl_actions(self, actions, subs=None, is_sorted=False):
         actions = [a[len('action_'):] for a in actions]
-        return asp_to_nl(actions, self.domain_class.action_to_natural_language, fluent_subs=fluent_subs,
+        return asp_to_nl(actions, self.domain_class.action_to_natural_language, subs=subs,
                          is_sorted=is_sorted)
 
     def nl_question_prefix(self, plan_length, is_planned=False):
