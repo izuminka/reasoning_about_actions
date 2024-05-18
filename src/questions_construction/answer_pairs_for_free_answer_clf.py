@@ -119,25 +119,33 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
 
 
     def general_asp_corrution(self, og_asp_obj_ls, function_corruption):
-        result_set = set()
+        result_set = []
         asp_obj_copy = deepcopy(og_asp_obj_ls)
-        random.shuffle(asp_obj_copy)
-        result_set.add(tuple(function_corruption(list(asp_obj_copy))))
+        result_set.append(function_corruption(list(asp_obj_copy)))
 
         # Case1.2 flip the negations of some fluents and remove some fluents
         asp_obj_copy = deepcopy(og_asp_obj_ls)
         random.shuffle(asp_obj_copy)
         if int(len(asp_obj_copy) / 2) > 0:
             rand_i = random.randint(int(len(asp_obj_copy) / 2), len(asp_obj_copy))
-            result_set.add(tuple(function_corruption(list(asp_obj_copy)[:rand_i])))
+            result_set.append(function_corruption(list(asp_obj_copy)[:rand_i]))
         # TODO: consider adding, + # of fluents
-        return result_set
+
+        final = set()
+        for r in result_set:
+            if r != og_asp_obj_ls:
+                random.shuffle(r)
+                final.add(tuple(r))
+        return final
 
 
     def corrupt_nl_variations(self, data_dict, num_corruptions=100, num_nl_variations=50):
         corrupted_set = set()
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
             og_fluents = deepcopy(data_dict[ASP_DATA])
+            slightly_corrupted_fluents = deepcopy(og_fluents)
+            random.shuffle(slightly_corrupted_fluents)
+            slightly_corrupted_fluents = self.corrupt_fluents(list(slightly_corrupted_fluents), 0.1)
             while num_corruptions > 0:
                 # Case1.1 flip the negations of some fluents
                 res = self.general_asp_corrution(og_fluents, self.corrupt_fluents)
@@ -150,20 +158,17 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
                 corrupted_set.update(res)
 
                 # Case3.1 corrupt_object_types_in_fluents
-                # fluents = deepcopy(og_fluents)
-                # random.shuffle(fluents)
-                # fluents = self.corrupt_fluents(list(fluents), 0.1)
-                res = self.general_asp_corrution(og_fluents, self.corrupt_object_types)
+                res = self.general_asp_corrution(slightly_corrupted_fluents, self.corrupt_object_types)
                 num_corruptions -= len(res)
                 corrupted_set.update(res)
 
                 # Case4.1 corrupt_numbers_in_fluents
-                res = self.general_asp_corrution(og_fluents, self.corrupt_numbers)
+                res = self.general_asp_corrution(slightly_corrupted_fluents, self.corrupt_numbers)
                 num_corruptions -= len(res)
                 corrupted_set.update(res)
 
                 # Case4.2 remove numbers in objects
-                res = self.general_asp_corrution(og_fluents, self.remove_numbers_in_objects)
+                res = self.general_asp_corrution(slightly_corrupted_fluents, self.remove_numbers_in_objects)
                 num_corruptions -= len(res)
                 corrupted_set.update(res)
                 to_nl_function = self.nl_fluents
@@ -176,6 +181,10 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
                 corrupted_set.update(res)
 
                 res = self.general_asp_corrution(og_objects, self.corrupt_object_types)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
+
+                res = self.general_asp_corrution(og_objects, self.corrupt_numbers)
                 num_corruptions -= len(res)
                 corrupted_set.update(res)
 
