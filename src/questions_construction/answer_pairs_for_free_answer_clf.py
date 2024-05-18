@@ -19,8 +19,10 @@ ASP_ID ='asp_id'
 ASP_DATA = 'asp_data'
 ASP_DATA_TYPE = 'asp_data_type'
 ASP_DATA_TYPE_FLUENTS = 'fluents'
+ASP_DATA_TYPE_OBJ = 'objects'
+ASP_DATA_TYPE_ACTIONS = 'actions'
 
-MAX_SENT_LEN = 2000
+MAX_SENT_LEN = 3000
 
 def unique_id(data):
     hasher = hashlib.sha1(str(data).encode('ascii'))
@@ -43,12 +45,12 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
             perturbed_fluents.add(tuple(tmp))
         return list(perturbed_fluents)
 
-    def variations_helper(self, fluents_ls, num_variations, max_len=MAX_SENT_LEN):
+    def nl_variations_helper(self, fluents_ls, to_nl_function, num_variations, max_len=MAX_SENT_LEN):
         nl_vatiations = set()
         for fluents in fluents_ls:
             while num_variations > 0:
                 try:
-                    nl_flunets = self.nl_fluents(fluents)
+                    nl_flunets = to_nl_function(fluents)
                     if len(nl_flunets) < max_len:
                         nl_vatiations.add(nl_flunets)
                 except Exception as e:
@@ -66,7 +68,7 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
         return result
 
 
-    def corrupt_stuff_in_fluents(self, fluents, stuff1, stuff2):
+    def corrupt_stuff_in_asp(self, fluents, stuff1, stuff2):
         fluents = deepcopy(fluents)
         if len(stuff1) == 1 and len(stuff2) == 1:
             return []
@@ -77,82 +79,132 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
                 if o1 in fluent:
                     corrupted_fluents_replaced.append(fluent.replace(o1, o2))
                     break
-        return corrupted_fluents_replaced + fluents[num_fluents_to_corrupt:]
+        result = corrupted_fluents_replaced + fluents[num_fluents_to_corrupt:]
+        if result == fluents:
+            return []
+        return result
 
-    def corrupt_objects_in_fluents(self, fluents):
+    def remove_numbers_in_objects(self, fluents):
+        stuff1 = list(range(20, -1, -1))
+        stuff2 = ['' for _ in range(len(stuff1))]
+        return self.corrupt_stuff_in_asp(fluents, stuff1, stuff2)
+
+    def corrupt_numbers(self, fluents):
+        stuff1 = list(range(20, -1, -1))
+        stuff2 = self.derange(deepcopy(stuff1))
+        return self.corrupt_stuff_in_asp(fluents, stuff1, stuff2)
+
+    def corrupt_objects(self, fluents):
         stuff1 = deepcopy(self.all_objects)
         stuff2 = self.derange(deepcopy(self.all_objects))
-        return self.corrupt_stuff_in_fluents(fluents, stuff1, stuff2)
+        return self.corrupt_stuff_in_asp(fluents, stuff1, stuff2)
 
-    def corrupt_object_types_in_fluents(self, fluents):
+    def corrupt_object_types(self, fluents):
         stuff1 = deepcopy(list(self.objects_by_type.keys()))
         stuff2 = self.derange(deepcopy(list(self.objects_by_type.keys())))
-        return self.corrupt_stuff_in_fluents(fluents, stuff1, stuff2)
+        return self.corrupt_stuff_in_asp(fluents, stuff1, stuff2)
 
     def all_nl_variations(self, data_dict, num_shuffles=100, num_variations=50):
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
             perturbed_fluents = self.purturb_helper(data_dict, num_shuffles)
-            nl_vatiations = self.variations_helper(perturbed_fluents, num_variations)
+            nl_vatiations = self.nl_variations_helper(perturbed_fluents, self.nl_fluents, num_variations)
             return list(nl_vatiations)
+
+
+    def general_asp_corrution(self, og_asp_obj_ls, function_corruption):
+        result_set = set()
+        asp_obj_copy = deepcopy(og_asp_obj_ls)
+        random.shuffle(asp_obj_copy)
+        result_set.add(tuple(function_corruption(list(asp_obj_copy))))
+
+        # Case1.2 flip the negations of some fluents and remove some fluents
+        asp_obj_copy = deepcopy(og_asp_obj_ls)
+        random.shuffle(asp_obj_copy)
+        if int(len(asp_obj_copy) / 2) > 0:
+            rand_i = random.randint(int(len(asp_obj_copy) / 2), len(asp_obj_copy))
+            result_set.add(tuple(function_corruption(list(asp_obj_copy)[:rand_i])))
+        # TODO: consider adding, + # of fluents
+        return result_set
 
 
     def corrupt_nl_variations(self, data_dict, num_corruptions=100, num_nl_variations=50):
+        corrupted_set = set()
         if data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_FLUENTS:
             og_fluents = deepcopy(data_dict[ASP_DATA])
-
-            corrupted_fluents_set = set()
             while num_corruptions > 0:
                 # Case1.1 flip the negations of some fluents
-                fluents = deepcopy(og_fluents)
-                random.shuffle(fluents)
-                corrupted_fluents_set.add(tuple(self.corrupt_fluents(list(fluents))))
-                num_corruptions -= 1
+                res = self.general_asp_corrution(og_fluents, self.corrupt_fluents)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
 
-                # Case1.2 flip the negations of some fluents and remove some fluents
-                fluents = deepcopy(og_fluents)
-                random.shuffle(fluents)
-                if int(len(fluents)/2) > 0:
-                    rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                    corrupted_fluents_set.add(tuple(self.corrupt_fluents(list(fluents)[:rand_i])))
-                    num_corruptions -= 1
-                # TODO: consider adding, + # of fluents
+                # Case2.1 corrupt_objects_in_fluents
+                res = self.general_asp_corrution(og_fluents, self.corrupt_objects)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
 
-                # Case2.1 swap the numbers in the fluents
-                fluents = deepcopy(og_fluents)
-                random.shuffle(fluents)
-                corrupted_fluents_set.add(tuple(self.corrupt_objects_in_fluents(fluents)))
-                num_corruptions -= 1
+                # Case3.1 corrupt_object_types_in_fluents
+                # fluents = deepcopy(og_fluents)
+                # random.shuffle(fluents)
+                # fluents = self.corrupt_fluents(list(fluents), 0.1)
+                res = self.general_asp_corrution(og_fluents, self.corrupt_object_types)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
 
-                # Case2.2 swap the numbers in the fluents
-                fluents = deepcopy(og_fluents)
-                random.shuffle(fluents)
-                if int(len(fluents)/2) > 0:
-                    rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                    corrupted_fluents_set.add(tuple(self.corrupt_objects_in_fluents(fluents)[:rand_i]))
-                    num_corruptions -= 1
+                # Case4.1 corrupt_numbers_in_fluents
+                res = self.general_asp_corrution(og_fluents, self.corrupt_numbers)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
 
-                # Case3.1 swap the numbers in the fluents
-                fluents = deepcopy(og_fluents)
-                random.shuffle(fluents)
-                fluents = self.corrupt_fluents(list(fluents), 0.1)
-                currupted = self.corrupt_object_types_in_fluents(fluents)
-                corrupted_fluents_set.add(tuple(currupted))
-                num_corruptions -= 1
+                # Case4.2 remove numbers in objects
+                res = self.general_asp_corrution(og_fluents, self.remove_numbers_in_objects)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
+                to_nl_function = self.nl_fluents
+        elif data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_OBJ:
+            og_objects = deepcopy(data_dict[ASP_DATA])
+            while num_corruptions > 0:
+                res = self.general_asp_corrution(og_objects, self.corrupt_numbers)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
 
-                # Case3.2 swap the numbers in the fluents
-                fluents = deepcopy(og_fluents)
-                random.shuffle(fluents)
-                fluents = self.corrupt_fluents(list(fluents), 0.1)
-                if int(len(fluents)/2) > 0:
-                    rand_i = random.randint(int(len(fluents)/2), len(fluents))
-                    corrupted = self.corrupt_object_types_in_fluents(fluents)[:rand_i]
-                    corrupted_fluents_set.add(tuple(corrupted))
-                    num_corruptions -= 1
+                res = self.general_asp_corrution(og_objects, self.remove_numbers_in_objects)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
 
-            if () in corrupted_fluents_set:
-                corrupted_fluents_set.remove(())
-            nl_vatiations = self.variations_helper(corrupted_fluents_set, num_nl_variations)
-            return list(nl_vatiations)
+                res = self.general_asp_corrution(og_objects, self.corrupt_object_types)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
+
+
+                # TODO add random new objects
+
+                to_nl_function = lambda x: x
+        elif data_dict[ASP_DATA_TYPE] == ASP_DATA_TYPE_ACTIONS:
+            og_actions = deepcopy(data_dict[ASP_DATA])
+            while num_corruptions > 0:
+                res = self.general_asp_corrution(og_actions, self.corrupt_numbers)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
+
+                res = self.general_asp_corrution(og_actions, self.remove_numbers_in_objects)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
+
+                res = self.general_asp_corrution(og_actions, self.corrupt_object_types)
+                num_corruptions -= len(res)
+                corrupted_set.update(res)
+
+                # TODO add random new actions
+
+                to_nl_function = self.nl_actions
+        else:
+            return []
+
+        if () in corrupted_set:
+            corrupted_set.remove(())
+        nl_vatiations = self.nl_variations_helper(corrupted_set, to_nl_function, num_nl_variations)
+        return list(nl_vatiations)
+
     def create_pairs(self, good, bad=None):
         if not bad:
             pairs = []
@@ -180,6 +232,46 @@ class AnswerPairGeneratorHelper(QuestionGenerator):
                         all.extend(self.create_pairs(data_all_nl_variations))
                         all.extend(self.create_pairs(data_all_nl_variations, data_corrupt_nl_variations))
         return all
+
+
+class ObjectTrackingPairs(AnswerPairGeneratorHelper):
+    QUESTION_CATEGORY = 'object_tracking'
+
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
+
+    def question_1(self, plan_length):
+        random_object_type = random.choice(list(self.objects_by_type.keys()))
+        question = f"{self.nl_question_prefix(plan_length)} list all objects associated with type {random_object_type}. {NONE_STATEMENT}."
+        answer = self.objects_by_type[random_object_type]
+        # nl_answer = asp_to_nl(sorted(answer), lambda x: x)
+        # return self.qa_data_object(question, nl_answer, FREE_ANSWER_TYPE, self.question_1.__name__, plan_length, None)
+        if answer:
+            return {ASP_ID: unique_id(answer),
+                    ASP_DATA: answer,
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_OBJ} | self.qa_data_object(question, None, FREE_ANSWER_TYPE,
+                                                                                question_name, plan_length, None, None)
+        return None
+
+    def question_2(self, plan_length):
+        random_object_type = random.choice(list(self.objects_by_type.keys()))
+        random_objects = random.sample(self.objects_by_type[random_object_type],
+                                       random.randint(1, len(self.objects_by_type[random_object_type])))
+        nl_random_objects = asp_to_nl(random_objects, lambda x: x)
+        question = f"{self.nl_question_prefix(plan_length)} what is the object type for {nl_random_objects}. {NONE_STATEMENT}."
+        if random_objects:
+            return {ASP_ID: unique_id(random_objects),
+                    ASP_DATA: random_objects,
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_OBJ} | self.qa_data_object(question, None, FREE_ANSWER_TYPE,
+                                                                                question_name, plan_length, None, None)
+        return None
+        # return self.qa_data_object(question, random_object_type, FREE_ANSWER_TYPE, self.question_2.__name__,
+        #                            plan_length, None)
+
+    def question_iterators(self):
+        return chain([self.question_1, self.question_2])
+
+
 
 class FluentTrackingPairs(AnswerPairGeneratorHelper):
     QUESTION_CATEGORY = 'fluent_tracking'
@@ -236,6 +328,7 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
                                    is_pos_fluent_question)
         return None
 
+
     def questions_iter_2(self):
         counter = 0
         for is_pos_fluent_question in [True, False, None]:
@@ -246,6 +339,235 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
 
     def question_iterators(self):
         return chain(self.questions_iter_2())
+
+class EffectsPairs(AnswerPairGeneratorHelper):
+    QUESTION_CATEGORY = 'effects'
+
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
+
+    def prefix(self, plan_length):
+        if plan_length == 0:
+            return f"{INITIAL_CONDITION_PREFIX},"
+        else:
+            return f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
+
+    def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
+        action = self.given_plan_sequence[plan_length]
+        if is_pos_fluent_question is None:
+            fluents_type_nl = FLUENTS_NL
+            fluents = self.pos_fluents_given_plan[plan_length + 1] + self.neg_fluents_given_plan[plan_length + 1]
+        elif is_pos_fluent_question:
+            fluents_type_nl = POSITIVE_FLUENTS_NL
+            fluents = self.pos_fluents_given_plan[plan_length + 1]
+        else:
+            fluents_type_nl = NEGATIVE_FLUENTS_NL
+            fluents = self.neg_fluents_given_plan[plan_length + 1]
+
+        if fluents:
+            return {ASP_ID: unique_id(fluents),
+                    ASP_DATA: fluents,
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_FLUENTS} | self.qa_data_object(None, '', FREE_ANSWER_TYPE, question_name, plan_length, None)
+        return None
+
+    def questions_iter_2(self):
+        counter = 0
+        for is_pos_fluent_question in [True, False, None]:
+            counter += 1
+            yield partial(self.questions_iter_2_helper,
+                          is_pos_fluent_question=is_pos_fluent_question,
+                          question_name=question_name(counter, 'iter_2'))
+
+    def question_iterators(self):
+        return chain(self.questions_iter_2())
+
+class ActionExecutabilityPairs(AnswerPairGeneratorHelper):
+    QUESTION_CATEGORY = 'action_executability'
+
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
+
+    def questions_iter_1_helper(self, plan_length, is_answer_true, question_name):
+        sequence_of_actions, _random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
+        nl_sequence_of_actions = asp_to_nl(sequence_of_actions, self.domain_class.action_to_natural_language)
+        question = f"{ACTIONS_ARE_PLANNED_TO_BE_PERFORMED_PREFIX} {nl_sequence_of_actions}. Is it possible to execute it, {TRUE_OR_FALSE}?"
+        return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length, None)
+
+
+    def questions_iter_3_helper(self, plan_length, is_answer_none, question_name):
+        if is_answer_none:
+            question = (
+                f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. "
+                f"What is the first inexecutable action in the sequence? "
+                f"{NONE_STATEMENT}.")
+            return self.qa_data_object(question, NONE_ANSWER, FREE_ANSWER_TYPE, question_name, plan_length, None)
+        else:
+            sequence_of_actions, random_corrupt_action_i = self.corrupt_action_sequence(plan_length)
+            inexecutable_action = sequence_of_actions[random_corrupt_action_i]
+            question = (
+                f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions(sequence_of_actions)} to reach the current state. "
+                f"What is the first inexecutable action in the sequence? "
+                f"{NONE_STATEMENT}.")
+            # return self.qa_data_object(question, self.domain_class.action_to_natural_language(inexecutable_action),
+            #                            FREE_ANSWER_TYPE, question_name, plan_length, None)
+            if inexecutable_action:
+                return {ASP_ID: unique_id(inexecutable_action),
+                        ASP_DATA: sequence_of_actions,
+                        ASP_DATA_TYPE: ASP_DATA_TYPE_ACTIONS} | self.qa_data_object(None, '', FREE_ANSWER_TYPE,
+                                                                                    question_name, plan_length, None)
+            return None
+
+    def questions_iter_3(self):
+        counter = 0
+        for is_answer_none in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_3_helper,
+                          is_answer_none=is_answer_none,
+                          question_name=question_name(counter, 'iter_3'))
+
+    def question_4(self, plan_length):
+        question = (f"{self.nl_question_prefix(plan_length)} list all executable actions. "
+                    f"{NONE_STATEMENT}.")
+        # return self.qa_data_object(question, self.nl_actions(self.executable_actions[plan_length]), FREE_ANSWER_TYPE,
+        #                            self.question_4.__name__, plan_length, None)
+        if self.executable_actions[plan_length]:
+            return {ASP_ID: unique_id(self.executable_actions[plan_length]),
+                    ASP_DATA: self.executable_actions[plan_length],
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_ACTIONS} | self.qa_data_object(None, '', FREE_ANSWER_TYPE,
+                                                                                question_name, plan_length, None)
+        return None
+
+    def question_5(self, plan_length):
+        question = (f"{self.nl_question_prefix(plan_length)} list all inexecutable actions. "
+                    f"{NONE_STATEMENT}.")
+        # return self.qa_data_object(question, self.nl_actions(self.inexecutable_actions[plan_length]), FREE_ANSWER_TYPE,
+        #                            self.question_5.__name__, plan_length, None)
+        if self.inexecutable_actions[plan_length]:
+            return {ASP_ID: unique_id(self.executable_actions[plan_length]),
+                    ASP_DATA: self.executable_actions[plan_length],
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_ACTIONS} | self.qa_data_object(None, '', FREE_ANSWER_TYPE,
+                                                                                question_name, plan_length, None)
+        return None
+
+    def question_iterators(self):
+        return chain(self.questions_iter_3(),
+                     [self.question_4, self.question_5])
+
+class HallucinationPairs(AnswerPairGeneratorHelper):
+    QUESTION_CATEGORY = 'hallucination'
+    NUMBER_REGEX = f'\d'
+
+    def __init__(self, states_actions_all, domain_class, instance_id):
+        super().__init__(states_actions_all, domain_class, instance_id)
+
+    def question_setup(self, stuff):
+        return f'some {stuff} may or may not be defined'
+
+    def hallucinated_object(self, object, other_objects_set=set()):
+        all_objects = self.all_objects_set.union(other_objects_set)
+
+        r = re.compile(self.NUMBER_REGEX)
+        object_prefix = r.sub('', object)
+        # if object == object_prefix:
+        #     print('Error: object name does not contain a number')
+        i = 1
+        hallucinated_object = object_prefix + f'{i}'
+        while hallucinated_object in all_objects and i < 100:
+            hallucinated_object = object_prefix + f'{i}'
+            i += 1
+            if i == 100:
+                raise 'timeout'
+        return hallucinated_object
+
+    def questions_iter_4_helper(self, plan_length, is_answer_true, question_name):
+        if len(self.all_objects) < 2:
+            print('less than 2 objects', question_name, plan_length)
+            return None
+        objects = random.sample(self.all_objects, random.randint(2, len(self.all_objects)))
+        answer = objects[0]
+        if not is_answer_true:
+            objects[0] = self.hallucinated_object(objects[0])
+            answer = objects[0]
+        random.shuffle(objects)
+        nl_objects = asp_to_nl(objects, lambda x: x)
+        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup('objects')}. "
+                    f"Which of the following objects, {nl_objects}, is not {PART_OF_THE_DOMAIN}? "
+                    f"Write None if all are defined.")
+        # return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, None)
+        if objects:
+            return {ASP_ID: unique_id(objects),
+                    ASP_DATA: objects,
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_OBJ} | self.qa_data_object(None, '', FREE_ANSWER_TYPE,
+                                                            question_name, plan_length, None)
+        return None
+
+    def questions_iter_4(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_4_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_4'))
+
+    def questions_iter_5_helper(self, plan_length, is_pos_fluent_question, is_answer_true, fluent_type, question_name):
+        pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
+        lower_bound_rand_int = 2
+        if is_pos_fluent_question is True and len(pos_fluents) >= lower_bound_rand_int:
+            fluent_type_nl = POSITIVE_FLUENT_NL
+            fluents = random.sample(pos_fluents, random.randint(lower_bound_rand_int, len(pos_fluents)))
+        elif is_pos_fluent_question is False and len(neg_fluents) >= lower_bound_rand_int:
+            fluent_type_nl = NEGATIVE_FLUENT_NL
+            fluents = random.sample(neg_fluents, random.randint(lower_bound_rand_int, len(neg_fluents)))
+        elif is_pos_fluent_question is None and len(pos_fluents + neg_fluents) >= lower_bound_rand_int:
+            fluent_type_nl = FLUENTS_NL
+            fluents = random.sample(pos_fluents + neg_fluents,
+                                    random.randint(lower_bound_rand_int, len(pos_fluents + neg_fluents)))
+        else:
+            return None
+
+        if is_answer_true:
+            nl_hallucinated_fluent = NONE_ANSWER
+            nl_fluents = self.nl_fluents(fluents)
+        else:
+            nl_fluent = self.domain_class.fluent_to_natural_language(fluents[0])
+            nl_hallucinated_fluent = self.domain_class.fluent_to_natural_language(fluents[0], is_hallucinated=True)
+            random.shuffle(fluents)
+            nl_fluents = self.nl_fluents(fluents).replace(nl_fluent, nl_hallucinated_fluent)
+        question = (f"{self.nl_question_prefix(plan_length)} {self.question_setup(f'{fluent_type_nl}')}. "
+                    f"What {fluent_type_nl} out of, {nl_fluents}, is not defined? Write None if all are defined.")
+        if fluents:
+            return {ASP_ID: unique_id(fluents),
+                    ASP_DATA: fluents,
+                    ASP_DATA_TYPE: ASP_DATA_TYPE_FLUENTS} | self.qa_data_object(None, '', FREE_ANSWER_TYPE,
+                                                            question_name, plan_length, None)
+        return None
+
+    def questions_iter_5(self):
+        counter = 0
+        for is_pos_fluent_question in [True, False, None]:
+            for is_answer_true in [True, False]:
+                for fluent_type in FLUENT_TYPES_LIST:
+                    counter += 1
+                    yield partial(self.questions_iter_5_helper,
+                                  is_pos_fluent_question=is_pos_fluent_question,
+                                  is_answer_true=is_answer_true,
+                                  fluent_type=fluent_type,
+                                  question_name=question_name(counter, 'iter_5'))
+
+    def questions_iter_6(self):
+        counter = 0
+        for is_answer_true in [True, False]:
+            counter += 1
+            yield partial(self.questions_iter_6_helper,
+                          is_answer_true=is_answer_true,
+                          question_name=question_name(counter, 'iter_6'))
+
+    def question_iterators(self):
+        return chain(
+                     self.questions_iter_4(),
+                     self.questions_iter_5(),
+                     self.questions_iter_6())
+
 
 
 if __name__ == '__main__':
@@ -260,7 +582,7 @@ if __name__ == '__main__':
             instance_name = f'Instance_{i}'
             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
 
-            for pair_class in [StateTrackingPairs, FluentTrackingPairs]:
+            for pair_class in [ObjectTrackingPairs, StateTrackingPairs, FluentTrackingPairs, EffectsPairs, ActionExecutabilityPairs, HallucinationPairs]:
                 all_questions = pair_class(jsonl_instance, domain, instance_name)
                 for p in all_questions.pairs_pipeline():
                     pairs_over_instances.add(p)
