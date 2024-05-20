@@ -24,7 +24,7 @@ class BaseDomain:
     DOMAIN_DESC_WITH_RAM = ''
     SUBSTRINGS_TO_RAND = {}
     REPLACE_REGEX_PREFIX = r'(?<!\S)'
-    REPLACE_REGEX_POSTFIX = r'(?![^\s"\'\.\,:;?!])'
+    REPLACE_REGEX_POSTFIX = r'(?![^\s"\'\.\,:;?!0-9])'
 
     BASE_FLUENTS = []
     DERIVED_FLUENTS = []

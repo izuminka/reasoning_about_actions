@@ -48,6 +48,14 @@ class TestDomains(unittest.TestCase):
         res = self.bd.replace_substring('stacking', 'stacking', 'sdnfjkdsnfkj')
         self.assertEqual('sdnfjkdsnfkj', res)
 
+        res = self.bd.replace_substring('stacking123', 'stacking', 'sdnfjkdsnfkj')
+        self.assertEqual('sdnfjkdsnfkj123', res)
+
+        res = self.bd.replace_substring('STACKING3. more blocks', 'stacking', 'ghsks')
+        self.assertEqual('GHSKS3. more blocks', res)
+
+
+
     def test_replace_substrings(self):
         text = ('picking up a block is \n\n only possible if that block is clear, on the table, and the hand is empty. '
                 'Unstacking the first block from the second causes first block to be held A block is said to be clear if it is not being held and there are no blocks that are on top of it. '
@@ -63,6 +71,7 @@ class TestDomains(unittest.TestCase):
                     'empty if and only if it is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can '
                     'only be at one place at a time.')
         self.assertEqual(expected, res)
+
 
     def test_replace_many_times_substrings(self):
         text = ('[[ picking up a block is \n\n only possible if that block is clear, on the table, and the hand is empty. '
@@ -81,6 +90,14 @@ class TestDomains(unittest.TestCase):
                     'no qbyyxzqvdhs that are wtuwjwbuja top of it. The egpbpdtalq is said to be '
                     'empty if and only if it is not casqqrrojp any qbyyxzqvdh. The qbyyxzqvdh can '
                     'only be at one place at a time. ]]')
+        self.assertEqual(expected, res)
+
+    def test_replace_substrings_numerical(self):
+        text = ('picking up block23 is \n\n only possible if block55 is clear, on the table, and the hand is empty. ')
+
+        obj_dict = Blocksworld.SUBSTRINGS_TO_RAND
+        res = self.bd.replace_substrings(text, obj_dict)
+        expected = ('ovyuecllio qbyyxzqvdh23 is \n\n only possible if qbyyxzqvdh55 is clear, wtuwjwbuja the gcbwvwyvkv, and the egpbpdtalq is empty. ')
         self.assertEqual(expected, res)
 
     def test_upper_lower_substrings(self):
