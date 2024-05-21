@@ -57,7 +57,7 @@ IS_POS_FLUENT_TYPES = [True, False, None]
 RESULTS_FILE_NAME = 'results.json'
 
 
-def gather_questions(questions_dir):
+def gather_questions(questions_dir, selected_ids=None):
     all_data = {}
     for substitutions in SUBSTITUTION_TYPES:
         for domain in DOMAIN_NAMES:
@@ -68,6 +68,8 @@ def gather_questions(questions_dir):
                 else:
                     qa_objects = open_jsonl(results_domain_path)
                     for d in qa_objects:
+                        if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
+                            continue
                         if d[OUT_OBJ_ID] in all_data:
                             raise ValueError(f"Duplicate ID {d[OUT_OBJ_ID]}")
                         del d[OUT_OBJ_INITIAL_STATE_ASP]
