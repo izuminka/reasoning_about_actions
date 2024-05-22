@@ -119,43 +119,48 @@ def sanity_checks():
     return True
 
 
-def gather_data(questions_by_id, selected_ids=None, results_dir=RESULTS_PATH):
-    if selected_ids and set(selected_ids).intersection(set(questions_by_id.keys())) != set(selected_ids):
-        raise ValueError(f"Missing questions {set(selected_ids).difference(set(questions_by_id.keys()))}")
-
-    all_data = []
-    missing_data = []
+def gather_data_iterator():
     for substitutions in SUBSTITUTION_TYPES:
         for ramifications in RAMIFICATION_TYPES:
             for model_name in PROMPT_MODEL_NAMES:
                 for prompt_type in PROMPT_TYPES:
                     for domain in DOMAIN_NAMES:
-                        for instance in [f'Instance_{i}' for i in range(1, 11)]:
-                            results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
-                            if not os.path.exists(results_domain_path):
-                                missing_data.append({SK_MODEL: model_name,
-                                                     SK_PROMPT_TYPE: prompt_type,
-                                                     SK_RAMIFICATION: ramifications,
-                                                     SK_SUBSTITUTION: substitutions,
-                                                     OUT_OBJ_DOMAIN_NAME: domain,
-                                                     OUT_OBJ_INSTANCE_ID: instance})
-                            else:
-                                extra_kv = {SK_MODEL: model_name,
-                                            SK_PROMPT_TYPE: prompt_type,
-                                            SK_RAMIFICATION: ramifications,
-                                            SK_SUBSTITUTION: substitutions}
-                                qa_objects = open_jsonl(results_domain_path)
-                                if selected_ids:
-                                    qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
-                                    if not qa_objects:
-                                        print(f"Missing questions, {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
-                                for d in qa_objects:
-                                    if d[OUT_OBJ_ID] not in questions_by_id:
-                                        raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
-                                    d.update(questions_by_id[d[OUT_OBJ_ID]])
-                                    d.update(deepcopy(extra_kv))
-                                    d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
-                                all_data.extend(qa_objects)
+                        yield substitutions, ramifications, model_name, prompt_type, domain
+
+
+def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterator, results_dir=RESULTS_PATH):
+    if selected_ids and set(selected_ids).intersection(set(questions_by_id.keys())) != set(selected_ids):
+        raise ValueError(f"Missing questions {set(selected_ids).difference(set(questions_by_id.keys()))}")
+
+    all_data = []
+    missing_data = []
+    for substitutions, ramifications, model_name, prompt_type, domain in iterator():
+        for instance in [f'Instance_{i}' for i in range(1, 11)]:
+            results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
+            if not os.path.exists(results_domain_path):
+                missing_data.append({SK_MODEL: model_name,
+                                     SK_PROMPT_TYPE: prompt_type,
+                                     SK_RAMIFICATION: ramifications,
+                                     SK_SUBSTITUTION: substitutions,
+                                     OUT_OBJ_DOMAIN_NAME: domain,
+                                     OUT_OBJ_INSTANCE_ID: instance})
+            else:
+                extra_kv = {SK_MODEL: model_name,
+                            SK_PROMPT_TYPE: prompt_type,
+                            SK_RAMIFICATION: ramifications,
+                            SK_SUBSTITUTION: substitutions}
+                qa_objects = open_jsonl(results_domain_path)
+                if selected_ids:
+                    qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
+                    if not qa_objects:
+                        print(f"Missing questions, {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
+                for d in qa_objects:
+                    if d[OUT_OBJ_ID] not in questions_by_id:
+                        raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
+                    d.update(questions_by_id[d[OUT_OBJ_ID]])
+                    d.update(deepcopy(extra_kv))
+                    d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
+                all_data.extend(qa_objects)
     print('data is gathered')
     return all_data, missing_data
 
