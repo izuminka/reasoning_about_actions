@@ -17,7 +17,7 @@ def prettify(text):
 
 
 
-def to_latex_table(df, caption_nl):
+def to_latex_table(df, caption_nl, label=''):
     latex_table = df.to_latex(index=True, formatters={"name": str.upper}, float_format="{:.2f}".format)
     latex_table = latex_table.replace('\\$', '$').replace('\\{', '{').replace('\\}', '}').replace('\\_', '_')
 
@@ -27,6 +27,7 @@ def to_latex_table(df, caption_nl):
 """ + latex_table + """
 \end{adjustbox}
 \caption{""" + caption_nl + """}
+\label{table:""" + label + """}
 \end{table}
 """
     return latex_table_all
