@@ -1,10 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from src.analysis.model_performances import *
 
 NAME_KEY = 'name'
 DATA_KEY = 'data'
 ERROR_KEY = 'error'
 
+IDS_FILE_NAME = 'dataset_ids.test'
+SAVE_MAIN_DIR = f'{STATISTICS_PATH}.{IDS_FILE_NAME}'
 
 def plt_n_bars(categories, groups):
     plt.figure(figsize=(10, 5))
