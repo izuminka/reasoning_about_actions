@@ -4,6 +4,7 @@ from rouge_score import rouge_scorer
 import numpy as np
 from copy import deepcopy
 from tqdm import tqdm
+from collections import defaultdict
 
 import sys
 
@@ -50,11 +51,11 @@ RESULTS_FILE_NAME = 'results.json'
 IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
-SMALL_MODELS = ['gemma-2b', 'llama2-7b-chat', 'llama2-13b-chat'] #'gemma-7b'
-BIG_MODELS = [] #['gemini'] #, 'GPT-4'
+SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
+BIG_MODELS = [] #['gemini', 'GPT-4']
 PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
-SUBSTITUTION_TYPES = [WITH_RANDOM_SUB]#, WITHOUT_RANDOM_SUB]
+SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 
 
@@ -78,7 +79,7 @@ def for_loop_all_iterator():
                         yield domain, plan_length, question_category, ramifications, substitutions, model_name, prompt_type
 
 def gather_questions(questions_dir, selected_ids=None):
-    all_data = {}
+    all_data = defaultdict(dict)
     for substitutions in SUBSTITUTION_TYPES:
         for domain in DOMAIN_NAMES:
             for instance in [f'Instance_{i}' for i in range(1, 11)]:
@@ -90,12 +91,12 @@ def gather_questions(questions_dir, selected_ids=None):
                     for d in qa_objects:
                         if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
                             continue
-                        if d[OUT_OBJ_ID] in all_data:
-                            raise ValueError(f"Duplicate ID {d[OUT_OBJ_ID]}")
+                        if d[OUT_OBJ_ID] in all_data and substitutions in all_data[d[OUT_OBJ_ID]]:
+                            raise ValueError(f"Duplicate question {d[OUT_OBJ_ID]}, {substitutions}")
                         del d[OUT_OBJ_INITIAL_STATE_ASP]
                         del d[OUT_OBJ_INITIAL_STATE_NL]
                         del d[OUT_OBJ_ACTION_SEQUENCE]
-                        all_data[d[OUT_OBJ_ID]] = d
+                        all_data[d[OUT_OBJ_ID]][substitutions] = d
     print('questions gathered')
     return all_data
 
@@ -128,7 +129,7 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
                                              SK_SUBSTITUTION: substitutions,
                                              OUT_OBJ_DOMAIN_NAME: domain,
                                              OUT_OBJ_INSTANCE_ID: instance})
-                else:
+                        continue
                     extra_kv = {SK_MODEL: model_name,
                                 SK_PROMPT_TYPE: prompt_type,
                                 SK_RAMIFICATION: ramifications,
@@ -141,7 +142,7 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
                     for d in qa_objects:
                         if d[OUT_OBJ_ID] not in questions_by_id:
                             raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
-                        d.update(questions_by_id[d[OUT_OBJ_ID]])
+                        d.update(questions_by_id[d[OUT_OBJ_ID]][substitutions])
                         d.update(deepcopy(extra_kv))
                         d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
                     all_data.extend(qa_objects)
@@ -428,18 +429,17 @@ if __name__ == '__main__':
 
     ids_file_name = 'dataset_ids.test'
     if ids_file_name:
-        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl') #+ open_jsonl(f'{DATA_PATH}/{WITH_RANDOM_SUB}.{ids_file_name}.jsonl')
+        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
         save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
     else:
         data_all, missing_data = gather_data(questions_by_id)
         save_main_dir = STATISTICS_PATH
 
-    print('data is gathered')
     sanity_checks(questions_by_id, data_all)
 
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
     calculate_stats_all(data_all, answer_response,
                         save_main_dir=save_main_dir,
-                        override=False)
+                        override=True)
     print('saved', answer_response)
