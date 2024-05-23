@@ -50,11 +50,12 @@ RESULTS_FILE_NAME = 'results.json'
 IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
-PROMPT_MODEL_NAMES = ['gemma-2b', 'llama2-7b-chat', 'llama2-13b-chat', 'gemini']  # TODO add 'gpt4', 'gemma-7b',
+SMALL_MODELS = ['gemma-2b', 'llama2-7b-chat', 'llama2-13b-chat'] #'gemma-7b'
+BIG_MODELS = [] #['gemini'] #, 'GPT-4'
+PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
-SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB] #WITH_RANDOM_SUB
+SUBSTITUTION_TYPES = [WITH_RANDOM_SUB]#, WITHOUT_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
-
 
 
 def gather_data_iterator():
@@ -62,16 +63,15 @@ def gather_data_iterator():
         for ramifications in RAMIFICATION_TYPES:
             for model_name in PROMPT_MODEL_NAMES:
                 for prompt_type in PROMPT_TYPES:
-                    for domain in DOMAIN_NAMES:
-                        yield substitutions, ramifications, model_name, prompt_type, domain
+                    yield substitutions, ramifications, model_name, prompt_type
 def for_loop_all_iterator():
     domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
     question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
 
-    total_len = len(list(gather_data_iterator()))*len(domains)*len(PLAN_LENGTHS)*len(question_categories)
+    total_len = len(list(gather_data_iterator()))*len(PLAN_LENGTHS)*len(domains)*len(question_categories)
     with tqdm(total=total_len) as pbar:
-        for substitutions, ramifications, model_name, prompt_type, domain in gather_data_iterator():
-            for domain in DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
+        for substitutions, ramifications, model_name, prompt_type in gather_data_iterator():
+            for domain in domains:
                 for plan_length in PLAN_LENGTHS:
                     for question_category in QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]:
                         pbar.update(1)
@@ -110,23 +110,24 @@ def sanity_checks(questions_by_id, data_all):
 
 def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterator, results_dir=RESULTS_PATH):
     if selected_ids and set(selected_ids).intersection(set(questions_by_id.keys())) != set(selected_ids):
-        raise ValueError(f"Missing questions {set(selected_ids).difference(set(questions_by_id.keys()))}")
+        raise ValueError(f"Missing questions set(selected_ids).intersection(set(questions_by_id.keys())) != set(selected_ids)")
 
     all_data = []
     missing_data = []
     total_len = len(list(iterator()))
-    with tqdm(total=total_len*10) as pbar:
-        for substitutions, ramifications, model_name, prompt_type, domain in iterator():
-            for instance in [f'Instance_{i}' for i in range(1, 11)]:
-                pbar.update(1)
-                results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
-                if not os.path.exists(results_domain_path):
-                    missing_data.append({SK_MODEL: model_name,
-                                         SK_PROMPT_TYPE: prompt_type,
-                                         SK_RAMIFICATION: ramifications,
-                                         SK_SUBSTITUTION: substitutions,
-                                         OUT_OBJ_DOMAIN_NAME: domain,
-                                         OUT_OBJ_INSTANCE_ID: instance})
+    with tqdm(total=total_len*len(DOMAIN_NAMES)*10) as pbar:
+        for substitutions, ramifications, model_name, prompt_type in iterator():
+            for domain in DOMAIN_NAMES:
+                for instance in [f'Instance_{i}' for i in range(1, 11)]:
+                    pbar.update(1)
+                    results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
+                    if not os.path.exists(results_domain_path):
+                        missing_data.append({SK_MODEL: model_name,
+                                             SK_PROMPT_TYPE: prompt_type,
+                                             SK_RAMIFICATION: ramifications,
+                                             SK_SUBSTITUTION: substitutions,
+                                             OUT_OBJ_DOMAIN_NAME: domain,
+                                             OUT_OBJ_INSTANCE_ID: instance})
                 else:
                     extra_kv = {SK_MODEL: model_name,
                                 SK_PROMPT_TYPE: prompt_type,
@@ -189,7 +190,8 @@ def filter_single_selector(stats_all, plan_length, question_category, ramificati
     filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
     filter_by.extend([(OUT_OBJ_QUESTION_CATEGORY, {question_category}),
                       (OUT_OBJ_DOMAIN_NAME, {domain}),
-                      (OUT_OBJ_PLAN_LENGTH, {plan_length})])
+                      (OUT_OBJ_PLAN_LENGTH, {plan_length})
+                      ])
 
     results = filter_gather(stats_all, filter_by)
     if len(results) == 0:
@@ -420,9 +422,6 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
     return results
 
 
-###### Custom class for fluents  end ######
-
-
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
@@ -435,6 +434,7 @@ if __name__ == '__main__':
     else:
         data_all, missing_data = gather_data(questions_by_id)
         save_main_dir = STATISTICS_PATH
+
     print('data is gathered')
     sanity_checks(questions_by_id, data_all)
 
