@@ -23,11 +23,14 @@ def fix_dict(result, domain):
 
 def fix_dict_questions(result, domain):
     if domain.is_random_sub:
-        repl = domain.to_random_substring(result["answer"])
-        result["answer"] = repl
+        repl = domain.to_random_substring(result[OUT_OBJ_ANSWER])
+        result[OUT_OBJ_ANSWER] = repl
 
-        repl = domain.to_random_substring(result["question"])
-        result["question"] = repl
+        repl = domain.to_random_substring(result[OUT_OBJ_QUESTION])
+        result[OUT_OBJ_QUESTION] = repl
+
+        repl = domain.to_random_substring(result[OUT_OBJ_INITIAL_STATE_NL])
+        result[OUT_OBJ_INITIAL_STATE_NL] = repl
     else:
         raise ValueError('Not implemented')
     return result

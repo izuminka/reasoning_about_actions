@@ -22,6 +22,7 @@ SK_RESULT = 'result'
 SK_RESULT_OTHER = 'result_other'
 SK_STATS = 'stats'
 SK_UNIQUE_ID = 'unique_id'
+SK_ERROR_MESSAGE = 'error_message'
 
 # Metrics & Metrics Related
 F1_SCORE_KEY = 'f1'
@@ -52,7 +53,7 @@ IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
 SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
-BIG_MODELS = ['gemini', 'GPT-4']
+BIG_MODELS = ['gemini'] #['gemini', 'GPT-4']
 PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
@@ -78,7 +79,7 @@ def for_loop_all_iterator():
                         pbar.update(1)
                         yield domain, plan_length, question_category, ramifications, substitutions, model_name, prompt_type
 
-def gather_questions(questions_dir, selected_ids=None):
+def gather_questions(questions_dir, selected_ids=None, delete_other_keys=True):
     all_data = defaultdict(dict)
     for substitutions in SUBSTITUTION_TYPES:
         for domain in DOMAIN_NAMES:
@@ -93,9 +94,10 @@ def gather_questions(questions_dir, selected_ids=None):
                             continue
                         if d[OUT_OBJ_ID] in all_data and substitutions in all_data[d[OUT_OBJ_ID]]:
                             raise ValueError(f"Duplicate question {d[OUT_OBJ_ID]}, {substitutions}")
-                        del d[OUT_OBJ_INITIAL_STATE_ASP]
-                        del d[OUT_OBJ_INITIAL_STATE_NL]
-                        del d[OUT_OBJ_ACTION_SEQUENCE]
+                        if delete_other_keys:
+                            del d[OUT_OBJ_INITIAL_STATE_ASP]
+                            del d[OUT_OBJ_INITIAL_STATE_NL]
+                            del d[OUT_OBJ_ACTION_SEQUENCE]
                         all_data[d[OUT_OBJ_ID]][substitutions] = d
     print('questions gathered')
     return all_data
@@ -138,7 +140,7 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
                     if selected_ids:
                         qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
                         if not qa_objects:
-                            print(f"Missing questions, {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
+                            print(f"Selected IDs are missing for: {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
                     for d in qa_objects:
                         if d[OUT_OBJ_ID] not in questions_by_id:
                             raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
@@ -216,7 +218,7 @@ class BaseStats:
         self.answer_type = None
         self.result = None
 
-    def out_object(self, result, stats=None, result_other=None):
+    def out_object(self, result, stats=None, result_other=None, error_message=None):
         '''returns a dictionary with the stats of the object,
         result is a float'''
         return {SK_RESULT: result,
@@ -231,7 +233,9 @@ class BaseStats:
                 OUT_OBJ_DOMAIN_NAME: self.domain,
                 OUT_OBJ_PLAN_LENGTH: self.plan_length,
                 OUT_OBJ_QUESTION_CATEGORY: self.question_category,
-                OUT_OBJ_ANSWER_TYPE: self.answer_type}
+                OUT_OBJ_ANSWER_TYPE: self.answer_type,
+
+                SK_ERROR_MESSAGE: error_message}
 
     def remove_corrupted(self, message='NO RESPONSE'):
         not_corrupted = []
@@ -274,11 +278,15 @@ class TrueFalseStats(BaseStats):
 
     def compute(self):
         if not self.data:
-            return self.out_object(None, None)
+            res = self.out_object(None, None, error_message='self.data is empty')
+            # print(f"No data for {res}")
+            return res
 
         not_corrupted_data = self.remove_corrupted()
         if not not_corrupted_data:
-            return self.out_object(None, None)
+            res = self.out_object(None, None, error_message='All corrupted')
+            # print(f"All corrupted {res}")
+            return res
         stats = {'num_original': len(self.data),
                  'num_corrupted': len(self.data) - len(not_corrupted_data),
                  'num_not_corrupted': len(not_corrupted_data)}
@@ -362,11 +370,16 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
         stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
                                model_name, prompt_type, domain, random_sub, tf_score_key)
 
-    stats_compute = stats.compute()
-    if stats_compute[SK_RESULT] is not None:
+    try:
+        stats_compute = stats.compute()
         os.makedirs(save_dir, exist_ok=True)
+        if stats_compute[SK_RESULT] is None:
+            file_path = file_path + '.error'
         with open(file_path, 'w') as f:
             json.dump(stats_compute, f)
+    except Exception as e:
+        with open(file_path + '.exception', 'w') as f:
+            json.dump(str(e), f)
     return True
 
 
