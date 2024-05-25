@@ -53,7 +53,7 @@ IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
 SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
-BIG_MODELS = ['gemini'] #['gemini', 'GPT-4']
+BIG_MODELS = ['gemini', 'GPT-4']
 PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
 PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
