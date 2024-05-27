@@ -6,8 +6,14 @@ import google.generativeai as genai    # pip install -q -U google-generativeai
 from openai import OpenAI              # pip install openai
 
 GEMINI_MODEL_NAME = 'gemini-pro'
-GPT_MODEL_NAME = 'gpt-4-0125-preview'
+GPT_MODEL_NAME = 'gpt-4o' #'gpt-4-0125-preview'
 # CLAUDE_MODEL_NAME = 'claude-opus'
+
+
+# model = genai.get_model(f'models/{GEMINI_MODEL_NAME}') # get model info
+INPUT_TOKEN_LIMIT = 30720
+OUTPUT_TOKEN_LIMIT = 2048
+
 
 def get_response(text, model_name, model=None, temp=0.0):
     '''
@@ -30,7 +36,8 @@ def get_response(text, model_name, model=None, temp=0.0):
             text,
             generation_config = genai.types.GenerationConfig(
                 candidate_count = 1,
-                temperature = temp
+                temperature = temp,
+                max_output_tokens = OUTPUT_TOKEN_LIMIT
             )
         )
         try:
@@ -38,12 +45,13 @@ def get_response(text, model_name, model=None, temp=0.0):
         except:
             return "NO RESPONSE"
     elif model_name == GPT_MODEL_NAME:
-        response = client.chat.completions.create(
+        response = client.ChatCompletion.create(
             model = GPT_MODEL_NAME,
             messages = [
                 {"role": "user", "content": text}
             ],
-            temperature = temp
+            temperature = temp,
+            max_tokens = OUTPUT_TOKEN_LIMIT
         )
         return response.choices[0].message.content
     else:
