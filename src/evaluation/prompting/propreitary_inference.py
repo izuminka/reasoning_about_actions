@@ -16,13 +16,13 @@ GPT_MODEL_NAME = 'gpt-4o' #'gpt-4-0125-preview'
 INPUT_TOKEN_LIMIT = 30720
 OUTPUT_TOKEN_LIMIT = 2048
 
-REGEX_TIME = r"in (\d+\.\d+)s"
+REGEX_TIME = r"try again in (\d+\.\d+)s"
 import re
 
-def get_try_time(pattern, default=60):
-    match = re.search(pattern, REGEX_TIME)
+def get_backoff_time(text, default=15, backoff_factor=1.1):
+    match = re.search(REGEX_TIME, text)
     if match:
-        return match.group(1)*2
+        return int(float(match.group(1))*backoff_factor)
     else:
         return default
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         genai.configure(api_key=args.model_api_key)
         model_name = GEMINI_MODEL_NAME
         model = genai.GenerativeModel(model_name)
-    elif args.model.lower()=='gpt4' or args.model.lower()=='gpt' or args.model.lower()=='gpt-4':
+    elif args.model.lower()=='gpt4' or args.model.lower()=='gpt' or args.model.lower()=='gpt-4' or args.model.lower()=='gpt-4o':
         with open('openai.api.key') as f:
             openai.api_key = f.read()
         model_name = GPT_MODEL_NAME
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     # Prompting the model
     with tqdm(total=len(data)) as pbar:
         for idx, ele in enumerate(data):
-            num_tries=5
+            num_tries = 10
             while num_tries > 0:
                 try:
                     if model_name == GEMINI_MODEL_NAME:
@@ -143,11 +143,11 @@ if __name__ == '__main__':
                             model_name = model_name,
                             temp = args.temperature
                         )
-                    break
+                    num_tries = 0
                 except openai.error.RateLimitError as e:
                     print(e)
-                    backoff_time = get_try_time(e)
-                    print(f"Rate limit exceeded. Backing off for {backoff_time} seconds...")
+                    backoff_time = get_backoff_time(str(e))
+                    print(f"Backing off for {backoff_time} seconds. Number of tries left: {num_tries}")
                     time.sleep(backoff_time)
                     num_tries -= 1
             ele['response'] = response

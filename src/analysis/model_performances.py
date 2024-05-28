@@ -53,9 +53,9 @@ IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
 SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
-BIG_MODELS = ['gemini', 'GPT-4']
+BIG_MODELS = ['gemini'] #, 'GPT-4'
 PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
-PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
+PROMPT_TYPES = ['few_shot_1', 'few_shot_5'] #, 'few_shot_3'
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 
@@ -117,6 +117,7 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
 
     all_data = []
     missing_data = []
+    unique_ids = set()
     total_len = len(list(iterator()))
     with tqdm(total=total_len*len(DOMAIN_NAMES)*10) as pbar:
         for substitutions, ramifications, model_name, prompt_type in iterator():
@@ -147,7 +148,9 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
                         d.update(questions_by_id[d[OUT_OBJ_ID]][substitutions])
                         d.update(deepcopy(extra_kv))
                         d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
-                    all_data.extend(qa_objects)
+                        if d[SK_UNIQUE_ID] not in unique_ids:
+                            unique_ids.add(d[SK_UNIQUE_ID])
+                            all_data.append(d)
     print('data is gathered')
     return all_data, missing_data
 
@@ -372,14 +375,17 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
 
     try:
         stats_compute = stats.compute()
-        os.makedirs(save_dir, exist_ok=True)
         if stats_compute[SK_RESULT] is None:
             file_path = file_path + '.error'
         with open(file_path, 'w') as f:
             json.dump(stats_compute, f)
     except Exception as e:
-        with open(file_path + '.exception', 'w') as f:
-            json.dump(str(e), f)
+        try:
+            file_path = file_path + '.exception'
+            with open(file_path, 'w') as f:
+                json.dump(str(e), f)
+        except:
+            print(file_path)
     return True
 
 

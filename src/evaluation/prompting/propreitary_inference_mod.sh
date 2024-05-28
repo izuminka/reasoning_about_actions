@@ -1,5 +1,5 @@
 MODELS=(
-    'gpt4'
+    'gpt-4o'
 )
 DOMAINS=(
     'blocksworld'
