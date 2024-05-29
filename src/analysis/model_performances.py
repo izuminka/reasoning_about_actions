@@ -53,9 +53,9 @@ IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
 SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
-BIG_MODELS = ['gemini'] #, 'GPT-4'
+BIG_MODELS = ['gemini', 'gpt-4o']
 PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
-PROMPT_TYPES = ['few_shot_1', 'few_shot_5'] #, 'few_shot_3'
+PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 
@@ -358,10 +358,11 @@ def stats_data_path(answer_response_type, domain, plan_length, question_category
 
 def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
                     model_name, prompt_type, save_main_dir=STATISTICS_PATH, override=False):
-    os.makedirs(save_main_dir, exist_ok=True)
     save_dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
                                random_sub, model_name, prompt_type, save_main_dir=save_main_dir)
     file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
+    os.makedirs(save_dir, exist_ok=True)
+
     if os.path.exists(file_path) and not override:
         return False
 
@@ -446,7 +447,7 @@ if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     questions_by_id = gather_questions(questions_dir)
 
-    ids_file_name = 'dataset_ids.test'
+    ids_file_name = 'dataset_ids.test.pruned'
     if ids_file_name:
         selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
