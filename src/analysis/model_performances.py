@@ -378,22 +378,26 @@ class FreeAnswerStats(BaseStats):
         labels = [str(label) if label else "" for label in batch["s2"]]
         # return self.tokenizer(responses, labels, padding="max_length", max_length=512, truncation=False)
         tokenized_output = self.tokenizer(responses, labels, padding="max_length", max_length=max_length, truncation=False)
-
-        # Ensure all input_ids are exactly 512 in length
-        valid_indices = [i for i, input_ids in enumerate(tokenized_output['input_ids']) if len(input_ids) <= max_length]
-        filtered_batch = {
-            'input_ids': [tokenized_output['input_ids'][i] for i in valid_indices],
-            'attention_mask': [tokenized_output['attention_mask'][i] for i in valid_indices],
-        }
-
-        return filtered_batch
+        return tokenized_output
 
     def prepare_data(self, true, pred, batch_size=128):
         data = [{'s1':t, 's2':p} for t,p in zip(true, pred)]
         test_data = Dataset.from_list(data)
         test_data = test_data.map(self.model_preprocess_function, batched=True, remove_columns=["s1", "s2"])
-        if not len(test_data['input_ids']):
+
+        # Filter out sequences with input_ids length less than 512
+        # Filter out sequences with input_ids length not equal to 512
+        def filter_valid_length(batch):
+            valid_indices = [i for i, input_ids in enumerate(batch['input_ids']) if len(input_ids) <= 512]
+            filtered_batch = {key: [batch[key][i] for i in valid_indices] for key in batch.keys()}
+            return filtered_batch
+
+        test_data = test_data.map(filter_valid_length, batched=True)
+
+        # Ensure the dataset is not empty
+        if not len(test_data) or 'input_ids' not in test_data.column_names or len(test_data['input_ids']) == 0:
             return None
+
         test_data.set_format(type='torch', columns=['input_ids', 'attention_mask'])
         return DataLoader(test_data, batch_size=batch_size)
 
