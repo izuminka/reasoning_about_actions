@@ -5,13 +5,18 @@ import numpy as np
 from copy import deepcopy
 from tqdm import tqdm
 from collections import defaultdict
-
 import sys
+
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from torch.utils.data import DataLoader
+from datasets import Dataset
 
 sys.path.insert(0, '../../')
 from src.questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
 from src.questions_construction.domains import DOMAIN_NAMES
 from src.common import *
+
 
 # STATS dict keys
 SK_RAMIFICATION = 'ramification_type'
@@ -52,13 +57,19 @@ RESULTS_FILE_NAME = 'results.json'
 IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
-SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
-BIG_MODELS = ['gemini', 'gpt-4o']
-PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
-PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
-SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
-RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
+# SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
+# BIG_MODELS = ['gemini', 'gpt-4o']
+# PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
+# PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
+# SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
+# RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
+PROMPT_MODEL_NAMES =  ['gpt-4o']
+PROMPT_TYPES = ['few_shot_1']
+SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB]
+RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS]
 
+
+NO_RESPONSE_MESSAGE = 'NO RESPONSE'
 
 def gather_data_iterator():
     for substitutions in SUBSTITUTION_TYPES:
@@ -68,7 +79,7 @@ def gather_data_iterator():
                     yield substitutions, ramifications, model_name, prompt_type
 def for_loop_all_iterator():
     domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
-    question_categories = QUESTION_CATEGORIES + [ALL_QUESTION_CATEGORIES_KEY]
+    question_categories = [ALL_QUESTION_CATEGORIES_KEY] + QUESTION_CATEGORIES
 
     total_len = len(list(gather_data_iterator()))*len(PLAN_LENGTHS)*len(domains)*len(question_categories)
     with tqdm(total=total_len) as pbar:
@@ -144,7 +155,9 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
                             print(f"Selected IDs are missing for: {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
                     for d in qa_objects:
                         if d[OUT_OBJ_ID] not in questions_by_id:
-                            raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
+                            print(f"{d[OUT_OBJ_ID]} not in questions_by_id")
+                            continue
+                            # raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
                         d.update(questions_by_id[d[OUT_OBJ_ID]][substitutions])
                         d.update(deepcopy(extra_kv))
                         d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
@@ -221,12 +234,12 @@ class BaseStats:
         self.answer_type = None
         self.result = None
 
-    def out_object(self, result, stats=None, result_other=None, error_message=None):
+    def out_object(self, result, result_other=None, stats=None, error_message=None):
         '''returns a dictionary with the stats of the object,
         result is a float'''
         return {SK_RESULT: result,
-                SK_STATS: stats,
                 SK_RESULT_OTHER: result_other,
+                SK_STATS: stats,
 
                 SK_MODEL: self.model_name,
                 SK_PROMPT_TYPE: self.prompt_type,
@@ -240,13 +253,15 @@ class BaseStats:
 
                 SK_ERROR_MESSAGE: error_message}
 
-    def remove_corrupted(self, message='NO RESPONSE'):
+    def remove_corrupted(self, message=NO_RESPONSE_MESSAGE):
         not_corrupted = []
         for d in self.data:
             if d[MODEL_RESPONSE_KEY] != message:
                 not_corrupted.append(d)
         return not_corrupted
 
+    def confidence_interval(self, accuracy, n, z = 1.96): # 1.96 is 95% confidence interval
+        return z * np.sqrt((accuracy * (1 - accuracy)) / n)
 
 class TrueFalseStats(BaseStats):
     BOTH_ARE_PRESENT_KEY = 'both_present'
@@ -281,15 +296,16 @@ class TrueFalseStats(BaseStats):
 
     def compute(self):
         if not self.data:
-            res = self.out_object(None, None, error_message='self.data is empty')
+            res = self.out_object(None, stats=None, error_message='self.data is empty')
             # print(f"No data for {res}")
             return res
 
         not_corrupted_data = self.remove_corrupted()
         if not not_corrupted_data:
-            res = self.out_object(None, None, error_message='All corrupted')
+            res = self.out_object(None, stats=None, error_message='All corrupted')
             # print(f"All corrupted {res}")
             return res
+
         stats = {'num_original': len(self.data),
                  'num_corrupted': len(self.data) - len(not_corrupted_data),
                  'num_not_corrupted': len(not_corrupted_data)}
@@ -321,33 +337,117 @@ class TrueFalseStats(BaseStats):
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
         elif self.score_type == ACCURACY_SCORE_KEY:
             self.result = accuracy_score(true, pred)
+            wilson = self.confidence_interval(self.result, len(true))
             std = np.std([1 if t == p else 0 for t, p in zip(true, pred)])
-            result_other = {'std': std, 'sem': std / np.sqrt(len(true))}
+            result_other = {'wilson': wilson, 'std': std, 'sem': std / np.sqrt(len(true))}
         else:
             raise f"Unknown score_type {self.score_type}"
-        return self.out_object(self.result, stats, result_other)
+        return self.out_object(self.result, result_other, stats)
 
 
 class FreeAnswerStats(BaseStats):
 
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                 substitutions):
+                 substitutions, model, tokenizer, device):
         super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions)
         self.answer_type = FREE_ANSWER_TYPE
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
                                           prompt_type, domain, self.answer_type, substitutions)
+        self.model = model
+        self.tokenizer = tokenizer
+        self.device = device
 
-    def get_rouge_score(self):
-        stats = []
-        for d in self.data:
-            # TODO, hande a case when model gives "OUTPUT is TOO LONG"
-            scores = ROUGE_SCORER.score(d[OUT_OBJ_ANSWER], d[MODEL_RESPONSE_KEY])
-            stats.append(scores[ROUGE_SCORE_TYPE].fmeasure)
-        return np.mean(stats)
+    def model_compute_similarity(self, dataloader):
+        # get the predictions and probabilities
+        # predictions = []
+        probabilities = []
+        self.model.eval()
+        for batch in dataloader:
+            with torch.no_grad():
+                input_ids = batch['input_ids'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+                outputs = self.model(input_ids, attention_mask=attention_mask)
+                logits = outputs.logits
+                probs = torch.softmax(logits, dim=-1)
+                # predictions.extend(torch.argmax(probs, dim=-1).cpu().numpy())
+                probabilities.extend(probs.cpu().numpy())
+        return probabilities
 
-    def compute(self):
-        self.result = self.get_rouge_score()
-        return self.out_object(self.result)
+    def model_preprocess_function(self, batch, max_length = 512):
+        responses = [str(response) if response else "" for response in batch["s1"]]
+        labels = [str(label) if label else "" for label in batch["s2"]]
+        # return self.tokenizer(responses, labels, padding="max_length", max_length=512, truncation=False)
+        tokenized_output = self.tokenizer(responses, labels, padding="max_length", max_length=max_length, truncation=False)
+
+        # Ensure all input_ids are exactly 512 in length
+        valid_indices = [i for i, input_ids in enumerate(tokenized_output['input_ids']) if len(input_ids) <= max_length]
+        filtered_batch = {
+            'input_ids': [tokenized_output['input_ids'][i] for i in valid_indices],
+            'attention_mask': [tokenized_output['attention_mask'][i] for i in valid_indices],
+        }
+
+        return filtered_batch
+
+    def prepare_data(self, true, pred, batch_size=128):
+        data = [{'s1':t, 's2':p} for t,p in zip(true, pred)]
+        test_data = Dataset.from_list(data)
+        test_data = test_data.map(self.model_preprocess_function, batched=True, remove_columns=["s1", "s2"])
+        if not len(test_data['input_ids']):
+            return None
+        test_data.set_format(type='torch', columns=['input_ids', 'attention_mask'])
+        return DataLoader(test_data, batch_size=batch_size)
+
+    def compute(self, best_threshold=98):
+        def find_text(text):
+            i_start = text.find('[[')
+            i_end = text.find(']]')
+            if i_start == -1 or i_end == -1:
+                return text.strip(' ')
+            return text[i_start+2:i_end].strip(' ')
+
+        if not self.data:
+            res = self.out_object(None, stats=None, error_message='self.data is empty')
+            return res
+
+        not_corrupted_data = self.remove_corrupted()
+        if not not_corrupted_data:
+            res = self.out_object(None, stats=None, error_message='All corrupted')
+            return res
+
+        stats = {'num_original': len(self.data),
+                 'num_corrupted': len(self.data) - len(not_corrupted_data),
+                 'num_not_corrupted': len(not_corrupted_data)}
+
+        true_free_answer = [d[OUT_OBJ_ANSWER] for d in not_corrupted_data]
+        pred_free_answer = [find_text(d[MODEL_RESPONSE_KEY]) for d in not_corrupted_data]
+        data_loader = self.prepare_data(true_free_answer, pred_free_answer)
+        if not data_loader:
+            res = self.out_object(None, stats=None, error_message='>512 length')
+            return res
+        probabilities = self.model_compute_similarity(data_loader)
+        stats['fa_num_above_model_context'] = len(probabilities)
+
+        # we want to compare true_free_answer, pred_free_answer
+        # the ideal case is that they are the same, that is the label is "1"
+        by_probability_threshold = {}
+        for percent_threshfold in range(90,100,1):
+            true = [1]*len(probabilities)
+            pred = []
+            for d in probabilities:
+                _p_label_0, p_label_1 = list(d)
+                if p_label_1 > percent_threshfold/100:
+                    pred.append(1)
+                else:
+                    pred.append(0)
+            accuracy = accuracy_score(true, pred)
+            std = np.std([1 if t == p else 0 for t, p in zip(true, pred)])
+            wilson = self.confidence_interval(accuracy, len(probabilities))
+            result_other = {'wilson': wilson, 'std': std, 'sem': std / np.sqrt(len(probabilities))}
+            by_probability_threshold[percent_threshfold] = [accuracy, result_other]
+        self.result, result_other = by_probability_threshold[best_threshold]
+        stats |= by_probability_threshold
+        stats['best_threshold'] = best_threshold
+        return self.out_object(self.result, result_other, stats)
 
 
 def stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications, random_sub, model_name,
@@ -357,7 +457,8 @@ def stats_data_path(answer_response_type, domain, plan_length, question_category
 
 
 def calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications, random_sub,
-                    model_name, prompt_type, save_main_dir=STATISTICS_PATH, override=False):
+                    model_name, prompt_type, save_main_dir=STATISTICS_PATH, override=False,
+                    model=None, tokenizer=None, device=None):
     save_dir = stats_data_path(answer_response_type, domain, plan_length, question_category, ramifications,
                                random_sub, model_name, prompt_type, save_main_dir=save_main_dir)
     file_path = os.path.join(save_dir, RESULTS_FILE_NAME)
@@ -367,8 +468,9 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
         return False
 
     if answer_response_type == FREE_ANSWER_TYPE:
+        assert model and tokenizer and device
         stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
-                                model_name, prompt_type, domain, random_sub)
+                                model_name, prompt_type, domain, random_sub, model, tokenizer, device)
     else:
         tf_score_key = answer_response_type.split('.')[1]
         stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
@@ -391,10 +493,13 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
 
 
 def calculate_stats_all(data_all, answer_response_type, save_main_dir=STATISTICS_PATH,
-                        override=False):
+                        override=False, model=None, tokenizer=None, device=None):
     for domain, plan_length, question_category, ramifications, random_sub, model_name, prompt_type in for_loop_all_iterator():
+        if domain in DOMAIN_NAMES: # don't copute for individual domains
+            continue
         calculate_stats(data_all, answer_response_type, domain, plan_length, question_category, ramifications,
-                        random_sub, model_name, prompt_type, save_main_dir=save_main_dir, override=override)
+                        random_sub, model_name, prompt_type, save_main_dir=save_main_dir, override=override,
+                        model=model,tokenizer=tokenizer, device=device)
 
 
 def save_stats_file(answer_response, score_key):
@@ -445,21 +550,31 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
 
 if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
-    questions_by_id = gather_questions(questions_dir)
-
     ids_file_name = 'dataset_ids.test.pruned'
     if ids_file_name:
         selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
+        questions_by_id = gather_questions(questions_dir, selected_ids)
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
         save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
     else:
+        questions_by_id = gather_questions(questions_dir)
         data_all, missing_data = gather_data(questions_by_id)
         save_main_dir = STATISTICS_PATH
-
     sanity_checks(questions_by_id, data_all)
 
     answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
+
+    model, tokenizer, device = None, None, None
+    if answer_response == FREE_ANSWER_TYPE:
+        device = torch.device("cpu")  # "cuda:0" if torch.cuda.is_available() else
+        model_name = 'roberta-base'
+        path_to_fine_tuned_model = f'{CODE_PATH}/analysis/roberta_finetuned_models/checkpoint-2500_roberta'
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForSequenceClassification.from_pretrained(path_to_fine_tuned_model)
+        model.to(device)
+
     calculate_stats_all(data_all, answer_response,
                         save_main_dir=save_main_dir,
-                        override=True)
+                        override=True,
+                        tokenizer=tokenizer, model=model, device=device)
     print('saved', answer_response)
