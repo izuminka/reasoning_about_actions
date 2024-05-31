@@ -16,6 +16,7 @@ sys.path.insert(0, '../../')
 from src.questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
 from src.questions_construction.domains import DOMAIN_NAMES
 from src.common import *
+import random
 
 
 # STATS dict keys
@@ -57,17 +58,12 @@ RESULTS_FILE_NAME = 'results.json'
 IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
-# SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
-# BIG_MODELS = ['gemini', 'gpt-4o']
-# PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
-# PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
-# SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
-# RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
-PROMPT_MODEL_NAMES =  ['gpt-4o']
-PROMPT_TYPES = ['few_shot_1']
-SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB]
-RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS]
-
+SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
+BIG_MODELS = ['gemini', 'gpt-4o']
+PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
+PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
+SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
+RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
 
 NO_RESPONSE_MESSAGE = 'NO RESPONSE'
 
@@ -373,7 +369,7 @@ class FreeAnswerStats(BaseStats):
                 probabilities.extend(probs.cpu().numpy())
         return probabilities
 
-    def model_preprocess_function(self, batch, max_length = 512):
+    def model_preprocess_function(self, batch, max_length=512):
         responses = [str(response) if response else "" for response in batch["s1"]]
         labels = [str(label) if label else "" for label in batch["s2"]]
         # return self.tokenizer(responses, labels, padding="max_length", max_length=512, truncation=False)
@@ -383,7 +379,7 @@ class FreeAnswerStats(BaseStats):
     def prepare_data(self, true, pred, batch_size=128):
         data = [{'s1':t, 's2':p} for t,p in zip(true, pred)]
         test_data = Dataset.from_list(data)
-        test_data = test_data.map(self.model_preprocess_function, batched=True, remove_columns=["s1", "s2"])
+        test_data = test_data.map(self.model_preprocess_function, batched=True)#, remove_columns=["s1", "s2"])
 
         # Filter out sequences with input_ids length less than 512
         # Filter out sequences with input_ids length not equal to 512
@@ -398,10 +394,10 @@ class FreeAnswerStats(BaseStats):
         if not len(test_data) or 'input_ids' not in test_data.column_names or len(test_data['input_ids']) == 0:
             return None
 
-        test_data.set_format(type='torch', columns=['input_ids', 'attention_mask'])
+        test_data.set_format(type='torch')#, columns=['input_ids', 'attention_mask'])
         return DataLoader(test_data, batch_size=batch_size)
 
-    def compute(self, best_threshold=98):
+    def compute(self, best_threshold=95):
         def find_text(text):
             i_start = text.find('[[')
             i_end = text.find(']]')
@@ -437,9 +433,9 @@ class FreeAnswerStats(BaseStats):
         for percent_threshfold in range(90,100,1):
             true = [1]*len(probabilities)
             pred = []
-            for d in probabilities:
+            for (d, s1, s2) in zip(probabilities, data_loader.dataset['s1'], data_loader.dataset['s2']):
                 _p_label_0, p_label_1 = list(d)
-                if p_label_1 > percent_threshfold/100:
+                if p_label_1 > percent_threshfold/100 or s1.lower() == s2.lower():
                     pred.append(1)
                 else:
                     pred.append(0)
@@ -450,6 +446,8 @@ class FreeAnswerStats(BaseStats):
             by_probability_threshold[percent_threshfold] = [accuracy, result_other]
         self.result, result_other = by_probability_threshold[best_threshold]
         stats |= by_probability_threshold
+        rand_ids = random.sample(range(len(probabilities)), min(len(probabilities), 50))
+        stats['examples'] = [{'true': v1, 'pred':v2, 'prob_same': float(v3[1])} for i, (v1,v2,v3) in enumerate(zip(data_loader.dataset['s1'], data_loader.dataset['s2'], probabilities)) if i in rand_ids]
         stats['best_threshold'] = best_threshold
         return self.out_object(self.result, result_other, stats)
 
