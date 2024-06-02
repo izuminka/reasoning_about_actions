@@ -1151,7 +1151,7 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_3_helper(self, plan_length, fluent_type, is_answer_true, question_name):
         actions = self.given_plan_sequence[:plan_length]
-        action_performed = actions[plan_length]
+        action_performed = actions[plan_length-1]
 
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type)
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true)
@@ -1207,8 +1207,11 @@ class CompositeQuestions(QuestionGenerator):
         if is_answer_true:
             answer = NONE_ANSWER
         else:
-            fluents = self.fluents_for_fluent_type(random_corrupt_action_i, fluent_type)
-            answer = self.nl_fluents(fluents)
+            pos_fluents, neg_fluents = self.fluents_for_fluent_type(random_corrupt_action_i, fluent_type)
+            total_fluents = pos_fluents + neg_fluents
+            if not total_fluents:
+                return None
+            answer = self.nl_fluents(total_fluents)
         return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
     def questions_iter_5(self):
@@ -1234,6 +1237,8 @@ class CompositeQuestions(QuestionGenerator):
             answer = NONE_ANSWER
         else:
             fluents = pos_fluents + pos_fluents
+            if not fluents:
+                return None
             answer = self.nl_fluents(fluents)
         return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
@@ -1247,7 +1252,7 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_7_helper(self, plan_length, fluent_type, question_name):
         actions = self.given_plan_sequence[:plan_length]
-        action_performed = actions[plan_length]
+        action_performed = actions[plan_length-1]
 
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length + 1, fluent_type)
         if pos_fluents is None and neg_fluents is None:
@@ -1256,8 +1261,10 @@ class CompositeQuestions(QuestionGenerator):
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions))}. "
                     f"If I perform action {action_performed}, what would be all of the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? "
                     f"{NONE_STATEMENT}")
-        pos_fluents, pos_fluents = self.fluents_for_fluent_type(fluent_type)
+        pos_fluents, pos_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
         fluents = pos_fluents + pos_fluents
+        if not fluents:
+            return None
         answer = self.nl_fluents(fluents)
         return self.qa_data_object(question, answer, FREE_ANSWER_TYPE, question_name, plan_length, fluent_type)
 
