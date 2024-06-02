@@ -11,7 +11,7 @@ QUESTION_CLASSES = [ObjectTrackingQuestions,
                     EffectsQuestions,
                     NumericalReasoningQuestions,
                     HallucinationQuestions,
-                    CompositeQuestions]
+                    CompositeQuestions][-1:]
 QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES][-1:]
 
 
