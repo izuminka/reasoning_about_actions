@@ -58,12 +58,12 @@ RESULTS_FILE_NAME = 'results.json'
 IS_POS_FLUENT_TYPES = [True, False, None]
 
 PLAN_LENGTHS = [1, 10, 19]
-SMALL_MODELS = ['gemma-2b', 'gemma-7b', 'llama2-7b-chat', 'llama2-13b-chat']
+SMALL_MODELS = ['llama2-13b-chat', 'llama-3-8b-instruct', 'llama2-7b-chat', 'gemma-7b', 'gemma-2b']
 BIG_MODELS = ['gemini', 'gpt-4o']
-PROMPT_MODEL_NAMES = SMALL_MODELS + BIG_MODELS
-PROMPT_TYPES = ['few_shot_1', 'few_shot_3', 'few_shot_5']
-SUBSTITUTION_TYPES = [WITH_RANDOM_SUB, WITHOUT_RANDOM_SUB]
-RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
+PROMPT_MODEL_NAMES = BIG_MODELS + SMALL_MODELS
+PROMPT_TYPES = ['few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
+SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB, WITH_RANDOM_SUB]
+RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 
 NO_RESPONSE_MESSAGE = 'NO RESPONSE'
 
@@ -216,6 +216,13 @@ def filter_single_selector(stats_all, plan_length, question_category, ramificati
     else:
         return results[0]  # [SK_RESULT]
 
+
+def find_text_within_brackets(text):
+    i_start = text.find('[[')
+    i_end = text.find(']]')
+    if i_start == -1 or i_end == -1:
+        return text.strip(' ')
+    return text[i_start+2:i_end].strip(' ')
 
 class BaseStats:
     def __init__(self, plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions):
@@ -398,13 +405,6 @@ class FreeAnswerStats(BaseStats):
         return DataLoader(test_data, batch_size=batch_size)
 
     def compute(self, best_threshold=95):
-        def find_text(text):
-            i_start = text.find('[[')
-            i_end = text.find(']]')
-            if i_start == -1 or i_end == -1:
-                return text.strip(' ')
-            return text[i_start+2:i_end].strip(' ')
-
         if not self.data:
             res = self.out_object(None, stats=None, error_message='self.data is empty')
             return res
@@ -419,7 +419,7 @@ class FreeAnswerStats(BaseStats):
                  'num_not_corrupted': len(not_corrupted_data)}
 
         true_free_answer = [d[OUT_OBJ_ANSWER] for d in not_corrupted_data]
-        pred_free_answer = [find_text(d[MODEL_RESPONSE_KEY]) for d in not_corrupted_data]
+        pred_free_answer = [find_text_within_brackets(d[MODEL_RESPONSE_KEY]) for d in not_corrupted_data]
         data_loader = self.prepare_data(true_free_answer, pred_free_answer)
         if not data_loader:
             res = self.out_object(None, stats=None, error_message='>512 length')
