@@ -23,14 +23,15 @@ TO_PRETTY = {
     'derived_fluents': 'Derived Fl',
     'static_fluents': 'Static Fl',
 
-    'object_tracking': 'Obj. Trk.',
-    'fluent_tracking': 'Fl. Trk.',
-    'state_tracking': 'St. Trk.',
-    'action_executability': 'Act. Exec.',
-    'effects': 'Eff.',
+    'object_tracking': 'Object Trk.',
+    'fluent_tracking': 'Fluent Trk.',
+    'state_tracking': 'State Trk.',
+    'action_executability': 'Action Exec.',
+    'effects': 'Effects',
     'numerical_reasoning': 'Num. Reas.',
-    'hallucination': 'Hall.',
-    ALL_QUESTION_CATEGORIES_KEY: 'All',
+    'hallucination': 'Hallucination',
+    'composite': 'Composite',
+    ALL_QUESTION_CATEGORIES_KEY: 'AVG',
 }
 
 def prettify(text):
@@ -40,8 +41,8 @@ def prettify(text):
 
 
 
-def to_latex_table(df, caption_nl, label=''):
-    latex_table = df.to_latex(index=True, formatters={"name": str.upper}, float_format="{:.2f}".format)
+def to_latex_table(df, caption_nl, label='', index=True):
+    latex_table = df.to_latex(index=index, formatters={"name": str.upper}, float_format="{:.2f}".format)
     latex_table = latex_table.replace('\\$', '$').replace('\\{', '{').replace('\\}', '}').replace('\\_', '_')
 
     latex_table_all = r"""

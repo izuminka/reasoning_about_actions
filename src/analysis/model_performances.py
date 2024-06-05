@@ -57,6 +57,8 @@ BY_DOMAIN_KEY = {TRANSPORTATION_DOMAIN_KEY: TRANSPORTATION_DOMAINS,
 RESULTS_FILE_NAME = 'results.json'
 IS_POS_FLUENT_TYPES = [True, False, None]
 
+NO_RESPONSE_MESSAGE = 'NO RESPONSE'
+
 PLAN_LENGTHS = [1, 10, 19]
 SMALL_MODELS = ['llama2-13b-chat', 'llama-3-8b-instruct', 'llama2-7b-chat', 'gemma-7b', 'gemma-2b']
 BIG_MODELS = ['gemini', 'gpt-4o']
@@ -65,7 +67,7 @@ PROMPT_TYPES = ['few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB, WITH_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 
-NO_RESPONSE_MESSAGE = 'NO RESPONSE'
+
 
 def gather_data_iterator():
     for substitutions in SUBSTITUTION_TYPES:
@@ -91,21 +93,22 @@ def gather_questions(questions_dir, selected_ids=None, delete_other_keys=True):
     for substitutions in SUBSTITUTION_TYPES:
         for domain in DOMAIN_NAMES:
             for instance in [f'Instance_{i}' for i in range(1, 11)]:
-                results_domain_path = f'{questions_dir}/{substitutions}/{domain}/{instance}.jsonl'
-                if not os.path.exists(results_domain_path):
-                    print("missing", results_domain_path)
-                else:
-                    qa_objects = open_jsonl(results_domain_path)
-                    for d in qa_objects:
-                        if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
-                            continue
-                        if d[OUT_OBJ_ID] in all_data and substitutions in all_data[d[OUT_OBJ_ID]]:
-                            raise ValueError(f"Duplicate question {d[OUT_OBJ_ID]}, {substitutions}")
-                        if delete_other_keys:
-                            del d[OUT_OBJ_INITIAL_STATE_ASP]
-                            del d[OUT_OBJ_INITIAL_STATE_NL]
-                            del d[OUT_OBJ_ACTION_SEQUENCE]
-                        all_data[d[OUT_OBJ_ID]][substitutions] = d
+                for ext in ['', '_composite']:
+                    results_domain_path = f'{questions_dir}{ext}/{substitutions}/{domain}/{instance}.jsonl'
+                    if not os.path.exists(results_domain_path):
+                        print("missing", results_domain_path)
+                    else:
+                        qa_objects = open_jsonl(results_domain_path)
+                        for d in qa_objects:
+                            if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
+                                continue
+                            if d[OUT_OBJ_ID] in all_data and substitutions in all_data[d[OUT_OBJ_ID]]:
+                                raise ValueError(f"Duplicate question {d[OUT_OBJ_ID]}, {substitutions}")
+                            if delete_other_keys:
+                                del d[OUT_OBJ_INITIAL_STATE_ASP]
+                                del d[OUT_OBJ_INITIAL_STATE_NL]
+                                del d[OUT_OBJ_ACTION_SEQUENCE]
+                            all_data[d[OUT_OBJ_ID]][substitutions] = d
     print('questions gathered')
     return all_data
 
@@ -130,36 +133,37 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
         for substitutions, ramifications, model_name, prompt_type in iterator():
             for domain in DOMAIN_NAMES:
                 for instance in [f'Instance_{i}' for i in range(1, 11)]:
-                    pbar.update(1)
-                    results_domain_path = f'{results_dir}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
-                    if not os.path.exists(results_domain_path):
-                        missing_data.append({SK_MODEL: model_name,
-                                             SK_PROMPT_TYPE: prompt_type,
-                                             SK_RAMIFICATION: ramifications,
-                                             SK_SUBSTITUTION: substitutions,
-                                             OUT_OBJ_DOMAIN_NAME: domain,
-                                             OUT_OBJ_INSTANCE_ID: instance})
-                        continue
-                    extra_kv = {SK_MODEL: model_name,
-                                SK_PROMPT_TYPE: prompt_type,
-                                SK_RAMIFICATION: ramifications,
-                                SK_SUBSTITUTION: substitutions}
-                    qa_objects = open_jsonl(results_domain_path)
-                    if selected_ids:
-                        qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
-                        if not qa_objects:
-                            print(f"Selected IDs are missing for: {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
-                    for d in qa_objects:
-                        if d[OUT_OBJ_ID] not in questions_by_id:
-                            print(f"{d[OUT_OBJ_ID]} not in questions_by_id")
+                    for ext in ['', '_composite']:
+                        pbar.update(1)
+                        results_domain_path = f'{results_dir}{ext}/{model_name}/{substitutions}/{ramifications}/{prompt_type}/{domain}/{instance}.jsonl'
+                        if not os.path.exists(results_domain_path):
+                            missing_data.append({SK_MODEL: model_name,
+                                                 SK_PROMPT_TYPE: prompt_type,
+                                                 SK_RAMIFICATION: ramifications,
+                                                 SK_SUBSTITUTION: substitutions,
+                                                 OUT_OBJ_DOMAIN_NAME: domain,
+                                                 OUT_OBJ_INSTANCE_ID: instance})
                             continue
-                            # raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
-                        d.update(questions_by_id[d[OUT_OBJ_ID]][substitutions])
-                        d.update(deepcopy(extra_kv))
-                        d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
-                        if d[SK_UNIQUE_ID] not in unique_ids:
-                            unique_ids.add(d[SK_UNIQUE_ID])
-                            all_data.append(d)
+                        extra_kv = {SK_MODEL: model_name,
+                                    SK_PROMPT_TYPE: prompt_type,
+                                    SK_RAMIFICATION: ramifications,
+                                    SK_SUBSTITUTION: substitutions}
+                        qa_objects = open_jsonl(results_domain_path)
+                        if selected_ids:
+                            qa_objects = [d for d in qa_objects if d[OUT_OBJ_ID] in selected_ids]
+                            if not qa_objects:
+                                print(f"Selected IDs are missing for: {model_name}, {substitutions}, {ramifications}, {prompt_type}, {domain}, {instance}")
+                        for d in qa_objects:
+                            if d[OUT_OBJ_ID] not in questions_by_id:
+                                print(f"{d[OUT_OBJ_ID]} not in questions_by_id")
+                                continue
+                                # raise ValueError(f"Missing question {d[OUT_OBJ_ID]}")
+                            d.update(questions_by_id[d[OUT_OBJ_ID]][substitutions])
+                            d.update(deepcopy(extra_kv))
+                            d[SK_UNIQUE_ID] = f"{d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramifications}::{substitutions}"
+                            if d[SK_UNIQUE_ID] not in unique_ids:
+                                unique_ids.add(d[SK_UNIQUE_ID])
+                                all_data.append(d)
     print('data is gathered')
     return all_data, missing_data
 
@@ -340,9 +344,11 @@ class TrueFalseStats(BaseStats):
             self.result = f1_score(true, pred, average=F1_SCORE_TYPE)
         elif self.score_type == ACCURACY_SCORE_KEY:
             self.result = accuracy_score(true, pred)
-            wilson = self.confidence_interval(self.result, len(true))
             std = np.std([1 if t == p else 0 for t, p in zip(true, pred)])
-            result_other = {'wilson': wilson, 'std': std, 'sem': std / np.sqrt(len(true))}
+            result_other = {'sem_95': self.confidence_interval(self.result, len(true)),
+                            'std': std,
+                            'sem': self.confidence_interval(self.result, len(true), z=1),
+                            'sem_old': std / np.sqrt(len(true))}
         else:
             raise f"Unknown score_type {self.score_type}"
         return self.out_object(self.result, result_other, stats)
@@ -441,8 +447,10 @@ class FreeAnswerStats(BaseStats):
                     pred.append(0)
             accuracy = accuracy_score(true, pred)
             std = np.std([1 if t == p else 0 for t, p in zip(true, pred)])
-            wilson = self.confidence_interval(accuracy, len(probabilities))
-            result_other = {'wilson': wilson, 'std': std, 'sem': std / np.sqrt(len(probabilities))}
+            result_other = {'sem_95': self.confidence_interval(accuracy, len(probabilities)),
+                            'std': std,
+                            'sem':  self.confidence_interval(accuracy, len(probabilities), z=1),
+                            'sem_old': std / np.sqrt(len(probabilities))}
             by_probability_threshold[percent_threshfold] = [accuracy, result_other]
         self.result, result_other = by_probability_threshold[best_threshold]
         stats |= by_probability_threshold
@@ -554,7 +562,7 @@ if __name__ == '__main__':
     questions_dir = f'{DATA_PATH}/questions_m1'
     ids_file_name = 'dataset_ids.test.pruned'
     if ids_file_name:
-        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl')
+        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl') + open_jsonl(f'{DATA_PATH}/questions.composite.test_ids.jsonl')
         questions_by_id = gather_questions(questions_dir, selected_ids)
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
         save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'

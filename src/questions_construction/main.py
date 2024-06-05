@@ -11,8 +11,8 @@ QUESTION_CLASSES = [ObjectTrackingQuestions,
                     EffectsQuestions,
                     NumericalReasoningQuestions,
                     HallucinationQuestions,
-                    CompositeQuestions][-1:]
-QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES][-1:]
+                    CompositeQuestions]
+QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES]
 
 
 def random_sub_keyword(is_random_sub):

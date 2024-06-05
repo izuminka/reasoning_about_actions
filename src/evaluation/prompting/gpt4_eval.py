@@ -13,8 +13,8 @@ INSTANCES = [f'Instance_10'] #[f'Instance_{i}' for i in range(1, 11)]
 SUBS = 'without_random_sub'
 RAMS = 'without_ramifications'
 # SUBS_RAMS_EXT = 'without_random_sub/without_ramifications'
-INPUT_DIR = f'../../../data/data_for_test_zero_shot.pruned'
-OUTPUT_DIR = '../../../results'
+INPUT_DIR = f'../../../data/composite_questions_for_test'
+OUTPUT_DIR = '../../../results_composite'
 
 if __name__ == '__main__':
     # Iterate over all combinations of models, domains, instances, and prompts
