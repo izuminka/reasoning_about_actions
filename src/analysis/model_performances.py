@@ -68,8 +68,8 @@ PROMPT_TYPES = ['few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB, WITH_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 
-# PROMPT_MODEL_NAMES = ['gemma-7b-finetuned']
-# PROMPT_TYPES = ['few_shot_0']
+# PROMPT_MODEL_NAMES = ['gemma-7b-finetuned', 'llama-3-8b-instruct']
+# PROMPT_TYPES = ['few_shot_0', 'few_shot_1']
 # SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB]
 # RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS]
 
