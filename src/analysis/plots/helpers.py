@@ -6,8 +6,8 @@ NAME_KEY = 'name'
 DATA_KEY = 'data'
 ERROR_KEY = 'error'
 
-IDS_FILE_NAME = 'dataset_ids.test'
-SAVE_MAIN_DIR = f'{STATISTICS_PATH}.{IDS_FILE_NAME}'
+ids_file_name = 'dataset_ids.test.pruned'  # None
+SAVE_MAIN_DIR = f'{STATISTICS_PATH}.{ids_file_name}'
 
 def plt_n_bars(categories, groups):
     plt.figure(figsize=(10, 5))

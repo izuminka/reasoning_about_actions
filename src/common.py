@@ -18,7 +18,7 @@ EXECUTABLE_ACTION_BOOL_KEY = 'executable?'
 OBJECTS_KEY = 'objects'
 
 # QUESTION GENERATION OUTPUT OBJECT KEYS
-OUT_OBJ_ID = 'id'
+OUT_OBJ_ID = 'id' # question id, has multiplicity of 2 (due to random vs non-random)
 OUT_OBJ_DOMAIN_NAME = 'domain_name'
 OUT_OBJ_INSTANCE_ID = 'instance_id'
 OUT_OBJ_INITIAL_STATE_ASP = 'initial_state_asp'
@@ -40,7 +40,7 @@ TRUE_FALSE_ANSWER_TYPE = 'true_false_answer'
 # ramifications
 WITH_RAMIFICATIONS = 'with_ramifications'
 WITHOUT_RAMIFICATIONS = 'without_ramifications'
-RAMIFICATION_TYPES = [WITH_RAMIFICATIONS, WITHOUT_RAMIFICATIONS]
+RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 
 # random sub
 WITH_RANDOM_SUB = 'with_random_sub'

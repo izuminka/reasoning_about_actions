@@ -46,20 +46,29 @@ class AllQuestions:
 
 
 if __name__ == '__main__':
+    save_dir_preix = f'{QUESTIONS_PATH}.composite'
     question_multiplicity = 1
     upper_instance = 11
-    is_random_sub = False
     for domain_class in ALL_DOMAIN_CLASSES:
-        domain = domain_class(is_random_sub=is_random_sub, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
+        domain = domain_class(is_random_sub=False, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
         for i in range(1, upper_instance):
             instance_name = f'Instance_{i}'
             jsonl_instance = open_jsonl(STATES_ACTIONS_PATH + f'/{domain.DOMAIN_NAME}/{instance_name}.jsonl')
 
-            save_dir = os.path.join(f'{QUESTIONS_PATH}_m{question_multiplicity}', random_sub_keyword(is_random_sub), domain.DOMAIN_NAME)
-            # if os.path.exists(save_dir):
-            #     continue
+            save_dir = os.path.join(save_dir_preix, WITHOUT_RANDOM_SUB, domain.DOMAIN_NAME)
+            save_dir_rand = os.path.join(save_dir_preix, WITH_RANDOM_SUB, domain.DOMAIN_NAME)
 
             all_questions = AllQuestions(jsonl_instance, domain, instance_name, question_multiplicity=question_multiplicity)
             all_questions.generate_all_questions()
             all_questions.save_questions(save_dir)
-            print(domain.DOMAIN_NAME, is_random_sub, instance_name, 'done')
+
+            # random sub composite questions
+            random_sub_all_questions = deepcopy(all_questions)
+            for d in random_sub_all_questions.all_questions:
+                for k in [OUT_OBJ_ANSWER, OUT_OBJ_QUESTION, OUT_OBJ_INITIAL_STATE_NL]:
+                    d[k] = domain.to_random_substring(d[k])
+                d['with_random_sub'] = True
+            random_sub_all_questions.save_questions(save_dir_rand)
+            print(domain.DOMAIN_NAME, instance_name, 'done')
+
+

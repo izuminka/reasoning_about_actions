@@ -1,13 +1,31 @@
+import time
+
 from tqdm import tqdm
 import json
 from pathlib import Path
 import argparse
 import google.generativeai as genai    # pip install -q -U google-generativeai
-from openai import OpenAI              # pip install openai
+import openai           # pip install openai
 
 GEMINI_MODEL_NAME = 'gemini-pro'
-GPT_MODEL_NAME = 'gpt-4-0125-preview'
+GPT_MODEL_NAME = 'gpt-4o' #'gpt-4-0125-preview'
 # CLAUDE_MODEL_NAME = 'claude-opus'
+
+
+# model = genai.get_model(f'models/{GEMINI_MODEL_NAME}') # get model info
+INPUT_TOKEN_LIMIT = 30720
+OUTPUT_TOKEN_LIMIT = 2048
+
+REGEX_TIME = r"try again in (\d+\.\d+)s"
+import re
+
+def get_backoff_time(text, default=15, backoff_factor=1.1):
+    match = re.search(REGEX_TIME, text)
+    if match:
+        return int(float(match.group(1))*backoff_factor)
+    else:
+        return default
+
 
 def get_response(text, model_name, model=None, temp=0.0):
     '''
@@ -30,7 +48,8 @@ def get_response(text, model_name, model=None, temp=0.0):
             text,
             generation_config = genai.types.GenerationConfig(
                 candidate_count = 1,
-                temperature = temp
+                temperature = temp,
+                max_output_tokens = OUTPUT_TOKEN_LIMIT
             )
         )
         try:
@@ -38,12 +57,13 @@ def get_response(text, model_name, model=None, temp=0.0):
         except:
             return "NO RESPONSE"
     elif model_name == GPT_MODEL_NAME:
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model = GPT_MODEL_NAME,
             messages = [
                 {"role": "user", "content": text}
             ],
-            temperature = temp
+            temperature = temp,
+            max_tokens = OUTPUT_TOKEN_LIMIT
         )
         return response.choices[0].message.content
     else:
@@ -71,10 +91,11 @@ def parse_args():
     parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
     parser.add_argument('-f', '--file', type=str, required=True, help='Input file path')
     parser.add_argument('-o', '--output', type=str, required=True, help='Output file path')
-    parser.add_argument('-k', '--model_api_key', type=str, required=True, help='API key')
+    # parser.add_argument('-k', '--model_api_key', type=str, required=True, help='API key')
     parser.add_argument('-i', '--index', type=int, required=False, help='Starting zero-index for evaluation')
     parser.add_argument('-t', '--temperature', type=float, required=False, default=0.0, help='Temperature for generation')
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     # Getting arguments
@@ -85,8 +106,9 @@ if __name__ == '__main__':
         genai.configure(api_key=args.model_api_key)
         model_name = GEMINI_MODEL_NAME
         model = genai.GenerativeModel(model_name)
-    elif args.model.lower()=='gpt4' or args.model.lower()=='gpt' or args.model.lower()=='gpt-4':
-        client = OpenAI(api_key=args.model_api_key)
+    elif args.model.lower()=='gpt4' or args.model.lower()=='gpt' or args.model.lower()=='gpt-4' or args.model.lower()=='gpt-4o':
+        with open('openai.api.key') as f:
+            openai.api_key = f.read()
         model_name = GPT_MODEL_NAME
     else:
         raise Exception(f'{args.model} is an invalid model')
@@ -105,22 +127,30 @@ if __name__ == '__main__':
     # Prompting the model
     with tqdm(total=len(data)) as pbar:
         for idx, ele in enumerate(data):
-            if model_name == GEMINI_MODEL_NAME:
-                response = get_response(
-                    text = ele['prompt'],
-                    model_name = model_name,
-                    model = model,
-                    temp = args.temperature
-                )
-            elif model_name == GPT_MODEL_NAME:
-                response = get_response(
-                    text = ele['prompt'],
-                    model_name = model_name,
-                    temp = args.temperature
-                )
-            
+            num_tries = 10
+            while num_tries > 0:
+                try:
+                    if model_name == GEMINI_MODEL_NAME:
+                        response = get_response(
+                            text = ele['prompt'],
+                            model_name = model_name,
+                            model = model,
+                            temp = args.temperature
+                        )
+                    elif model_name == GPT_MODEL_NAME:
+                        response = get_response(
+                            text = ele['prompt'],
+                            model_name = model_name,
+                            temp = args.temperature
+                        )
+                    num_tries = 0
+                except openai.error.RateLimitError as e:
+                    print(e)
+                    backoff_time = get_backoff_time(str(e))
+                    print(f"Backing off for {backoff_time} seconds. Number of tries left: {num_tries}")
+                    time.sleep(backoff_time)
+                    num_tries -= 1
             ele['response'] = response
             print(response)
-            exit()
             write_response(ele, args.output)
             pbar.update(1)
