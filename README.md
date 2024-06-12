@@ -35,14 +35,3 @@ To get started with this project, follow the steps below:
 3. **Download Data/Models**:
    
    Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
-
-# Cite This Work
-````bibtex
-@misc{handa2024actionreasoningbench,
-      title={ActionReasoningBench: Reasoning about Actions with and without Ramification Constraints}, 
-      author={Divij Handa and Pavel Dolin and Shrinidhi Kumbhar and Chitta Baral and Tran Cao Son},
-      year={2024},
-      eprint={2406.04046},
-      archivePrefix={arXiv},
-      primaryClass={cs.CC}}
-````
