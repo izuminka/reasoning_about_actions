@@ -1,6 +1,5 @@
 
 # ActionReasoningBench
-This repository contains the source code for **ActionReasoningBench: Reasoning about Actions with and without Ramification Constraints**
 
 Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
 
