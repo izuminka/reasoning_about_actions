@@ -1,8 +1,8 @@
 
 import sys
 sys.path.insert(0, '../../')
-from src.questions_construction.domains import *
-from src.questions_construction.questions import *
+from questions_construction.domains import *
+from questions_construction.questions import *
 
 QUESTION_CLASSES = [ObjectTrackingQuestions,
                     FluentTrackingQuestions,

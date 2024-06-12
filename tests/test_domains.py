@@ -1,7 +1,7 @@
 
 import sys
 sys.path.insert(0,'../../')
-from src.questions_construction.domains import *
+from questions_construction.domains import *
 import unittest
 
 random.seed(42)

@@ -4,7 +4,7 @@ from tqdm import tqdm
 import argparse
 import sys
 sys.path.insert(0, '../../../')
-from src.questions_construction.domains import *
+from questions_construction.domains import *
 
 ROOT_DIRECTORY = "../../../data/"
 ALL_DOMAIN_CLASSES = [

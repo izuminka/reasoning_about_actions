@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0,'../../')
-from src.common import *
-from src.questions_construction.domains import *
+from common import *
+from questions_construction.domains import *
 from tqdm import tqdm
 from time import time
 

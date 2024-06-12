@@ -1,8 +1,8 @@
 import sys
 import json
 sys.path.append('..')
-from src.common import *
-from src.analysis.model_performances import *
+from common import *
+from analysis.model_performances import *
 
 TO_PRETTY = {
     WITH_RAMIFICATIONS : 'W R',

@@ -4,7 +4,7 @@ import string
 
 import sys
 sys.path.insert(0,'../../')
-from src.common import *
+from common import *
 from copy import deepcopy
 
 def strip_action_prefix(action):

@@ -12,8 +12,8 @@ import numpy as np
 import sys
 
 sys.path.insert(0, '../../')
-from src.questions_construction.domains import *
-from src.common import *
+from questions_construction.domains import *
+from common import *
 
 INITIAL_CONDITION_PREFIX = 'Given the initial condition'
 ACTIONS_ARE_PERFORMED_PREFIX = f'{INITIAL_CONDITION_PREFIX}, the following actions are performed:'

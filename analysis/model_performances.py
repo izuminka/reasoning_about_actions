@@ -13,9 +13,9 @@ from torch.utils.data import DataLoader
 from datasets import Dataset
 
 sys.path.insert(0, '../../')
-from src.questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
-from src.questions_construction.domains import DOMAIN_NAMES
-from src.common import *
+from questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
+from questions_construction.domains import DOMAIN_NAMES
+from common import *
 import random
 
 

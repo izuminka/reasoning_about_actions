@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from src.analysis.model_performances import *
+from analysis.model_performances import *
 
 NAME_KEY = 'name'
 DATA_KEY = 'data'

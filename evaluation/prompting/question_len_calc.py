@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from collections import defaultdict
 from reasoning_about_actions.src.evaluation.prompting.prompting_stencils import Generate_prompting_template
-from src.questions_construction.domains import *
+from questions_construction.domains import *
 root_directory = '/data_4/data/shri/reasoning_about_actions/data/questions/'
 domain_class = Miconic()
 domain_name = 'miconic'
