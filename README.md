@@ -2,12 +2,12 @@
 # ActionReasoningBench
 This repository contains the source code for [ActionReasoningBench: Reasoning about Actions with and without Ramification Constraints](https://arxiv.org/pdf/2406.04046)
 
-Data is available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
+Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
 
 ## Directory Structure 
 - **init_goal_state_generation/**: PDDL instances are created, plan is computed and validated. Instances are automatically converted to ASP
-- **states_actions_generation/**: Given ASP domain, instance and plan `jsonl` file is computed with states and actions branching (depth 1) from the given plan
-- **questions_construction/**: Given computed `jsonl`, domain name creates questions
+- **states_actions_generation/**: Given ASP domain, instance and plan `jsonl` file is computed with states and actions branching from the given plan
+- **questions_construction/**: Contains ASP -> NL conversions for each domain and question generation scripts.
 - **evaluation/**: Contains scripts for creates prompts, evaluates models on prompting and fine-tuning
 - **analysis/**: Contains scripts and tools for analyzing the evaluated models
 - **tests/**: Includes unit tests and other testing scripts to ensure the functionality and integrity of the pipeline.
@@ -41,6 +41,5 @@ To get started with this project, follow the steps below:
       year={2024},
       eprint={2406.04046},
       archivePrefix={arXiv},
-      primaryClass={cs.CC}
-}
+      primaryClass={cs.CC}}
 ````
