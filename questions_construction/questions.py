@@ -249,6 +249,9 @@ class QuestionGenerationHelpers:
                 by_object_name[obj] = obj_type
         return by_object_name
 
+    def nl_objects(self, objects, is_sorted=True):
+        return asp_to_nl(objects, lambda x: x, is_sorted=is_sorted)
+
     def nl_fluents(self, fluents, fluent_subs=None, is_sorted=True, is_capitalized=False):
         nl = asp_to_nl(fluents, self.domain_class.fluent_to_natural_language, fluent_subs=fluent_subs,
                        is_sorted=is_sorted)
@@ -282,7 +285,7 @@ class QuestionGenerationHelpers:
             return [corrupt_fluent(fluents[0])]
         else:
             corrupted_fluents = copy.deepcopy(fluents)
-            num_samples_to_corrupt = int(fraction_to_corrupt * len(fluents))
+            num_samples_to_corrupt = int(fraction_to_corrupt * len(fluents)) or 1
             samples_to_corrupt_inds = random.sample(range(0, len(fluents)), num_samples_to_corrupt)
             for i in samples_to_corrupt_inds:
                 corrupted_fluents[i] = corrupt_fluent(fluents[i])
