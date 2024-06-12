@@ -32,9 +32,9 @@ To get started with this project, follow the steps below:
    conda activate action_reasoning
    pip install -r requirements.txt
    ```
-3. **Download Data/Models**
-   Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
+3. **Download Data/Models**:
    
+   Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
 
 # Cite This Work
 ````bibtex
