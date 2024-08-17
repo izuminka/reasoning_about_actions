@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from datasets import Dataset
 
 sys.path.insert(0, '../../')
-from questions_construction.main import PLAN_LENGTHS, QUESTION_CATEGORIES
+from questions_construction.main import QUESTION_CATEGORIES
 from questions_construction.domains import DOMAIN_NAMES
 from common import *
 import random
@@ -68,11 +68,6 @@ PROMPT_TYPES = ['few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB, WITH_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 
-# PROMPT_MODEL_NAMES = ['gemma-7b-finetuned', 'llama-3-8b-instruct']
-# PROMPT_TYPES = ['few_shot_0', 'few_shot_1']
-# SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB]
-# RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS]
-
 
 
 def gather_data_iterator():
@@ -95,6 +90,22 @@ def for_loop_all_iterator():
                         yield domain, plan_length, question_category, ramifications, substitutions, model_name, prompt_type
 
 def gather_questions(questions_dir, selected_ids=None, delete_other_keys=True):
+    all_data = defaultdict(dict)
+    for substitutions in SUBSTITUTION_TYPES:
+        qa_objects = open_jsonl(f'{questions_dir}/questions.{substitutions}.jsonl')
+        for d in qa_objects:
+            if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
+                continue
+            if delete_other_keys:
+                del d[OUT_OBJ_INITIAL_STATE_ASP]
+                del d[OUT_OBJ_INITIAL_STATE_NL]
+                del d[OUT_OBJ_ACTION_SEQUENCE]
+            all_data[d[OUT_OBJ_ID]][substitutions] = d
+    print('questions gathered')
+    return all_data
+
+def gather_questions_old_format(questions_dir, selected_ids=None, delete_other_keys=True):
+    """old format"""
     all_data = defaultdict(dict)
     for substitutions in SUBSTITUTION_TYPES:
         for domain in DOMAIN_NAMES:
@@ -565,11 +576,11 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
 
 
 if __name__ == '__main__':
-    questions_dir = f'{DATA_PATH}/questions_m1'
+    questions_dir = f'{DATA_PATH}/questions'
     ids_file_name = 'dataset_ids.test.pruned'
     if ids_file_name:
         selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl') + open_jsonl(f'{DATA_PATH}/questions.composite.test_ids.jsonl')
-        questions_by_id = gather_questions(questions_dir, selected_ids)
+        questions_by_id = gather_questions(questions_dir, selected_ids=selected_ids)
         data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
         save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
     else:
@@ -578,19 +589,19 @@ if __name__ == '__main__':
         save_main_dir = STATISTICS_PATH
     sanity_checks(questions_by_id, data_all)
 
-    answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
-
-    model, tokenizer, device = None, None, None
-    if answer_response == FREE_ANSWER_TYPE:
-        device = torch.device("cpu")  # "cuda:0" if torch.cuda.is_available() else
-        model_name = 'roberta-base'
-        path_to_fine_tuned_model = f'{CODE_PATH}/analysis/roberta_finetuned_models/checkpoint-2500_roberta'
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSequenceClassification.from_pretrained(path_to_fine_tuned_model)
-        model.to(device)
-
-    calculate_stats_all(data_all, answer_response,
-                        save_main_dir=save_main_dir,
-                        override=True,
-                        tokenizer=tokenizer, model=model, device=device)
-    print('saved', answer_response)
+    # answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
+    #
+    # model, tokenizer, device = None, None, None
+    # if answer_response == FREE_ANSWER_TYPE:
+    #     device = torch.device("cpu")  # "cuda:0" if torch.cuda.is_available() else
+    #     model_name = 'roberta-base'
+    #     path_to_fine_tuned_model = f'{CODE_PATH}/analysis/roberta_finetuned_models/checkpoint-2500_roberta'
+    #     tokenizer = AutoTokenizer.from_pretrained(model_name)
+    #     model = AutoModelForSequenceClassification.from_pretrained(path_to_fine_tuned_model)
+    #     model.to(device)
+    #
+    # calculate_stats_all(data_all, answer_response,
+    #                     save_main_dir=save_main_dir,
+    #                     override=True,
+    #                     tokenizer=tokenizer, model=model, device=device)
+    # print('saved', answer_response)
