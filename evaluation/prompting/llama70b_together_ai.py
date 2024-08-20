@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, '../../')
 from common import *
 
-with open("together3.key", "r") as f:
+with open("together.key", "r") as f:
   os.environ["TOGETHER_API_KEY"] = f.read().strip()
 client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
 
@@ -35,16 +35,17 @@ def get_output(prompt, model="meta-llama/Llama-3-70b-chat-hf"):
 model = 'llama70b'
 PROMPTS = ['few_shot_1'] #'few_shot_5',
 
-# DOMAINS = ['blocksworld']# , 'depots', 'driverlog', 'goldminer', 'grippers', 'logistics','miconic', 'mystery', 'npuzzle',
+# DOMAINS = ['blocksworld' , 'depots', 'driverlog', 'goldminer',
+# 'grippers', 'logistics','miconic', 'mystery', 'npuzzle',
 # 'satellite', 'spanner', 'visitall', 'zenotravel']
 INSTANCES = [f'Instance_{i}' for i in range(1, 11)]
 
 SUBS = 'without_random_sub'
 RAMS = 'without_ramifications'
-INPUT_DIR = f'{PROJECT_PATH}/data/prompts_for_test.pruned'
-OUTPUT_DIR = f'{PROJECT_PATH}/results'
-# INPUT_DIR = f'../../../data/composite_questions_for_test'
-# OUTPUT_DIR = '../../../results_composite'
+# INPUT_DIR = f'{PROJECT_PATH}/data/prompts_for_test.pruned'
+# OUTPUT_DIR = f'{PROJECT_PATH}/results'
+INPUT_DIR = f'{PROJECT_PATH}/data/prompts_for_test.composite'
+OUTPUT_DIR = f'{PROJECT_PATH}/results_composite'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
