@@ -46,9 +46,10 @@ class AllQuestions:
 
 
 if __name__ == '__main__':
-    save_dir_preix = f'{QUESTIONS_PATH}.composite'
+    save_dir_preix = f'{QUESTIONS_PATH}'
     question_multiplicity = 1
     upper_instance = 11
+    all_questions_tmp = []
     for domain_class in ALL_DOMAIN_CLASSES:
         domain = domain_class(is_random_sub=False, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
         for i in range(1, upper_instance):
@@ -62,7 +63,7 @@ if __name__ == '__main__':
             all_questions.generate_all_questions()
             all_questions.save_questions(save_dir)
 
-            # random sub composite questions
+            #random sub questions
             random_sub_all_questions = deepcopy(all_questions)
             for d in random_sub_all_questions.all_questions:
                 for k in [OUT_OBJ_ANSWER, OUT_OBJ_QUESTION, OUT_OBJ_INITIAL_STATE_NL]:

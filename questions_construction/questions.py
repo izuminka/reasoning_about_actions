@@ -33,7 +33,7 @@ PLAN_LENGTHS = [1, 5, 10, 15, 19]
 FRACTION_TO_CORRUPT = 0.5
 
 QUESTION_MULTIPLICITY = 1
-
+CONTROLLED_REJECTED_QUESTION_FOR_BALANCE = 'sdfnksdbvsdbvjdsbvjh'
 
 def unique_id(data):
     # TODO add, if QUESTION_MULTIPLICITY > 1
@@ -127,6 +127,8 @@ class QuestionGenerationHelpers:
                                                                        self.domain_class.STATIC_POS_FLUENTS)
         self.static_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
                                                                        self.domain_class.STATIC_NEG_FLUENTS)
+        self.pos_fluents = self.base_pos_fluents + self.derived_pos_fluents + self.persistent_pos_fluents + self.static_pos_fluents
+        self.neg_fluents = self.base_neg_fluents + self.derived_neg_fluents + self.persistent_neg_fluents + self.static_neg_fluents
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
@@ -194,6 +196,9 @@ class QuestionGenerationHelpers:
         elif fluent_type == STATIC_FLUENTS:
             pos_fluents = self.static_pos_fluents[plan_length]
             neg_fluents = self.static_neg_fluents[plan_length]
+        elif fluent_type == FLUENT_TYPES_ALL:
+            pos_fluents = self.pos_fluents[plan_length]
+            neg_fluents = self.neg_fluents[plan_length]
         else:
             raise ValueError(f'Undefined fluent type {fluent_type}')
         return pos_fluents, neg_fluents
@@ -402,7 +407,9 @@ class QuestionGenerator(QuestionGenerationHelpers):
         results = {}
         while (len(results) < multiplicity) and timeout_outer > 0:
             qa_object = question_constructor(plan_length)
-            while (qa_object is None) and timeout_inner > 0:
+            if qa_object == CONTROLLED_REJECTED_QUESTION_FOR_BALANCE:
+                return []
+            while timeout_inner > 0 and (qa_object is None):
                 qa_object = question_constructor(plan_length)
                 timeout_inner -= 1
             if not qa_object:
@@ -711,7 +718,7 @@ class EffectsQuestions(QuestionGenerator):
         else:
             return f"{ACTIONS_ARE_PERFORMED_PREFIX} {self.nl_actions_up_to(plan_length)} to reach the current state. In this state,"
 
-    def questions_iter_1_helper(self, plan_length, fluent_type, is_answer_true, is_same_sample, question_name):
+    def questions_iter_1_helper(self, plan_length, fluent_type, is_answer_true, question_name):
         action = self.given_plan_sequence[plan_length]
         pos_fluents, neg_fluents = self.fluents_for_fluent_type(plan_length, fluent_type)
         fluents_current_state = set(pos_fluents).union(set(neg_fluents))
@@ -720,12 +727,17 @@ class EffectsQuestions(QuestionGenerator):
         fluents_next_state = set(next_pos_fluents).union(set(next_neg_fluents))
         fluents_new_minus_old = fluents_next_state - fluents_current_state
 
+        empty_fluents_nl = f'no {FLUENTS_NL_BY_KEY[fluent_type]} change'
         if is_answer_true:
-            fluents = fluents_new_minus_old
-        else:
-            if is_same_sample and fluents_new_minus_old:
-                fluents = self.corrupt_fluents(list(fluents_new_minus_old))
+            if not fluents_new_minus_old: # if no fluents are changed, such as static fluents or if say only persistent fluents are changed and not base fluents
+                if random.choice([True, False]):
+                    nl_fluents = empty_fluents_nl
+                else:
+                    return CONTROLLED_REJECTED_QUESTION_FOR_BALANCE
             else:
+                nl_fluents = self.nl_fluents(list(fluents_new_minus_old))
+        else:
+            if not fluents_new_minus_old: # if there is nothing, then create random crap
                 fluents_all = set()
                 for l in range(self.plan_length_max):
                     pos_fluents, neg_fluents = self.fluents_for_fluent_type(l, fluent_type)
@@ -733,30 +745,27 @@ class EffectsQuestions(QuestionGenerator):
                 if not fluents_all:
                     return None
                 fluents = self.corrupt_fluents(list(fluents_all))
-                fluents = list(set(fluents) - fluents_new_minus_old)
-                if len(fluents) < len(fluents_new_minus_old):
-                    return None
-                fluents = random.sample(fluents, len(fluents_new_minus_old))
-        fluents = list(fluents)
-        if not fluents:
-            nl_fluents = f'no {FLUENTS_NL} change'
-        else:
-            nl_fluents = self.nl_fluents(fluents)
+                fluents = list(set(fluents))
+                rand_num_fluents = random.randint(1, len(fluents))
+                fluents = random.sample(fluents, rand_num_fluents)
+                assert len(fluents) >= 1
+                nl_fluents = self.nl_fluents(list(fluents))
+            else: # if there is something, state that there is nothing (since the answer should be wrong)
+                nl_fluents = empty_fluents_nl
+
         question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {nl_fluents}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length,
                                    fluent_type)
 
     def questions_iter_1(self):
         counter = 0
-        for fluent_type in FLUENT_TYPES_LIST:
-            for is_same_sample in [True, False]:
-                for is_answer_true in [True, False]:
-                    counter += 1
-                    yield partial(self.questions_iter_1_helper,
-                                  fluent_type=fluent_type,
-                                  is_answer_true=is_answer_true,
-                                  is_same_sample=is_same_sample,
-                                  question_name=question_name(counter, 'iter_1'))
+        for fluent_type in list(FLUENT_TYPES_LIST) + [FLUENT_TYPES_ALL]:
+            for is_answer_true in [True, False]:
+                counter += 1
+                yield partial(self.questions_iter_1_helper,
+                              fluent_type=fluent_type,
+                              is_answer_true=is_answer_true,
+                              question_name=question_name(counter, 'iter_1'))
 
     #### FREE ANSWER QUESTIONS ####
 
