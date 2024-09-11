@@ -51,6 +51,13 @@ WITHOUT_RANDOM_SUB = 'without_random_sub'
 # model and prompts
 MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
 
+BASE_FLUENTS = 'base_fluents'
+DERIVED_FLUENTS = 'derived_fluents'
+PERSISTENT_FLUENTS = 'persistent_fluents'
+STATIC_FLUENTS = 'static_fluents'
+FLUENT_TYPES_ALL = None
+FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
+
 # fluent names for QA and domains
 FLUENTS_NL = 'properties of the state'
 POSITIVE_FLUENT_NL = 'valid property of the state'
@@ -62,6 +69,11 @@ BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
 DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
 PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL
 STATIC_FLUENTS_NL = 'static ' + FLUENTS_NL
+FLUENTS_NL_BY_KEY = {BASE_FLUENTS: BASE_FLUENTS_NL,
+                     DERIVED_FLUENTS: DERIVED_FLUENTS_NL,
+                     PERSISTENT_FLUENTS: PERSISTENT_FLUENTS_NL,
+                     STATIC_FLUENTS: STATIC_FLUENTS_NL,
+                     FLUENT_TYPES_ALL: FLUENTS_NL}
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
