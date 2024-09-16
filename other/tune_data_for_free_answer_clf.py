@@ -23,6 +23,19 @@ def out_obj(asp):
     return {'asp': asp, }
 
 
+def fluent_type_to_fluent_nl(fluent_type):
+    if fluent_type == BASE_FLUENTS:
+        return BASE_FLUENTS_NL
+    elif fluent_type == DERIVED_FLUENTS:
+        return DERIVED_FLUENTS_NL
+    elif fluent_type == PERSISTENT_FLUENTS:
+        return PERSISTENT_FLUENTS_NL
+    elif fluent_type == STATIC_FLUENTS:
+        return STATIC_FLUENTS_NL
+    else:
+        raise ValueError(f'Undefined fluent type {fluent_type}')
+
+
 class AnswerPairGeneratorHelper(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)

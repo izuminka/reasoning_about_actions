@@ -31,7 +31,7 @@ class BaseDomain:
     PERSISTENT_FLUENTS = []
     STATIC_FLUENTS = []
 
-    def __init__(self, is_random_sub, is_ramifications, is_with_fluent_info=True):
+    def __init__(self, is_random_sub, is_ramifications, is_with_fluent_info=False):
         self.is_random_sub = is_random_sub
         self.is_ramifications = is_ramifications
         self.domain_description = self.DOMAIN_DESC_WITH_RAM if is_ramifications else self.DOMAIN_DESC_WITHOUT_RAM
