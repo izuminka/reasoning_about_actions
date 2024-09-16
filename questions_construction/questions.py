@@ -737,31 +737,24 @@ class EffectsQuestions(QuestionGenerator):
         fluents_next_state = set(next_pos_fluents).union(set(next_neg_fluents))
         fluents_new_minus_old = fluents_next_state - fluents_current_state
 
-        empty_fluents_nl = f'no {FLUENTS_NL_BY_KEY[fluent_type]} change'
+        if not fluents_new_minus_old:
+            return None
+
         if is_answer_true:
-            if not fluents_new_minus_old: # if no fluents are changed, such as static fluents or if say only persistent fluents are changed and not base fluents
-                if random.choice([True, False]):
-                    nl_fluents = empty_fluents_nl
-                else:
-                    return CONTROLLED_REJECTED_QUESTION_FOR_BALANCE
-            else:
-                nl_fluents = self.nl_fluents(list(fluents_new_minus_old))
+            nl_fluents = self.nl_fluents(list(fluents_new_minus_old))
         else:
-            if not fluents_new_minus_old: # if there is nothing, then create random crap
-                fluents_all = set()
-                for l in range(self.plan_length_max):
-                    pos_fluents, neg_fluents = self.fluents_for_fluent_type(l, fluent_type)
-                    fluents_all = fluents_all.union(set(pos_fluents).union(set(neg_fluents)))
-                if not fluents_all:
-                    return None
-                fluents = self.corrupt_fluents(list(fluents_all))
-                fluents = list(set(fluents))
-                rand_num_fluents = random.randint(1, len(fluents))
-                fluents = random.sample(fluents, rand_num_fluents)
-                assert len(fluents) >= 1
-                nl_fluents = self.nl_fluents(list(fluents))
-            else: # if there is something, state that there is nothing (since the answer should be wrong)
-                nl_fluents = empty_fluents_nl
+            fluents_all = set()
+            for l in range(self.plan_length_max):
+                pos_fluents, neg_fluents = self.fluents_for_fluent_type(l, fluent_type)
+                fluents_all = fluents_all.union(set(pos_fluents).union(set(neg_fluents)))
+            if not fluents_all:
+                return None
+            fluents = self.corrupt_fluents(list(fluents_all))
+            fluents = list(set(fluents))
+            upper = min(len(fluents), len(fluents_new_minus_old))
+            rand_num_fluents = random.randint(1, upper)
+            fluents = random.sample(fluents, rand_num_fluents)
+            nl_fluents = self.nl_fluents(list(fluents))
 
         question = f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {nl_fluents}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length,
