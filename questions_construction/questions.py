@@ -822,6 +822,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
             'inexecutable actions': len(self.inexecutable_actions[plan_length]),
             POSITIVE_FLUENTS_NL: len(self.pos_fluents_given_plan[plan_length]),
             NEGATIVE_FLUENTS_NL: len(self.neg_fluents_given_plan[plan_length]),
+            FLUENTS_NL: len(self.pos_fluents_given_plan[plan_length]) + len(self.neg_fluents_given_plan[plan_length]),
             # BASE_FLUENTS_NL: len(list(chain.from_iterable(self.fluents_for_fluent_type(plan_length, BASE_FLUENTS)))),
             # DERIVED_FLUENTS_NL: len(list(chain.from_iterable(self.fluents_for_fluent_type(plan_length, DERIVED_FLUENTS)))),
             # PERSISTENT_FLUENTS_NL: len(list(chain.from_iterable(self.fluents_for_fluent_type(plan_length, PERSISTENT_FLUENTS)))),
