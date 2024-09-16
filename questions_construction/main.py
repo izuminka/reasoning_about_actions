@@ -4,14 +4,12 @@ sys.path.insert(0, '../../')
 from questions_construction.domains import *
 from questions_construction.questions import *
 
-QUESTION_CLASSES = [ObjectTrackingQuestions,
-                    FluentTrackingQuestions,
+QUESTION_CLASSES = [FluentTrackingQuestions,
                     StateTrackingQuestions,
                     ActionExecutabilityQuestions,
                     EffectsQuestions,
                     NumericalReasoningQuestions,
-                    HallucinationQuestions,
-                    CompositeQuestions]
+                    CompositeQuestions] # ObjectTrackingQuestions, HallucinationQuestions
 QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES]
 
 
