@@ -60,10 +60,10 @@ FLUENT_TYPES_ALL_LEGACY_KEY = None # old key comp. with old data
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
 # fluent names for QA and domains
-FLUENTS_NL = 'properties of the state'
-POSITIVE_FLUENT_NL = 'valid property of the state'
+FLUENTS_NL = 'valid properties of the state'
+POSITIVE_FLUENT_NL = 'valid property of the state that does not involve a negation'
+POSITIVE_FLUENTS_NL = 'valid properties of the state that do not involve negations'
 NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
-POSITIVE_FLUENTS_NL = 'valid properties of the state'
 NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
 BASE_FLUENTS_NL = 'base ' + FLUENTS_NL

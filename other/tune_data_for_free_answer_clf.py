@@ -357,12 +357,15 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
-        if is_pos_fluent_question:
+        if is_pos_fluent_question == True:
             fluent_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length]
-        else:
+        elif is_pos_fluent_question == False:
             fluent_type_nl = NEGATIVE_FLUENTS_NL
             fluents = self.neg_fluents_given_plan[plan_length]
+        else:
+            fluent_type_nl = FLUENTS_NL
+            fluents = self.pos_fluents_given_plan[plan_length] + self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         if fluents:
             return {ASP_ID: unique_id(fluents),
