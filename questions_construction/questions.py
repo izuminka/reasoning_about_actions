@@ -75,7 +75,7 @@ def question_name(q_id, prefix=None):
     return f'question_{q_id}'
 
 
-def fluent_negation_to_nl(value):
+def fluents_negation_to_nl(value):
     if value == True:
         return POSITIVE_FLUENTS_NL
     elif value == False:
@@ -530,7 +530,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         fluents = self.fluent_helper(pos_fluents, neg_fluents, is_answer_true, is_pos_fluent_question)
         if not fluents:
             return None
-        fluent_negation_nl = fluent_negation_to_nl(is_pos_fluent_question)
+        fluent_negation_nl = fluents_negation_to_nl(is_pos_fluent_question)
         question = f"{self.nl_question_prefix(plan_length)} are all of the following {fluent_negation_nl} {TRUE_OR_FALSE}: {self.nl_fluents(fluents)}?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length,
                                    fluent_type, is_pos_fluent_question)
@@ -551,7 +551,7 @@ class FluentTrackingQuestions(QuestionGenerator):
 
     def questions_iter_3_helper(self, plan_length, is_pos_fluent_question, question_name):
         fluent_type = FLUENT_TYPES_ALL
-        fluent_type_negation_nl = fluent_negation_to_nl(is_pos_fluent_question)
+        fluent_type_negation_nl = fluents_negation_to_nl(is_pos_fluent_question)
         pos_fluents, neg_fluents, obj = self.fluents_for_random_obj(plan_length, fluent_type=fluent_type)
         if not pos_fluents and not neg_fluents:
             return None
@@ -1214,7 +1214,7 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_5_helper(self, plan_length, is_pos_fluent_question, question_name):
         fluent_type = FLUENT_TYPES_ALL
-        fluent_type_negation_nl = fluent_negation_to_nl(is_pos_fluent_question)
+        fluent_type_negation_nl = fluents_negation_to_nl(is_pos_fluent_question)
         is_answer_true = random.choice([True, False])
         actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
         question = (f"{self.nl_question_prefix_custom(self.nl_actions(actions), is_planned=True)} "
@@ -1240,7 +1240,7 @@ class CompositeQuestions(QuestionGenerator):
 
     def questions_iter_6_helper(self, plan_length, is_pos_fluent_question, question_name):
         fluent_type = FLUENT_TYPES_ALL
-        fluent_type_negation_nl = fluent_negation_to_nl(is_pos_fluent_question)
+        fluent_type_negation_nl = fluents_negation_to_nl(is_pos_fluent_question)
 
         is_answer_true = random.choice([True, False])
         actions, random_corrupt_action_i = self.sequence_of_actions(plan_length, is_answer_true)
