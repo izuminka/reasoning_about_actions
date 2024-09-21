@@ -37,9 +37,7 @@ class Generate_prompting_template:
             data = f.readlines()
         question_jsonl = [json.loads(x) for x in data]
         for dictionary_item in question_jsonl:
-            if dictionary_item['answer_type'] == 'free_answer':
-                dictionary_item['prompt'] = f'''[DOMAIN DESCRIPTION]
-
+            dictionary_item['prompt'] = f'''[DOMAIN DESCRIPTION]
 {self.domain_class.domain_description}
 
 [INITIAL CONDITIONS]
@@ -47,20 +45,16 @@ Initially, {dictionary_item["initial_state_nl"]}
 
 [QUESTION]
 {dictionary_item["question"]}.
-Provide your final answer in between [[ and ]]'''
-                dictionary_item['label'] = f"[[{dictionary_item['answer']}]]"
-            else:
-                dictionary_item['prompt'] = f'''[DOMAIN DESCRIPTION]
 
-{self.domain_class.domain_description}
+Answer the above question in the following format:
 
-[INITIAL CONDITIONS]
-Initially, {dictionary_item["initial_state_nl"]}
+[REASON]
+<Write your reasoning here>
 
-[QUESTION]
-{dictionary_item["question"]}.
-Just provide your answer as TRUE/FALSE.'''
-                dictionary_item['label'] = dictionary_item['answer']
+[ANSWER]
+<Write the final answer here>
+'''
+            dictionary_item['label'] = {dictionary_item['answer']}
             results.append(dictionary_item)
         return results
     
