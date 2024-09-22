@@ -340,7 +340,7 @@ class FluentTrackingPairs(AnswerPairGeneratorHelper):
     def questions_iter_3(self):
         counter = 0
         for fluent_type in FLUENT_TYPES_LIST:
-            for is_pos_fluent_question in [True, False, None]:
+            for is_pos_fluent_question in POS_NEG_FLUENTS_KEY_LIST:
                 counter += 1
                 yield partial(self.questions_iter_3_helper,
                               fluent_type=fluent_type,
@@ -377,7 +377,7 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
 
     def questions_iter_2(self):
         counter = 0
-        for is_pos_fluent_question in [True, False, None]:
+        for is_pos_fluent_question in POS_NEG_FLUENTS_KEY_LIST:
             counter += 1
             yield partial(self.questions_iter_2_helper,
                           is_pos_fluent_question=is_pos_fluent_question,
@@ -400,10 +400,10 @@ class EffectsPairs(AnswerPairGeneratorHelper):
 
     def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
         action = self.given_plan_sequence[plan_length]
-        if is_pos_fluent_question is None:
+        if is_pos_fluent_question == POS_NEG_FLUENTS_KEY_LIST:
             fluents_type_nl = FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1] + self.neg_fluents_given_plan[plan_length + 1]
-        elif is_pos_fluent_question:
+        elif is_pos_fluent_question == POS_FLUENTS_QUEESTION:
             fluents_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
@@ -418,7 +418,7 @@ class EffectsPairs(AnswerPairGeneratorHelper):
 
     def questions_iter_2(self):
         counter = 0
-        for is_pos_fluent_question in [True, False, None]:
+        for is_pos_fluent_question in POS_NEG_FLUENTS_KEY_LIST:
             counter += 1
             yield partial(self.questions_iter_2_helper,
                           is_pos_fluent_question=is_pos_fluent_question,

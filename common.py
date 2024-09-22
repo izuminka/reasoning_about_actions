@@ -31,7 +31,8 @@ OUT_OBJ_QUESTION = 'question'
 OUT_OBJ_ANSWER_TYPE = 'answer_type'
 OUT_OBJ_ANSWER = 'answer' # ground truth answer #TODO rename
 OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
-OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question'
+OUT_OBJ_FLUENT_SIGN_QUESTION = 'is_pos_fluent_question'
+OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question' # Legacy key
 OUT_OBJ_TEST_KEY = 'for_testing'
 
 # OUTPUT ANSWER TYPES
