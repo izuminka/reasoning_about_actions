@@ -557,8 +557,7 @@ class FluentTrackingQuestions(QuestionGenerator):
         if not pos_fluents and not neg_fluents:
             return None
 
-        question = (f"{self.nl_question_prefix(plan_length)}. "
-                    f"What are the {fluent_type_negation_nl} for {obj}? "
+        question = (f"{self.nl_question_prefix(plan_length)} what are the {fluent_type_negation_nl} for {obj}? "
                     f"{NONE_STATEMENT}")
         fluents = self.fluent_helper(pos_fluents, neg_fluents, True, fluent_sign_question)
         if not fluents:
