@@ -124,7 +124,6 @@ def gather_questions_old_format(questions_dir, selected_ids=None, delete_other_k
                                 raise ValueError(f"Duplicate question {d[OUT_OBJ_ID]}, {substitutions}")
                             if delete_other_keys:
                                 del d[OUT_OBJ_INITIAL_STATE_ASP]
-                                del d[OUT_OBJ_INITIAL_STATE_NL]
                                 del d[OUT_OBJ_ACTION_SEQUENCE]
                             all_data[d[OUT_OBJ_ID]][substitutions] = d
     print('questions gathered')
