@@ -113,7 +113,8 @@ def gather_questions_old_format(questions_dir, selected_ids=None, delete_other_k
                 for ext in ['', '_composite']:
                     results_domain_path = f'{questions_dir}{ext}/{substitutions}/{domain}/{instance}.jsonl'
                     if not os.path.exists(results_domain_path):
-                        print("missing", results_domain_path)
+                        pass
+                        # print("missing", results_domain_path)
                     else:
                         qa_objects = open_jsonl(results_domain_path)
                         for d in qa_objects:

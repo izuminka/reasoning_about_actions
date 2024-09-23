@@ -403,7 +403,7 @@ class EffectsPairs(AnswerPairGeneratorHelper):
         if is_pos_fluent_question == POS_NEG_FLUENTS_KEY_LIST:
             fluents_type_nl = FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1] + self.neg_fluents_given_plan[plan_length + 1]
-        elif is_pos_fluent_question == POS_FLUENTS_QUEESTION:
+        elif is_pos_fluent_question == POS_FLUENTS_QUESTION:
             fluents_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
