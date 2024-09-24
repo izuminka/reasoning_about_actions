@@ -3811,10 +3811,10 @@ class Spanner(BaseDomain):
         "A man cannot be at two different places at the same time. "
         "The spanner is not at a location if it is being hold by the man. "
         "The nut is not loose if and only if it is tightened. "
-        "The spanner is not usable if and only if the nut is tightened. "
+        "The spanner is not usable if and only if the nut is tightened with the spanner. "
     )
     
-    BASE_POS_FLUENTS = ['carrying(', 'useable(', 'tightened(']
+    BASE_POS_FLUENTS = ['carrying(', 'tightened(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['loose(', 'useable(']
