@@ -327,8 +327,7 @@ class FluentTrackingPairs(AnswerPairGeneratorHelper):
         if not pos_fluents and not neg_fluents:
             return None
 
-        question = (f"{self.nl_question_prefix(plan_length)}. "
-                    f"What are the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? "
+        question = (f"{self.nl_question_prefix(plan_length)}, what are the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? "
                     f"{NONE_STATEMENT}")
         fluents = self.fluent_helper(pos_fluents, neg_fluents, True, is_pos_fluent_question)
         if fluents:

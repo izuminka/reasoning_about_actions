@@ -869,8 +869,7 @@ class NumericalReasoningQuestions(QuestionGenerator):
 
     def questions_iter_2_helper(self, plan_length, name_count, question_name):
         count = self.objects_count(plan_length)[name_count]
-        question = (f"{self.nl_question_prefix(plan_length, is_planned=False)} "
-                    f"what is the total number of {name_count}? "
+        question = (f"{self.nl_question_prefix(plan_length)} what is the total number of {name_count}? "
                     f"Write as an integer. {NONE_STATEMENT}.")
         return self.qa_data_object(question, count, FREE_ANSWER_TYPE, question_name, plan_length, FLUENT_TYPES_ALL,
                                    POS_PLUS_NEG_FLUENTS_QUESTION)
