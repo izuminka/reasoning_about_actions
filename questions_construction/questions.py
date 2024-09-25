@@ -553,8 +553,12 @@ class FluentTrackingQuestions(QuestionGenerator):
         fluent_type = FLUENT_TYPES_ALL
         fluent_type_negation_nl = fluents_negation_to_nl(fluent_sign_question)
         pos_fluents, neg_fluents = self.fluents_for_object_tracking(obj, plan_length, fluent_type)
-        if not pos_fluents or not neg_fluents:
-            raise ValueError('Empty list')
+        if fluent_sign_question == POS_FLUENTS_QUESTION and not pos_fluents:
+            return None
+        elif fluent_sign_question == NEG_FLUENTS_QUESTION and not neg_fluents:
+            return None
+        elif not pos_fluents or not neg_fluents and fluent_sign_question == POS_PLUS_NEG_FLUENTS_QUESTION:
+            return None
 
         question = (f"{self.nl_question_prefix(plan_length)} what are the {fluent_type_negation_nl} for {obj}? "
                     f"{NONE_STATEMENT}")
@@ -845,11 +849,12 @@ class NumericalReasoningQuestions(QuestionGenerator):
             # STATIC_FLUENTS_NL: len(list(chain.from_iterable(self.fluents_for_fluent_type(plan_length, STATIC_FLUENTS))))
         }
 
-    def subcategories_helper(self, name_count):
+    @staticmethod
+    def subcategories_helper(name_count):
         subcategories = []
-        if name_count in (POSITIVE_FLUENTS_NL, NEGATIVE_FLUENTS_NL, POS_PLUS_NEG_FLUENTS_QUESTION):
+        if name_count in (POSITIVE_FLUENTS_NL, NEGATIVE_FLUENTS_NL, POS_AND_NEG_FLUENTS_NL):
             subcategories.append(FluentTrackingQuestions.QUESTION_CATEGORY)
-        elif name_count in ('executable actions', 'inexecutable actions'):
+        elif name_count in ('executable actions', 'inexecutable actions', 'executable and inexecutable actions'):
             subcategories.append(ActionExecutabilityQuestions.QUESTION_CATEGORY)
         else:
             raise ValueError(f'Undefined name_count {name_count}')
