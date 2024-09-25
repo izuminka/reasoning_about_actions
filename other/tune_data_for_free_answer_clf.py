@@ -363,7 +363,7 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
             fluent_type_nl = NEGATIVE_FLUENTS_NL
             fluents = self.neg_fluents_given_plan[plan_length]
         else:
-            fluent_type_nl = FLUENTS_NL
+            fluent_type_nl = POS_AND_NEG_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length] + self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         if fluents:
@@ -400,7 +400,7 @@ class EffectsPairs(AnswerPairGeneratorHelper):
     def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
         action = self.given_plan_sequence[plan_length]
         if is_pos_fluent_question == POS_NEG_FLUENTS_KEY_LIST:
-            fluents_type_nl = FLUENTS_NL
+            fluents_type_nl = POS_AND_NEG_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1] + self.neg_fluents_given_plan[plan_length + 1]
         elif is_pos_fluent_question == POS_FLUENTS_QUESTION:
             fluents_type_nl = POSITIVE_FLUENTS_NL

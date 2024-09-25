@@ -66,7 +66,7 @@ class BaseDomain:
             return result
 
         result = f'A state is a set of valid properties. Properties may or may not involve negations. '
-        result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
+        result += f'{capitalize_first_letter(POS_AND_NEG_FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
 
         result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties that don't depend on other properties. "
         result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS_NL)

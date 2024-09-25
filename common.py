@@ -35,6 +35,7 @@ OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
 OUT_OBJ_FLUENT_SIGN_QUESTION = 'is_pos_fluent_question'
 OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question' # Legacy key
 OUT_OBJ_TEST_KEY = 'for_testing'
+OUT_OBJ_QUESTION_SUBCATEGORIES = 'question_subcategories'
 
 # OUTPUT ANSWER TYPES
 FREE_ANSWER_TYPE = 'free_answer'
@@ -67,19 +68,19 @@ FLUENT_TYPES_ALL_LEGACY_KEY = None # old key comp. with old data
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
 # fluent names for QA and domains
-FLUENTS_NL = 'valid properties of the state (both with and without negations)'
+POS_AND_NEG_FLUENTS_NL = 'valid properties of the state (both with and without negations)'
 POSITIVE_FLUENTS_NL = 'valid properties of the state that do not involve negations'
 NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
-BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
-DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
-PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL
-STATIC_FLUENTS_NL = 'static ' + FLUENTS_NL
+BASE_FLUENTS_NL = 'base ' + POS_AND_NEG_FLUENTS_NL
+DERIVED_FLUENTS_NL = 'derived ' + POS_AND_NEG_FLUENTS_NL
+PERSISTENT_FLUENTS_NL = 'self constraint ' + POS_AND_NEG_FLUENTS_NL
+STATIC_FLUENTS_NL = 'static ' + POS_AND_NEG_FLUENTS_NL
 FLUENTS_NL_BY_KEY = {BASE_FLUENTS: BASE_FLUENTS_NL,
                      DERIVED_FLUENTS: DERIVED_FLUENTS_NL,
                      PERSISTENT_FLUENTS: PERSISTENT_FLUENTS_NL,
                      STATIC_FLUENTS: STATIC_FLUENTS_NL,
-                     FLUENT_TYPES_ALL: FLUENTS_NL}
+                     FLUENT_TYPES_ALL: POS_AND_NEG_FLUENTS_NL}
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
