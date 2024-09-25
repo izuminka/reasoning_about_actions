@@ -7,7 +7,7 @@ DATA_PATH = f'{PROJECT_PATH}/data'
 QUESTIONS_PATH = f'{DATA_PATH}/questions'
 STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
 STATISTICS_PATH = f'{PROJECT_PATH}/stats'
-RESULTS_PATH = f'{PROJECT_PATH}/results'  # todo rn to results dir
+RESULTS_PATH = f'{PROJECT_PATH}/results'
 
 # JSONL KEYS for states_actions_generation
 INIT_ACTION_KEY = 'action_init'
@@ -18,7 +18,8 @@ EXECUTABLE_ACTION_BOOL_KEY = 'executable?'
 OBJECTS_KEY = 'objects'
 
 # QUESTION GENERATION OUTPUT OBJECT KEYS
-OUT_OBJ_ID = 'id' # question id, has multiplicity of 2 (due to random vs non-random)
+OUT_OBJ_ID = 'question_id' # question id, has multiplicity of 2 (due to random vs non-random)
+OUT_OBJ_ID_LEGACY_KEY = 'id'
 OUT_OBJ_DOMAIN_NAME = 'domain_name'
 OUT_OBJ_INSTANCE_ID = 'instance_id'
 OUT_OBJ_INITIAL_STATE_ASP = 'initial_state_asp'
@@ -66,10 +67,8 @@ FLUENT_TYPES_ALL_LEGACY_KEY = None # old key comp. with old data
 FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
 
 # fluent names for QA and domains
-FLUENTS_NL = 'valid properties of the state'
-# POSITIVE_FLUENT_NL = 'valid property of the state that does not involve a negation'
+FLUENTS_NL = 'valid properties of the state (both with and without negations)'
 POSITIVE_FLUENTS_NL = 'valid properties of the state that do not involve negations'
-# NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
 NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
 BASE_FLUENTS_NL = 'base ' + FLUENTS_NL

@@ -97,9 +97,9 @@ def gather_questions(questions_dir, selected_ids=None, delete_other_keys=True):
             if selected_ids and d[OUT_OBJ_ID] not in selected_ids:
                 continue
             if delete_other_keys:
-                del d[OUT_OBJ_INITIAL_STATE_ASP]
-                del d[OUT_OBJ_INITIAL_STATE_NL]
-                del d[OUT_OBJ_ACTION_SEQUENCE]
+                pass
+                # del d[OUT_OBJ_INITIAL_STATE_ASP]
+                # del d[OUT_OBJ_ACTION_SEQUENCE]
             all_data[d[OUT_OBJ_ID]][substitutions] = d
     print('questions gathered')
     return all_data
@@ -123,8 +123,9 @@ def gather_questions_old_format(questions_dir, selected_ids=None, delete_other_k
                             if d[OUT_OBJ_ID] in all_data and substitutions in all_data[d[OUT_OBJ_ID]]:
                                 raise ValueError(f"Duplicate question {d[OUT_OBJ_ID]}, {substitutions}")
                             if delete_other_keys:
-                                del d[OUT_OBJ_INITIAL_STATE_ASP]
-                                del d[OUT_OBJ_ACTION_SEQUENCE]
+                                pass
+                                # del d[OUT_OBJ_INITIAL_STATE_ASP]
+                                # del d[OUT_OBJ_ACTION_SEQUENCE]
                             all_data[d[OUT_OBJ_ID]][substitutions] = d
     print('questions gathered')
     return all_data
