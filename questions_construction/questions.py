@@ -125,8 +125,10 @@ class QuestionGenerationHelpers:
                                                                        self.domain_class.STATIC_POS_FLUENTS)
         self.static_neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
                                                                        self.domain_class.STATIC_NEG_FLUENTS)
-        self.pos_fluents = self.base_pos_fluents + self.derived_pos_fluents + self.persistent_pos_fluents + self.static_pos_fluents
-        self.neg_fluents = self.base_neg_fluents + self.derived_neg_fluents + self.persistent_neg_fluents + self.static_neg_fluents
+        self.pos_fluents = self.extract_fluents_types_for_state(self.pos_fluents_given_plan,
+                                                                     self.domain_class.BASE_POS_FLUENTS + self.domain_class.DERIVED_POS_FLUENTS + self.domain_class.PERSISTENT_POS_FLUENTS + self.domain_class.STATIC_POS_FLUENTS)
+        self.neg_fluents = self.extract_fluents_types_for_state(self.neg_fluents_given_plan,
+                                                                     self.domain_class.BASE_NEG_FLUENTS+ self.domain_class.DERIVED_NEG_FLUENTS + self.domain_class.PERSISTENT_NEG_FLUENTS + self.domain_class.STATIC_NEG_FLUENTS)
 
     def extract_given_plan_sequence(self):
         given_plan_sequence = []
@@ -348,6 +350,8 @@ class QuestionGenerationHelpers:
 
         if is_answer_true:
             if fluent_sign_question == POS_PLUS_NEG_FLUENTS_QUESTION:
+                if not pos_fluents or not neg_fluents:
+                    return None
                 return pos_fluents + neg_fluents
             if fluent_sign_question == POS_FLUENTS_QUESTION:
                 return pos_fluents
@@ -355,7 +359,6 @@ class QuestionGenerationHelpers:
                 return neg_fluents
             else:
                 raise ValueError('Undefined fluent_sign_question')
-
         else:
             if fluent_sign_question == POS_PLUS_NEG_FLUENTS_QUESTION:
                 return self.corrupt_fluents(pos_fluents + neg_fluents)
@@ -397,10 +400,11 @@ class QuestionGenerator(QuestionGenerationHelpers):
                   OUT_OBJ_QUESTION: question,
                   OUT_OBJ_ANSWER: str(answer),
                   OUT_OBJ_PLAN_LENGTH: plan_length,
-                  OUT_OBJ_INITIAL_STATE_ASP: self.init_state,
                   OUT_OBJ_INITIAL_STATE_NL: self.init_state_nl,
+                  OUT_OBJ_FLUENT_SIGN_QUESTION: fluent_sign_question,
                   OUT_OBJ_ACTION_SEQUENCE: self.given_plan_sequence,
-                  OUT_OBJ_FLUENT_SIGN_QUESTION: fluent_sign_question}
+                  # OUT_OBJ_INITIAL_STATE_ASP: self.init_state,
+                  }
         if self.domain_class.is_random_sub:
             result[OUT_OBJ_QUESTION] = self.domain_class.to_random_substring(result[OUT_OBJ_QUESTION])
             if answer_type == FREE_ANSWER_TYPE:
@@ -554,8 +558,8 @@ class FluentTrackingQuestions(QuestionGenerator):
         fluent_type = FLUENT_TYPES_ALL
         fluent_type_negation_nl = fluents_negation_to_nl(fluent_sign_question)
         pos_fluents, neg_fluents = self.fluents_for_object_tracking(obj, plan_length, fluent_type)
-        if not pos_fluents and not neg_fluents:
-            return None
+        if not pos_fluents or not neg_fluents:
+            raise ValueError('Empty list')
 
         question = (f"{self.nl_question_prefix(plan_length)} what are the {fluent_type_negation_nl} for {obj}? "
                     f"{NONE_STATEMENT}")
