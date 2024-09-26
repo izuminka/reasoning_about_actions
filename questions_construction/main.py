@@ -1,17 +1,14 @@
 
 import sys
 sys.path.insert(0, '../../')
-from questions_construction.domains import *
 from questions_construction.questions import *
 
-QUESTION_CLASSES = [ObjectTrackingQuestions,
-                    FluentTrackingQuestions,
+QUESTION_CLASSES = [FluentTrackingQuestions,
                     StateTrackingQuestions,
                     ActionExecutabilityQuestions,
                     EffectsQuestions,
                     NumericalReasoningQuestions,
-                    HallucinationQuestions,
-                    CompositeQuestions]
+                    CompositeQuestions] # ObjectTrackingQuestions, HallucinationQuestions
 QUESTION_CATEGORIES = [q_class.QUESTION_CATEGORY for q_class in QUESTION_CLASSES]
 
 
@@ -46,9 +43,10 @@ class AllQuestions:
 
 
 if __name__ == '__main__':
-    save_dir_preix = f'{QUESTIONS_PATH}.composite'
-    question_multiplicity = 1
+    save_dir_preix = f'{QUESTIONS_PATH}'
     upper_instance = 11
+    # plan_lengths = [1, 10, 19]
+    all_questions_tmp = []
     for domain_class in ALL_DOMAIN_CLASSES:
         domain = domain_class(is_random_sub=False, is_ramifications=False) # for questions, is_ramifications does not matter T/F, only for prompts
         for i in range(1, upper_instance):
@@ -58,17 +56,18 @@ if __name__ == '__main__':
             save_dir = os.path.join(save_dir_preix, WITHOUT_RANDOM_SUB, domain.DOMAIN_NAME)
             save_dir_rand = os.path.join(save_dir_preix, WITH_RANDOM_SUB, domain.DOMAIN_NAME)
 
-            all_questions = AllQuestions(jsonl_instance, domain, instance_name, question_multiplicity=question_multiplicity)
+            all_questions = AllQuestions(jsonl_instance, domain, instance_name)#, plan_lengths=plan_lengths)
             all_questions.generate_all_questions()
             all_questions.save_questions(save_dir)
 
-            # random sub composite questions
-            random_sub_all_questions = deepcopy(all_questions)
-            for d in random_sub_all_questions.all_questions:
-                for k in [OUT_OBJ_ANSWER, OUT_OBJ_QUESTION, OUT_OBJ_INITIAL_STATE_NL]:
-                    d[k] = domain.to_random_substring(d[k])
-                d['with_random_sub'] = True
-            random_sub_all_questions.save_questions(save_dir_rand)
+            # #random sub questions
+            # random_sub_all_questions = deepcopy(all_questions)
+            # for d in random_sub_all_questions.all_questions:
+            #     for k in [OUT_OBJ_ANSWER, OUT_OBJ_QUESTION, OUT_OBJ_INITIAL_STATE_NL]:
+            #         d[k] = domain.to_random_substring(d[k])
+            #     d['with_random_sub'] = True
+            # random_sub_all_questions.save_questions(save_dir_rand)
+
             print(domain.DOMAIN_NAME, instance_name, 'done')
 
 

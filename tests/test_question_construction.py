@@ -97,7 +97,7 @@ class TestQuestionGenerationMainMethods(TestHelpers):
                                  '-on(b2,b1)'],
                                 ['-ontable(b1)', '-holding(b2)', '-on(b2,b1)', '-holding(b1)', '-clear(b2)']]
         self.assertListofListsIndepObjOrder(expected_neg_fluents,
-                                            self.DMM.extract_fluents_for_given_plan(NEG_FLUENTS_KEY))
+                                            self.DMM.extract_fluents_for_given_plan(NEG_FLUENTS_QUESTION))
 
 
 if __name__ == '__main__':

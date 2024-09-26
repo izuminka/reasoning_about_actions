@@ -7,7 +7,7 @@ DATA_PATH = f'{PROJECT_PATH}/data'
 QUESTIONS_PATH = f'{DATA_PATH}/questions'
 STATES_ACTIONS_PATH = f'{DATA_PATH}/states_actions'
 STATISTICS_PATH = f'{PROJECT_PATH}/stats'
-RESULTS_PATH = f'{PROJECT_PATH}/results'  # todo rn to results dir
+RESULTS_PATH = f'{PROJECT_PATH}/results'
 
 # JSONL KEYS for states_actions_generation
 INIT_ACTION_KEY = 'action_init'
@@ -18,7 +18,8 @@ EXECUTABLE_ACTION_BOOL_KEY = 'executable?'
 OBJECTS_KEY = 'objects'
 
 # QUESTION GENERATION OUTPUT OBJECT KEYS
-OUT_OBJ_ID = 'id' # question id, has multiplicity of 2 (due to random vs non-random)
+OUT_OBJ_ID = 'question_id' # question id, has multiplicity of 2 (due to random vs non-random)
+OUT_OBJ_ID_LEGACY_KEY = 'id'
 OUT_OBJ_DOMAIN_NAME = 'domain_name'
 OUT_OBJ_INSTANCE_ID = 'instance_id'
 OUT_OBJ_INITIAL_STATE_ASP = 'initial_state_asp'
@@ -31,7 +32,10 @@ OUT_OBJ_QUESTION = 'question'
 OUT_OBJ_ANSWER_TYPE = 'answer_type'
 OUT_OBJ_ANSWER = 'answer' # ground truth answer #TODO rename
 OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
-OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question'
+OUT_OBJ_FLUENT_SIGN_QUESTION = 'fluent_sign_question'
+OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question' # Legacy key
+OUT_OBJ_TEST_KEY = 'for_testing'
+OUT_OBJ_QUESTION_SUBCATEGORIES = 'question_subcategories'
 
 # OUTPUT ANSWER TYPES
 FREE_ANSWER_TYPE = 'free_answer'
@@ -46,21 +50,37 @@ RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 WITH_RANDOM_SUB = 'with_random_sub'
 WITHOUT_RANDOM_SUB = 'without_random_sub'
 
+# question involving pos or neg fluents
+NEG_FLUENTS_QUESTION = 'neg'
+POS_FLUENTS_QUESTION = 'pos'
+POS_PLUS_NEG_FLUENTS_QUESTION = 'pos_neg'
+POS_NEG_FLUENTS_KEY_LIST = [POS_FLUENTS_QUESTION, NEG_FLUENTS_QUESTION, POS_PLUS_NEG_FLUENTS_QUESTION]
 
 # model and prompts
 MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
 
+BASE_FLUENTS = 'base_fluents'
+DERIVED_FLUENTS = 'derived_fluents'
+PERSISTENT_FLUENTS = 'persistent_fluents'
+STATIC_FLUENTS = 'static_fluents'
+FLUENT_TYPES_ALL = 'all_fluents'
+FLUENT_TYPES_ALL_LEGACY_KEY = None # old key comp. with old data
+FLUENT_TYPES_LIST = (BASE_FLUENTS, DERIVED_FLUENTS, PERSISTENT_FLUENTS, STATIC_FLUENTS)
+
 # fluent names for QA and domains
-FLUENTS_NL = 'properties of the state'
-POSITIVE_FLUENT_NL = 'valid property of the state'
-NEGATIVE_FLUENT_NL = 'valid property of the state that involves a negation'
-POSITIVE_FLUENTS_NL = 'valid properties of the state'
+POS_AND_NEG_FLUENTS_NL = 'valid properties of the state (both with and without negations)'
+POSITIVE_FLUENTS_NL = 'valid properties of the state that do not involve negations'
 NEGATIVE_FLUENTS_NL = 'valid properties of the state that involve negations'
 
-BASE_FLUENTS_NL = 'base ' + FLUENTS_NL
-DERIVED_FLUENTS_NL = 'derived ' + FLUENTS_NL
-PERSISTENT_FLUENTS_NL = 'self constraint ' + FLUENTS_NL
-STATIC_FLUENTS_NL = 'static ' + FLUENTS_NL
+BASE_FLUENTS_NL = 'base ' + POS_AND_NEG_FLUENTS_NL
+DERIVED_FLUENTS_NL = 'derived ' + POS_AND_NEG_FLUENTS_NL
+PERSISTENT_FLUENTS_NL = 'self constraint ' + POS_AND_NEG_FLUENTS_NL
+STATIC_FLUENTS_NL = 'static ' + POS_AND_NEG_FLUENTS_NL
+FLUENTS_NL_BY_KEY = {BASE_FLUENTS: BASE_FLUENTS_NL,
+                     DERIVED_FLUENTS: DERIVED_FLUENTS_NL,
+                     PERSISTENT_FLUENTS: PERSISTENT_FLUENTS_NL,
+                     STATIC_FLUENTS: STATIC_FLUENTS_NL,
+                     FLUENT_TYPES_ALL: POS_AND_NEG_FLUENTS_NL}
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []

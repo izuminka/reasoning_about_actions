@@ -23,6 +23,19 @@ def out_obj(asp):
     return {'asp': asp, }
 
 
+def fluent_type_to_fluent_nl(fluent_type):
+    if fluent_type == BASE_FLUENTS:
+        return BASE_FLUENTS_NL
+    elif fluent_type == DERIVED_FLUENTS:
+        return DERIVED_FLUENTS_NL
+    elif fluent_type == PERSISTENT_FLUENTS:
+        return PERSISTENT_FLUENTS_NL
+    elif fluent_type == STATIC_FLUENTS:
+        return STATIC_FLUENTS_NL
+    else:
+        raise ValueError(f'Undefined fluent type {fluent_type}')
+
+
 class AnswerPairGeneratorHelper(QuestionGenerator):
     def __init__(self, states_actions_all, domain_class, instance_id):
         super().__init__(states_actions_all, domain_class, instance_id)
@@ -314,8 +327,7 @@ class FluentTrackingPairs(AnswerPairGeneratorHelper):
         if not pos_fluents and not neg_fluents:
             return None
 
-        question = (f"{self.nl_question_prefix(plan_length)}. "
-                    f"What are the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? "
+        question = (f"{self.nl_question_prefix(plan_length)}, what are the {fluent_type_to_fluent_nl(fluent_type)} for {obj}? "
                     f"{NONE_STATEMENT}")
         fluents = self.fluent_helper(pos_fluents, neg_fluents, True, is_pos_fluent_question)
         if fluents:
@@ -327,7 +339,7 @@ class FluentTrackingPairs(AnswerPairGeneratorHelper):
     def questions_iter_3(self):
         counter = 0
         for fluent_type in FLUENT_TYPES_LIST:
-            for is_pos_fluent_question in [True, False, None]:
+            for is_pos_fluent_question in POS_NEG_FLUENTS_KEY_LIST:
                 counter += 1
                 yield partial(self.questions_iter_3_helper,
                               fluent_type=fluent_type,
@@ -344,12 +356,15 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
         super().__init__(states_actions_all, domain_class, instance_id)
 
     def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
-        if is_pos_fluent_question:
+        if is_pos_fluent_question == True:
             fluent_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length]
-        else:
+        elif is_pos_fluent_question == False:
             fluent_type_nl = NEGATIVE_FLUENTS_NL
             fluents = self.neg_fluents_given_plan[plan_length]
+        else:
+            fluent_type_nl = POS_AND_NEG_FLUENTS_NL
+            fluents = self.pos_fluents_given_plan[plan_length] + self.neg_fluents_given_plan[plan_length]
         nl_fluents = self.nl_fluents(fluents)
         if fluents:
             return {ASP_ID: unique_id(fluents),
@@ -361,7 +376,7 @@ class StateTrackingPairs(AnswerPairGeneratorHelper):
 
     def questions_iter_2(self):
         counter = 0
-        for is_pos_fluent_question in [True, False, None]:
+        for is_pos_fluent_question in POS_NEG_FLUENTS_KEY_LIST:
             counter += 1
             yield partial(self.questions_iter_2_helper,
                           is_pos_fluent_question=is_pos_fluent_question,
@@ -384,10 +399,10 @@ class EffectsPairs(AnswerPairGeneratorHelper):
 
     def questions_iter_2_helper(self, plan_length, is_pos_fluent_question, question_name):
         action = self.given_plan_sequence[plan_length]
-        if is_pos_fluent_question is None:
-            fluents_type_nl = FLUENTS_NL
+        if is_pos_fluent_question == POS_NEG_FLUENTS_KEY_LIST:
+            fluents_type_nl = POS_AND_NEG_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1] + self.neg_fluents_given_plan[plan_length + 1]
-        elif is_pos_fluent_question:
+        elif is_pos_fluent_question == POS_FLUENTS_QUESTION:
             fluents_type_nl = POSITIVE_FLUENTS_NL
             fluents = self.pos_fluents_given_plan[plan_length + 1]
         else:
@@ -402,7 +417,7 @@ class EffectsPairs(AnswerPairGeneratorHelper):
 
     def questions_iter_2(self):
         counter = 0
-        for is_pos_fluent_question in [True, False, None]:
+        for is_pos_fluent_question in POS_NEG_FLUENTS_KEY_LIST:
             counter += 1
             yield partial(self.questions_iter_2_helper,
                           is_pos_fluent_question=is_pos_fluent_question,

@@ -31,7 +31,7 @@ class BaseDomain:
     PERSISTENT_FLUENTS = []
     STATIC_FLUENTS = []
 
-    def __init__(self, is_random_sub, is_ramifications, is_with_fluent_info=True):
+    def __init__(self, is_random_sub, is_ramifications, is_with_fluent_info=False):
         self.is_random_sub = is_random_sub
         self.is_ramifications = is_ramifications
         self.domain_description = self.DOMAIN_DESC_WITH_RAM if is_ramifications else self.DOMAIN_DESC_WITHOUT_RAM
@@ -66,7 +66,7 @@ class BaseDomain:
             return result
 
         result = f'A state is a set of valid properties. Properties may or may not involve negations. '
-        result += f'{capitalize_first_letter(FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
+        result += f'{capitalize_first_letter(POS_AND_NEG_FLUENTS_NL)} can be of 4 types: base, derived, persistent, and static. '
 
         result += f"{capitalize_first_letter(BASE_FLUENTS_NL)} are properties that don't depend on other properties. "
         result += add_fluents(self.BASE_FLUENTS, BASE_FLUENTS_NL)
@@ -936,7 +936,7 @@ class Driverlog(BaseDomain):
     def fluent_to_natural_language_helper(self, fluent, is_without_object=False):
         if fluent.startswith('at('):
             if is_without_object:
-                return ['an object is obj is at a location']
+                return ['an object is at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is at location {location}',
@@ -945,7 +945,7 @@ class Driverlog(BaseDomain):
             ]
         elif fluent.startswith('-at('):
             if is_without_object:
-                return ['an object is obj is not at a location']
+                return ['an object is not at a location']
             obj, location = self.extract_multi_variable(fluent)
             return [
                 f'{obj} is not at location {location}',
@@ -1079,7 +1079,7 @@ class Driverlog(BaseDomain):
                 f'from {truck}, {driver} disembarks at location {location}'
             ]
         elif action.startswith('drive_truck('):
-            truck, driver, loc_from, loc_to = self.extract_multi_variable(action)
+            truck, loc_from, loc_to, driver = self.extract_multi_variable(action)
             return [
                 f'{driver} drives {truck} from location {loc_from} to location {loc_to}',
                 f'{truck} is driven from location {loc_from} to {loc_to} by {driver}',
@@ -2314,7 +2314,7 @@ class Logistics(BaseDomain):
             return [
                 f'truck {truck} is driven from airport {loc_from} to airport {loc_to} in city {city}',
                 f'truck {truck} is driven to airport {loc_to} from airport {loc_from} in city {city}',
-                f'in city {city}, truck is driven from airports {loc_from} to {loc_to}',
+                f'in city {city}, truck {truck} is driven from airports {loc_from} to {loc_to}',
             ]
         elif action.startswith('fly_airplane('):
             airplane, airport_from, airport_to = self.extract_multi_variable(action)
@@ -2853,7 +2853,7 @@ class Mystery(BaseDomain):
             if is_without_object:
                 return ['a vehicle is at a location']
             obj, location = self.extract_multi_variable(fluent)
-            if obj.startswith('vehicle'):
+            if obj.startswith('v'):
                 return [
                     f'vehicle {obj} is at location {location}',
                     f'vehicle {obj} is present at location {location}',
@@ -2869,7 +2869,7 @@ class Mystery(BaseDomain):
             if is_without_object:
                 return ['a vehicle is not at a location']
             obj, location = self.extract_multi_variable(fluent)
-            if obj.startswith('vehicle'):
+            if obj.startswith('v'):
                 return [
                     f'vehicle {obj} is not at location {location}',
                     f'vehicle {obj} is not present at location {location}',
@@ -3811,10 +3811,10 @@ class Spanner(BaseDomain):
         "A man cannot be at two different places at the same time. "
         "The spanner is not at a location if it is being hold by the man. "
         "The nut is not loose if and only if it is tightened. "
-        "The spanner is not usable if and only if the nut is tightened. "
+        "The spanner is not usable if and only if the nut is tightened with the spanner. "
     )
     
-    BASE_POS_FLUENTS = ['carrying(', 'useable(', 'tightened(']
+    BASE_POS_FLUENTS = ['carrying(', 'tightened(']
     BASE_NEG_FLUENTS = ['-' + fluent for fluent in BASE_POS_FLUENTS]
     BASE_FLUENTS = BASE_POS_FLUENTS + BASE_NEG_FLUENTS
     DERIVED_POS_FLUENTS = ['loose(', 'useable(']
