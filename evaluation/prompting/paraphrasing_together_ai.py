@@ -12,16 +12,17 @@ from together import Together
 import sys
 sys.path.insert(0, '../../')
 from common import *
+import random
 
 
 DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo" #"meta-llama/Llama-3-70b-chat-hf"
-OUTPUT_TOKEN_LIMIT = 4000
+OUTPUT_TOKEN_LIMIT = 5000
 
-with open("together4.key", "r") as f:
+with open("together5.key", "r") as f:
   os.environ["TOGETHER_API_KEY"] = f.read().strip()
 client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
 
-def get_output(prompt, model=DEFAULT_MODEL):
+def get_output_stream(prompt, model=DEFAULT_MODEL):
     stream = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
@@ -32,8 +33,28 @@ def get_output(prompt, model=DEFAULT_MODEL):
 
     model_output = ''
     for chunk in stream:
-        model_output += chunk.choices[0].delta.content or ""
+        try:
+            model_output += chunk.choices[0].message.content or ""
+        except Exception as e:
+            return None
     return model_output
+
+def get_output(prompt, model=DEFAULT_MODEL):
+    output = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        stream=False,
+        temperature = 0,
+        max_tokens = OUTPUT_TOKEN_LIMIT
+    )
+
+    try:
+        if output.choices:
+            return output.choices[0].message.content
+    except Exception as e:
+        print(e)
+        return None
+    return None
 
 
 def api_call(prompt, num_tries = 10):
@@ -65,26 +86,40 @@ os.makedirs(massive_dump_dir, exist_ok=True)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--domain', type=str, required=True, help='Domain name')
+    parser.add_argument('-i', '--instance', type=str, required=True, help='Domain name')
     args = parser.parse_args()
 
-    paraphrased_ids = set([int(f.split('.')[0]) for f in os.listdir(massive_dump_dir)])
+    paraphrased_ids = set([f.strip('.json') for f in os.listdir(massive_dump_dir) if f.endswith('.json')])
+    print(len(paraphrased_ids))
+    print('gathered ids')
+
+
     test_data = open_jsonl(f'{PROJECT_PATH}/data/test_dataset.jsonl')
+    random.shuffle(test_data) # TODO rm
     last_ind = 0
+
     try:
-        for i, data_d in tqdm(enumerate(test_data)):
-            last_ind = i
-            if data_d[OUT_OBJ_DOMAIN_NAME] != args.domain or data_d[OUT_OBJ_ID] in paraphrased_ids:
+        for data_d in tqdm(test_data):
+            if data_d[OUT_OBJ_ID] in paraphrased_ids or (data_d[OUT_OBJ_DOMAIN_NAME] != args.domain and data_d[OUT_OBJ_INSTANCE_ID  ] != args.instance):
                 continue
 
             for k_input, k_output in [[OUT_OBJ_QUESTION, OUT_OBJ_QUESTION_PARAPHRASED],
                                       [OUT_OBJ_INITIAL_STATE_NL, OUT_OBJ_INITIAL_STATE_NL_PARAPHRASED]]:
                 prompt = paraphrase_prompt(data_d[k_input])
                 response = api_call(prompt)
+                if not response:
+                    break
                 data_d[k_output] = response.strip()
-            with open(f'{massive_dump_dir}/{data_d[OUT_OBJ_ID]}.json', 'w') as f:
-                json.dump(data_d, f)
+            if not response:
+                with open(f'{PROJECT_PATH}/data/failed_ids', 'a') as f:
+                    f.write(f'{data_d[OUT_OBJ_ID]}\n')
+            else:
+                with open(f'{massive_dump_dir}/{data_d[OUT_OBJ_ID]}.json', 'w') as f:
+                    json.dump(data_d, f)
     except Exception as e:
         print(e)
 
+
+#TODO make sure paraphrased are within acceptable char len from the original
 
 
