@@ -1,5 +1,8 @@
 import os
 import time
+
+import numpy as np
+
 from propreitary_inference import *
 
 from tqdm import tqdm
@@ -13,7 +16,11 @@ import sys
 sys.path.insert(0, '../../')
 from common import *
 import random
+import concurrent.futures  # for multithreading
+import multiprocessing  # for multiprocessing
 
+import matplotlib.pyplot as plt
+import numpy as np
 
 DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo" #"meta-llama/Llama-3-70b-chat-hf"
 OUTPUT_TOKEN_LIMIT = 5000
@@ -80,44 +87,80 @@ Text: {text_for_paraphrasing}
 Provide the paraphrased text below:
 '''
 
-massive_dump_dir = f'{PROJECT_PATH}/data/paraphrased'
-os.makedirs(massive_dump_dir, exist_ok=True)
+
+def process_data(data_d, paraphrased_ids, massive_dump_dir, args):
+    if data_d[OUT_OBJ_ID] in paraphrased_ids:
+        return False
+
+    for k_input, k_output in [[OUT_OBJ_QUESTION, OUT_OBJ_QUESTION_PARAPHRASED], [OUT_OBJ_INITIAL_STATE_NL, OUT_OBJ_INITIAL_STATE_NL_PARAPHRASED]]:
+        prompt = paraphrase_prompt(data_d[k_input])
+        response = api_call(prompt)
+        if not response:
+            return False
+        data_d[k_output] = response.strip()
+
+    with open(f'{massive_dump_dir}/{data_d[OUT_OBJ_ID]}.json', 'w') as f:
+        json.dump(data_d, f)
+
+    return True
+
+def check_lengths():
+    data_by_id = {}
+    massive_dump_dir = f'{PROJECT_PATH}/data/paraphrased'
+    for f in os.listdir(massive_dump_dir):
+        if not f.endswith('.json'):
+            continue
+        with open(f'{massive_dump_dir}/{f}', 'r') as f:
+            data_d = json.load(f)
+            data_by_id[data_d[OUT_OBJ_ID]] = data_d
+
+    lens_question = {}
+    lens_init = {}
+    for q_id, d in data_by_id.items():
+        lens_question[q_id] = np.abs(len(d[OUT_OBJ_QUESTION]) - len(d[OUT_OBJ_QUESTION_PARAPHRASED]))
+        lens_init[q_id] = np.abs(len(d[OUT_OBJ_INITIAL_STATE_NL]) - len(d[OUT_OBJ_INITIAL_STATE_NL_PARAPHRASED]))
+
+    # plt.hist(list(lens_question.values()), bins=100)
+    # plt.show()
+    # plt.hist(list(lens_init.values()), bins=100)
+    # plt.show()
+
+    cutoff_question = np.mean(list(lens_question.values())) + np.std(list(lens_question.values()))
+    cutoff_init = np.mean(list(lens_init.values())) + np.std(list(lens_init.values()))
+    count = 0
+    for q_id, d in data_by_id.items():
+        if lens_question[q_id] > cutoff_question or lens_init[q_id] > cutoff_init:
+            count+=1
+            os.remove(f'{massive_dump_dir}/{q_id}.json')
+            print(q_id, lens_question[q_id], lens_init[q_id])
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--domain', type=str, required=True, help='Domain name')
-    parser.add_argument('-i', '--instance', type=str, required=True, help='Domain name')
     args = parser.parse_args()
+
+    massive_dump_dir = f'{PROJECT_PATH}/data/paraphrased'
+    os.makedirs(massive_dump_dir, exist_ok=True)
 
     paraphrased_ids = set([f.strip('.json') for f in os.listdir(massive_dump_dir) if f.endswith('.json')])
     print(len(paraphrased_ids))
     print('gathered ids')
 
-
     test_data = open_jsonl(f'{PROJECT_PATH}/data/test_dataset.jsonl')
-    random.shuffle(test_data) # TODO rm
-    last_ind = 0
+    random.shuffle(test_data)
 
-    try:
-        for data_d in tqdm(test_data):
-            if data_d[OUT_OBJ_ID] in paraphrased_ids or (data_d[OUT_OBJ_DOMAIN_NAME] != args.domain and data_d[OUT_OBJ_INSTANCE_ID  ] != args.instance):
-                continue
+    # Multithreading: Using ThreadPoolExecutor
+    with concurrent.futures.ThreadPoolExecutor(max_workers=120) as executor:
+        futures = []
+        for data_d in test_data:
+            futures.append(executor.submit(process_data, data_d, paraphrased_ids, massive_dump_dir, args))
 
-            for k_input, k_output in [[OUT_OBJ_QUESTION, OUT_OBJ_QUESTION_PARAPHRASED],
-                                      [OUT_OBJ_INITIAL_STATE_NL, OUT_OBJ_INITIAL_STATE_NL_PARAPHRASED]]:
-                prompt = paraphrase_prompt(data_d[k_input])
-                response = api_call(prompt)
-                if not response:
-                    break
-                data_d[k_output] = response.strip()
-            if not response:
-                with open(f'{PROJECT_PATH}/data/failed_ids', 'a') as f:
-                    f.write(f'{data_d[OUT_OBJ_ID]}\n')
-            else:
-                with open(f'{massive_dump_dir}/{data_d[OUT_OBJ_ID]}.json', 'w') as f:
-                    json.dump(data_d, f)
-    except Exception as e:
-        print(e)
+        # Iterate over the results to ensure all tasks complete
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(test_data)):
+            try:
+                future.result()  # Get the result (or raise exceptions if any occurred)
+            except Exception as e:
+                print(f"Exception occurred: {e}")
 
 
 #TODO make sure paraphrased are within acceptable char len from the original
