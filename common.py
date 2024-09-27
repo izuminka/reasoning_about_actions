@@ -37,6 +37,10 @@ OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question' # Legacy key
 OUT_OBJ_TEST_KEY = 'for_testing'
 OUT_OBJ_QUESTION_SUBCATEGORIES = 'question_subcategories'
 
+OUT_OBJ_QUESTION_PARAPHRASED = 'question_paraphrased'
+OUT_OBJ_INITIAL_STATE_NL_PARAPHRASED = 'initial_state_nl_paraphrased'
+
+
 # OUTPUT ANSWER TYPES
 FREE_ANSWER_TYPE = 'free_answer'
 TRUE_FALSE_ANSWER_TYPE = 'true_false_answer'
