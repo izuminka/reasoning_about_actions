@@ -139,8 +139,3 @@ if __name__ == '__main__':
                 future.result()  # Get the result (or raise exceptions if any occurred)
             except Exception as e:
                 print(f"Exception occurred: {e}")
-
-
-#TODO make sure paraphrased are within acceptable char len from the original
-
-

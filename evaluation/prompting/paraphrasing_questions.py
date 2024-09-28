@@ -96,6 +96,3 @@ if __name__ == '__main__':
                 print(f"Exception occurred: {e}")
 
 
-#TODO make sure paraphrased are within acceptable char len from the original
-
-
