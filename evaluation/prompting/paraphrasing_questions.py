@@ -78,21 +78,22 @@ if __name__ == '__main__':
     random.shuffle(test_data)
 
     chosen_data = [d for d in test_data if d[OUT_OBJ_ID] not in paraphrased_ids]
-    # for data_d in tqdm(chosen_data):
-    #     process_data(data_d, paraphrased_ids, massive_dump_dir)
+    for data_d in tqdm(chosen_data):
+        if data_d[OUT_OBJ_ID] not in paraphrased_ids:
+            process_data(data_d, paraphrased_ids, massive_dump_dir)
 
-    # Multithreading: Using ThreadPoolExecutor
-    with concurrent.futures.ThreadPoolExecutor(max_workers=90) as executor:
-        futures = []
-        for data_d in chosen_data:
-            if data_d[OUT_OBJ_ID] not in paraphrased_ids:
-                futures.append(executor.submit(process_data, data_d, paraphrased_ids, massive_dump_dir))
-
-        # Iterate over the results to ensure all tasks complete
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
-            try:
-                future.result()  # Get the result (or raise exceptions if any occurred)
-            except Exception as e:
-                print(f"Exception occurred: {e}")
+    # # Multithreading: Using ThreadPoolExecutor
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=80) as executor:
+    #     futures = []
+    #     for data_d in chosen_data:
+    #         if data_d[OUT_OBJ_ID] not in paraphrased_ids:
+    #             futures.append(executor.submit(process_data, data_d, paraphrased_ids, massive_dump_dir))
+    #
+    #     # Iterate over the results to ensure all tasks complete
+    #     for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
+    #         try:
+    #             future.result()  # Get the result (or raise exceptions if any occurred)
+    #         except Exception as e:
+    #             print(f"Exception occurred: {e}")
 
 

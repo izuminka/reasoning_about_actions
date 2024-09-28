@@ -24,20 +24,6 @@ with open("together5.key", "r") as f:
 client = Together(api_key=os.environ.get("TOGETHER_API_KEY"))
 
 
-def api_call(prompt, model, max_tokens, num_tries = 10):
-    response = None
-    while num_tries > 0:
-        try:
-            response = get_output(prompt, model, max_tokens)
-            num_tries = 0
-        except Exception as e:
-            print(e)
-            backoff_time = get_backoff_time(str(e))
-            print(f"Backing off for {backoff_time} seconds. Number of tries left: {num_tries}")
-            time.sleep(backoff_time)
-            num_tries -= 1
-    return response
-
 def get_output_stream(prompt, model, max_tokens):
     stream = client.chat.completions.create(
         model=model,
@@ -71,3 +57,19 @@ def get_output(prompt, model, max_tokens):
         print(e)
         return None
     return None
+
+
+def api_call(prompt, model, max_tokens, num_tries = 10):
+    response = None
+    while num_tries > 0:
+        try:
+            response = get_output(prompt, model, max_tokens)
+            num_tries = 0
+        except Exception as e:
+            print(e)
+            backoff_time = get_backoff_time(str(e))
+            print(f"Backing off for {backoff_time} seconds. Number of tries left: {num_tries}")
+            time.sleep(backoff_time)
+            num_tries -= 1
+    return response
+
