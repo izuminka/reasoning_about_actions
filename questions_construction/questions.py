@@ -774,8 +774,7 @@ class EffectsQuestions(QuestionGenerator):
             fluents = random.sample(fluents, rand_num_fluents)
             nl_fluents = self.nl_fluents(list(fluents))
 
-        question = (f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that "
-                    f"{nl_fluents} would change after taking the action?")
+        question = (f"{self.prefix(plan_length)} if {self.nl_actions([action])}, is it {TRUE_OR_FALSE} that {nl_fluents}?") #"would be valid after the action is taken?"
         return self.qa_data_object(question, is_answer_true, TRUE_FALSE_ANSWER_TYPE, question_name, plan_length,
                                    fluent_type, POS_PLUS_NEG_FLUENTS_QUESTION)
 
