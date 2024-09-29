@@ -2,11 +2,6 @@ from tqdm import tqdm
 from common import *
 from questions_construction.domains import DOMAIN_NAMES
 
-ZERO_SHOT_PROMPT_KEY = 'zero_shot'
-PROMPT_KEY = 'prompt'
-LABEL_KEY = 'lebel'
-RESPONSE_KEY = 'response'
-ID_KEY = OUT_OBJ_ID
 
 
 def zero_shot_prompt(domain_description, initial_state_nl, question):
@@ -32,7 +27,7 @@ Answer the above question in the following format:
 def create_prompts_dataset(questions, domain_descr_by_name, prompt_type):
     prompts = []
     for question_d in tqdm(questions, total=len(questions)):
-        prompt_d = {ID_KEY: question_d[OUT_OBJ_ID], LABEL_KEY: question_d[OUT_OBJ_ANSWER]}
+        prompt_d = {OUT_OBJ_ID: question_d[OUT_OBJ_ID], LABEL_KEY: question_d[OUT_OBJ_ANSWER]}
         domain_name = question_d[OUT_OBJ_DOMAIN_NAME]
         domain_description = domain_descr_by_name[domain_name]
         if prompt_type == ZERO_SHOT_PROMPT_KEY:

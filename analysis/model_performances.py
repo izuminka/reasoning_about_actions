@@ -64,7 +64,7 @@ SMALL_MODELS = ['llama2-13b-chat', 'llama-3-8b-instruct', 'llama2-7b-chat', 'gem
 BIG_MODELS = ['gemini', 'gpt-4o']
 TUNED_MODELS = ['llama-3-8b-instruct-finetuned', 'gemma-7b-finetuned']
 PROMPT_MODEL_NAMES = BIG_MODELS + SMALL_MODELS + TUNED_MODELS
-PROMPT_TYPES = ['few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
+PROMPT_TYPES = ['zero_shot','few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB, WITH_RANDOM_SUB]
 RAMIFICATION_TYPES = [WITHOUT_RAMIFICATIONS, WITH_RAMIFICATIONS]
 
@@ -76,6 +76,12 @@ def gather_data_iterator():
             for model_name in PROMPT_MODEL_NAMES:
                 for prompt_type in PROMPT_TYPES:
                     yield substitutions, ramifications, model_name, prompt_type
+
+def gather_data_iterator_new():
+    for ramifications in RAMIFICATION_TYPES:
+        for model_name in PROMPT_MODEL_NAMES:
+            for prompt_type in PROMPT_TYPES:
+                yield ramifications, model_name, prompt_type
 def for_loop_all_iterator():
     domains = DOMAIN_NAMES + [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]
     question_categories = [ALL_QUESTION_CATEGORIES_KEY] + QUESTION_CATEGORIES
@@ -184,7 +190,6 @@ def gather_data(questions_by_id, selected_ids=None, iterator=gather_data_iterato
                                 all_data.append(d)
     print('data is gathered')
     return all_data, missing_data
-
 
 def base_filter(ramifications, model_name, prompt_type, answer_type, substitutions):
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
@@ -302,8 +307,8 @@ class TrueFalseStats(BaseStats):
                                           prompt_type, domain, self.answer_type, substitutions)
 
     @staticmethod
-    def prediction_selection_criteria(d):
-        model_response = d[MODEL_RESPONSE_KEY]
+    def prediction_selection_criteria(d, model_response_key=MODEL_RESPONSE_CLEAN_KEY):
+        model_response = d[model_response_key]
         tokens_to_consider = model_response.split()
         # tokens_to_consider = tokens_to_consider[:10]+tokens_to_consider[-10:]
         tokens = set([token.strip(',."\':;?!\n ').lower() for token in tokens_to_consider])
@@ -339,19 +344,21 @@ class TrueFalseStats(BaseStats):
         pred = []
         both_present = 0
         both_absent = 0
+        #TODO tune this
         for d in not_corrupted_data:
-            true.append(d[OUT_OBJ_ANSWER])
             prediction = self.prediction_selection_criteria(d)
             # if the model response is unknown, set the response to the opposite of the ground truth
             response_to_unknown = str(not eval(d[OUT_OBJ_ANSWER]))
             if prediction == self.BOTH_ARE_PRESENT_KEY:
                 both_present += 1
-                pred.append(response_to_unknown)
+                # pred.append(response_to_unknown)
             elif prediction == self.BOTH_ARE_ABSENT_KEY:
                 both_absent += 1
-                pred.append(response_to_unknown)
+                # pred.append(response_to_unknown)
             else:
                 pred.append(prediction)
+                true.append(d[OUT_OBJ_ANSWER])
+
         stats |= {self.BOTH_ARE_PRESENT_KEY: both_present,
                   self.BOTH_ARE_ABSENT_KEY: both_absent,
                   self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
@@ -428,7 +435,7 @@ class FreeAnswerStats(BaseStats):
         test_data.set_format(type='torch')#, columns=['input_ids', 'attention_mask'])
         return DataLoader(test_data, batch_size=batch_size)
 
-    def compute(self, best_threshold=95):
+    def compute(self, best_threshold=95, model_response_key=MODEL_RESPONSE_CLEAN_KEY):
         if not self.data:
             res = self.out_object(None, stats=None, error_message='self.data is empty')
             return res
@@ -443,7 +450,7 @@ class FreeAnswerStats(BaseStats):
                  'num_not_corrupted': len(not_corrupted_data)}
 
         true_free_answer = [d[OUT_OBJ_ANSWER] for d in not_corrupted_data]
-        pred_free_answer = [find_text_within_brackets(d[MODEL_RESPONSE_KEY]) for d in not_corrupted_data]
+        pred_free_answer = [find_text_within_brackets(d[model_response_key]) for d in not_corrupted_data]
         data_loader = self.prepare_data(true_free_answer, pred_free_answer)
         if not data_loader:
             res = self.out_object(None, stats=None, error_message='>512 length')
@@ -576,33 +583,79 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
     return results
 
 
-if __name__ == '__main__':
-    questions_dir = f'{DATA_PATH}/questions'
-    ids_file_name = 'dataset_ids.test.pruned'
-    if ids_file_name:
-        selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl') + open_jsonl(f'{DATA_PATH}/questions.composite.test_ids.jsonl')
-        questions_by_id = gather_questions(questions_dir, selected_ids=selected_ids)
-        data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
-        save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
-    else:
-        questions_by_id = gather_questions(questions_dir)
-        data_all, missing_data = gather_data(questions_by_id)
-        save_main_dir = STATISTICS_PATH
-    sanity_checks(questions_by_id, data_all)
+def clean_response(response):
+    keyword = '[ANSWER]'
+    ind = response.find(keyword)
+    if ind == -1:
+        return response
+    return response[ind+len(keyword):].strip()
 
+
+def data_all_single_run(questions_by_id, model_results, substitution, ramification, model_name, prompt_type):
+    data_all = []
+    extra_kv = {SK_MODEL: model_name,
+                  SK_PROMPT_TYPE: prompt_type,
+                  SK_RAMIFICATION: ramification,
+                  SK_SUBSTITUTION: substitution}
+    for result_d in model_results:
+        result_d.update(deepcopy(extra_kv))
+        result_d.update(questions_by_id[result_d[OUT_OBJ_ID]])
+        result_d[SK_UNIQUE_ID] = f"{result_d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramification}::{substitution}"
+        result_d[MODEL_RESPONSE_CLEAN_KEY] = clean_response(result_d[MODEL_RESPONSE_KEY])
+        data_all.append(result_d)
+    return data_all
+
+def calculate_stats_single_run(data_all, answer_response_type, ramification, substitution, model_name, prompt_type, save_main_dir, override=False):
+    for plan_length in PLAN_LENGTHS:
+        for question_category in [ALL_QUESTION_CATEGORIES_KEY] + QUESTION_CATEGORIES:
+            for domain in [ALL_DOMAINS_KEY, TRANSPORTATION_DOMAIN_KEY, NON_TRANSPORTATION_DOMAIN_KEY]:
+                calculate_stats(data_all, answer_response_type, domain, plan_length, question_category,
+                                ramification, substitution, model_name, prompt_type, save_main_dir=save_main_dir,
+                                override=override)
+
+
+if __name__ == '__main__':
+    questions_by_id = {d[OUT_OBJ_ID]: d for d in open_jsonl(f'{DATA_PATH}/test_data.paraphrased.cleaned.jsonl')}
+    override = True
+
+    model_name = 'gpt-4o'
+    substitution = WITHOUT_RANDOM_SUB
+    ramification = WITHOUT_RAMIFICATIONS
+    prompt_type = ZERO_SHOT_PROMPT_KEY
+    model_results_dir = f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}/{model_name}.jsonl'
+    model_results = open_jsonl(model_results_dir)
+    data_all = data_all_single_run(questions_by_id, model_results, substitution, ramification, model_name, prompt_type)
+
+    stats_save_dir = f'{STATISTICS_PATH}.trial_run3'
+    answer_response_type = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
+    calculate_stats_single_run(data_all, answer_response_type, ramification, substitution, model_name, prompt_type, stats_save_dir, override)
+
+    # questions_dir = f'{DATA_PATH}/questions'
+    # ids_file_name = 'dataset_ids.test.pruned'
+    # if ids_file_name:
+    #     selected_ids = open_jsonl(f'{DATA_PATH}/{ids_file_name}.jsonl') + open_jsonl(f'{DATA_PATH}/questions.composite.test_ids.jsonl')
+    #     questions_by_id = gather_questions(questions_dir, selected_ids=selected_ids)
+    #     data_all, missing_data = gather_data(questions_by_id, selected_ids=selected_ids)
+    #     save_main_dir = f'{STATISTICS_PATH}.{ids_file_name}'
+    # else:
+    #     questions_by_id = gather_questions(questions_dir)
+    #     data_all, missing_data = gather_data(questions_by_id)
+    #     save_main_dir = STATISTICS_PATH
+    # sanity_checks(questions_by_id, data_all)
+    #
     # answer_response = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
-    #
+    # #
     # model, tokenizer, device = None, None, None
-    # if answer_response == FREE_ANSWER_TYPE:
-    #     device = torch.device("cpu")  # "cuda:0" if torch.cuda.is_available() else
-    #     model_name = 'roberta-base'
-    #     path_to_fine_tuned_model = f'{CODE_PATH}/analysis/roberta_finetuned_models/checkpoint-2500_roberta'
-    #     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    #     model = AutoModelForSequenceClassification.from_pretrained(path_to_fine_tuned_model)
-    #     model.to(device)
-    #
+    # # if answer_response == FREE_ANSWER_TYPE:
+    # #     device = torch.device("cpu")  # "cuda:0" if torch.cuda.is_available() else
+    # #     model_name = 'roberta-base'
+    # #     path_to_fine_tuned_model = f'{CODE_PATH}/analysis/roberta_finetuned_models/checkpoint-2500_roberta'
+    # #     tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # #     model = AutoModelForSequenceClassification.from_pretrained(path_to_fine_tuned_model)
+    # #     model.to(device)
+    # #
     # calculate_stats_all(data_all, answer_response,
     #                     save_main_dir=save_main_dir,
     #                     override=True,
     #                     tokenizer=tokenizer, model=model, device=device)
-    # print('saved', answer_response)
+    # # print('saved', answer_response)

@@ -51,7 +51,7 @@ def process_data(data_d, paraphrased_ids, massive_dump_dir, model):
     if not response:
         return False
 
-    data_d[RESPONSE_KEY] = response
+    data_d[MODEL_RESPONSE_KEY] = response
     with open(f'{massive_dump_dir}/{data_d[OUT_OBJ_ID]}.json', 'w') as f:
         json.dump(data_d, f)
     return True

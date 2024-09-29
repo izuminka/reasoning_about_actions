@@ -61,9 +61,6 @@ POS_FLUENTS_QUESTION = 'pos'
 POS_PLUS_NEG_FLUENTS_QUESTION = 'pos_neg'
 POS_NEG_FLUENTS_KEY_LIST = [POS_FLUENTS_QUESTION, NEG_FLUENTS_QUESTION, POS_PLUS_NEG_FLUENTS_QUESTION]
 
-# model and prompts
-MODEL_RESPONSE_KEY = 'response'  # TODO add to all scripts
-
 BASE_FLUENTS = 'base_fluents'
 DERIVED_FLUENTS = 'derived_fluents'
 PERSISTENT_FLUENTS = 'persistent_fluents'
@@ -86,6 +83,14 @@ FLUENTS_NL_BY_KEY = {BASE_FLUENTS: BASE_FLUENTS_NL,
                      PERSISTENT_FLUENTS: PERSISTENT_FLUENTS_NL,
                      STATIC_FLUENTS: STATIC_FLUENTS_NL,
                      FLUENT_TYPES_ALL: POS_AND_NEG_FLUENTS_NL}
+
+
+# PROMPTING
+ZERO_SHOT_PROMPT_KEY = 'zero_shot'
+PROMPT_KEY = 'prompt'
+LABEL_KEY = 'lebel'
+MODEL_RESPONSE_KEY = 'response'
+MODEL_RESPONSE_CLEAN_KEY = 'response_clean'
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []
