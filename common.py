@@ -1,5 +1,6 @@
 import os
 import jsonlines
+import json
 
 CODE_PATH = os.path.dirname(os.path.realpath(__file__))
 PROJECT_PATH = os.path.dirname(CODE_PATH)
@@ -99,6 +100,14 @@ def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%
     return asp_code
 
 
+def open_json(path):
+    with open(path, 'r') as f:
+        data = json.load(f)
+    return data
+
+def save_json(data, save_path):
+    with open(save_path, 'w') as f:
+        json.dump(data, f)
 def open_jsonl(path):
     with jsonlines.open(path, 'r') as r:
         data = [obj for obj in r]

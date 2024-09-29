@@ -5,6 +5,7 @@ from questions_construction.domains import DOMAIN_NAMES
 ZERO_SHOT_PROMPT_KEY = 'zero_shot'
 PROMPT_KEY = 'prompt'
 LABEL_KEY = 'lebel'
+RESPONSE_KEY = 'response'
 ID_KEY = OUT_OBJ_ID
 
 
