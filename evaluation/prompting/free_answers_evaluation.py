@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from together_ai_common import *
+from analysis.model_performances import clean_response, EVALUATED_FREE_ANSWER_RESPONSE_KEY
 
 DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo" #"meta-llama/Llama-3-70b-chat-hf"
 OUTPUT_TOKEN_LIMIT = 5000
@@ -15,6 +16,7 @@ OUTPUT_TOKEN_LIMIT = 5000
 def eval_free_answers_prompt(llm_response, true_response):
     return f"""Evaluate whether the LLM response and the ground truth response are semantically the same. Examine the responses, 
 provide reasoning for your evaluation, and then Write "True" if the responses are the same or "False" if they are different.
+LLM Response or Ground Truth could be "None".
 
 Example 1:
 
@@ -85,7 +87,7 @@ package p3 is located in vehicle t2, but LLM response has(contradition, misslabe
 False
 
 
-Example 4:
+Now, evaluate the following responses:
 
 [LLM Response]
 {llm_response}
@@ -94,16 +96,18 @@ Example 4:
 {true_response}
 """
 
-def process_data(data_d, free_answers_completed_ids, massive_dump_dir, args):
+def process_data(data_d, free_answers_completed_ids, massive_dump_dir):
     if data_d[OUT_OBJ_ID] in free_answers_completed_ids:
         return False
 
-    for k_input, k_output in [[OUT_OBJ_QUESTION, OUT_OBJ_QUESTION_PARAPHRASED], [OUT_OBJ_INITIAL_STATE_NL, OUT_OBJ_INITIAL_STATE_NL_PARAPHRASED]]:
-        prompt = eval_free_answers_prompt(data_d[k_input])
-        response = api_call(prompt, DEFAULT_MODEL, OUTPUT_TOKEN_LIMIT)
-        if not response:
-            return False
-        data_d[k_output] = response.strip()
+    if not MODEL_RESPONSE_CLEAN_KEY in data_d:
+        data_d[MODEL_RESPONSE_CLEAN_KEY] = clean_response(data_d[MODEL_RESPONSE_KEY])
+
+    prompt = eval_free_answers_prompt(data_d[MODEL_RESPONSE_CLEAN_KEY], data_d[OUT_OBJ_ANSWER])
+    api_response = api_call(prompt, DEFAULT_MODEL, OUTPUT_TOKEN_LIMIT)
+    if not api_response:
+        return False
+    data_d[EVALUATED_FREE_ANSWER_RESPONSE_KEY] = api_response.strip()
 
     with open(f'{massive_dump_dir}/{data_d[OUT_OBJ_ID]}.json', 'w') as f:
         json.dump(data_d, f)
@@ -113,29 +117,38 @@ def process_data(data_d, free_answers_completed_ids, massive_dump_dir, args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # args = parser.parse_args()
 
-    massive_dump_dir = f'{PROJECT_PATH}/data/free_answers'
+    model = 'gpt-4o_human_test'#'gpt-4o'
+    prompt_type = ZERO_SHOT_PROMPT_KEY
+    ramification = WITHOUT_RAMIFICATIONS
+    save_dir = f'{PROJECT_PATH}/data/free_answers/{ramification}/{prompt_type}'
+    massive_dump_dir = f'{save_dir}/{model}'
     os.makedirs(massive_dump_dir, exist_ok=True)
 
     free_answers_completed_ids = set([f.strip('.json') for f in os.listdir(massive_dump_dir) if f.endswith('.json')])
     print(len(free_answers_completed_ids))
     print('gathered ids')
 
-    test_data = open_jsonl(f'{PROJECT_PATH}/data/test_dataset.jsonl')
-    random.shuffle(test_data)
+    model_responses_dir = f'{PROJECT_PATH}/data/prompting_results'#f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}'
+    model_responses = open_jsonl(os.path.join(model_responses_dir, f'{model}.jsonl'))
+    random.shuffle(model_responses)
 
-    # Multithreading: Using ThreadPoolExecutor
-    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-        futures = []
-        for data_d in test_data:
-            if data_d[OUT_OBJ_ID] not in free_answers_completed_ids:
-                futures.append(executor.submit(process_data, data_d, free_answers_completed_ids, massive_dump_dir, args))
+    for data_d in tqdm(model_responses):
+        if data_d[OUT_OBJ_ID] not in free_answers_completed_ids:
+            process_data(data_d, free_answers_completed_ids, massive_dump_dir)
 
-        # Iterate over the results to ensure all tasks complete
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(test_data)):
-            try:
-                future.result()  # Get the result (or raise exceptions if any occurred)
-            except Exception as e:
-                print(f"Exception occurred: {e}")
+    # # Multithreading: Using ThreadPoolExecutor
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+    #     futures = []
+    #     for data_d in model_responses:
+    #         if data_d[OUT_OBJ_ID] not in free_answers_completed_ids:
+    #             futures.append(executor.submit(process_data, data_d, free_answers_completed_ids, massive_dump_dir))
+    #
+    #     # Iterate over the results to ensure all tasks complete
+    #     for future in tqdm(concurrent.futures.as_completed(futures), total=len(model_responses)):
+    #         try:
+    #             future.result()  # Get the result (or raise exceptions if any occurred)
+    #         except Exception as e:
+    #             print(f"Exception occurred: {e}")
