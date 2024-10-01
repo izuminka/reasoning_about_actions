@@ -34,7 +34,7 @@ OUT_OBJ_ANSWER_TYPE = 'answer_type'
 OUT_OBJ_ANSWER = 'answer' # ground truth answer #TODO rename
 OUT_OBJ_FLUENT_TYPE = 'fluent_type'  # base, derived or persistent
 OUT_OBJ_FLUENT_SIGN_QUESTION = 'fluent_sign_question'
-OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question' # Legacy key
+# OUT_OBJ_IS_POS_FLUENT_QUESTION = 'is_pos_fluent_question' # Legacy key
 OUT_OBJ_TEST_KEY = 'for_testing'
 OUT_OBJ_QUESTION_SUBCATEGORIES = 'question_subcategories'
 
@@ -87,10 +87,13 @@ FLUENTS_NL_BY_KEY = {BASE_FLUENTS: BASE_FLUENTS_NL,
 
 # PROMPTING
 ZERO_SHOT_PROMPT_KEY = 'zero_shot'
+FEW_SHOT_3_PROMPT_KEY = 'few_shot_3'
 PROMPT_KEY = 'prompt'
 LABEL_KEY = 'lebel'
 MODEL_RESPONSE_KEY = 'response'
 MODEL_RESPONSE_CLEAN_KEY = 'response_clean'
+
+IS_RESPONSE_CORRECT_KEY = 'is_response_correct'
 
 def assemble_asp_code(paths, additional_asp_code='', separator='\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n'):
     asp_code = []

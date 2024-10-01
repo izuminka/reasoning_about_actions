@@ -4,8 +4,7 @@ import multiprocessing  # for multiprocessing
 import matplotlib.pyplot as plt
 import numpy as np
 
-from together_ai_common import *
-
+import openai
 from prompts import *
 
 
@@ -62,7 +61,7 @@ if __name__ == '__main__':
         openai.api_key = f.read()
 
     model = 'gpt-4o'
-    prompt_type = ZERO_SHOT_PROMPT_KEY
+    prompt_type = FEW_SHOT_3_PROMPT_KEY #ZERO_SHOT_PROMPT_KEY
     ramification = WITHOUT_RAMIFICATIONS
     save_dir = f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}'
     massive_dump_dir = f'{save_dir}/{model}'
