@@ -59,10 +59,12 @@ IS_POS_FLUENT_TYPES = [True, False, None]
 
 NO_RESPONSE_MESSAGE = 'NO RESPONSE'
 
+EVALUATED_FREE_ANSWER_RESPONSE_KEY = 'evaluated_free_answer_response'
+
 PLAN_LENGTHS = [1, 10, 19]
-SMALL_MODELS = ['llama2-13b-chat', 'llama-3-8b-instruct', 'llama2-7b-chat', 'gemma-7b', 'gemma-2b']
+SMALL_MODELS = ['llama_8b', 'llama_70b']#['llama2-13b-chat', 'llama-3-8b-instruct', 'llama2-7b-chat', 'gemma-7b', 'gemma-2b']
 BIG_MODELS = ['gemini', 'gpt-4o']
-TUNED_MODELS = ['llama-3-8b-instruct-finetuned', 'gemma-7b-finetuned']
+TUNED_MODELS = ['llama_8b.finetuned_tf', 'llama_8b.finetuned_free'] #['llama-3-8b-instruct-finetuned', 'gemma-7b-finetuned']
 PROMPT_MODEL_NAMES = BIG_MODELS + SMALL_MODELS + TUNED_MODELS
 PROMPT_TYPES = ['zero_shot','few_shot_0', 'few_shot_1', 'few_shot_3', 'few_shot_5']
 SUBSTITUTION_TYPES = [WITHOUT_RANDOM_SUB, WITH_RANDOM_SUB]
@@ -209,7 +211,7 @@ def filter_gather(data_all, filter_by):
 
 
 def filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                          answer_type, substitutions):
+                          answer_type, substitutions, fluent_sign_question=None):
     """ if ALL_DOMAINS_KEY or ALL_CATEGORIES_KEY or ALL_LENGTHS_KEY selects multiple values from data_all"""
     filter_by = base_filter(ramifications, model_name, prompt_type, answer_type, substitutions)
     if domain == TRANSPORTATION_DOMAIN_KEY:
@@ -223,6 +225,9 @@ def filter_multi_selector(data_all, plan_length, question_category, ramification
         filter_by.append((OUT_OBJ_QUESTION_CATEGORY, {question_category}))
     if plan_length != ALL_LENGTHS_KEY:
         filter_by.append((OUT_OBJ_PLAN_LENGTH, {plan_length}))
+
+    if fluent_sign_question is not None:
+        filter_by.append((OUT_OBJ_FLUENT_SIGN_QUESTION, {fluent_sign_question}))
 
     return filter_gather(data_all, filter_by)
 
@@ -298,17 +303,17 @@ class TrueFalseStats(BaseStats):
     BOTH_ARE_ABSENT_KEY = 'both_absent'
 
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
-                 substitutions,
-                 score_type=F1_SCORE_KEY):
+                 substitutions, score_type):
         super().__init__(plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions)
         self.answer_type = TRUE_FALSE_ANSWER_TYPE
         self.score_type = score_type
         self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name,
                                           prompt_type, domain, self.answer_type, substitutions)
 
+
     @staticmethod
-    def prediction_selection_criteria(d, model_response_key=MODEL_RESPONSE_CLEAN_KEY):
-        model_response = d[model_response_key]
+    def prediction_selection_criteria(d, model_response_key=MODEL_RESPONSE_KEY):
+        model_response = clean_response(d[model_response_key])
         tokens_to_consider = model_response.split()
         # tokens_to_consider = tokens_to_consider[:10]+tokens_to_consider[-10:]
         tokens = set([token.strip(',."\':;?!\n ').lower() for token in tokens_to_consider])
@@ -324,22 +329,7 @@ class TrueFalseStats(BaseStats):
         else:
             return ValueError(f"Unknown prediction {model_response}")
 
-    def compute(self):
-        if not self.data:
-            res = self.out_object(None, stats=None, error_message='self.data is empty')
-            # print(f"No data for {res}")
-            return res
-
-        not_corrupted_data = self.remove_corrupted()
-        if not not_corrupted_data:
-            res = self.out_object(None, stats=None, error_message='All corrupted')
-            # print(f"All corrupted {res}")
-            return res
-
-        stats = {'num_original': len(self.data),
-                 'num_corrupted': len(self.data) - len(not_corrupted_data),
-                 'num_not_corrupted': len(not_corrupted_data)}
-
+    def true_pred(self, not_corrupted_data):
         true = []
         pred = []
         both_present = 0
@@ -359,10 +349,30 @@ class TrueFalseStats(BaseStats):
                 pred.append(prediction)
                 true.append(d[OUT_OBJ_ANSWER])
 
-        stats |= {self.BOTH_ARE_PRESENT_KEY: both_present,
+        stats = {self.BOTH_ARE_PRESENT_KEY: both_present,
                   self.BOTH_ARE_ABSENT_KEY: both_absent,
                   self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
                   self.BOTH_ARE_ABSENT_KEY + '_%': both_absent / len(not_corrupted_data)}
+
+        return true, pred, stats
+
+    def compute(self):
+        if not self.data:
+            res = self.out_object(None, stats=None, error_message='self.data is empty')
+            # print(f"No data for {res}")
+            return res
+
+        not_corrupted_data = self.remove_corrupted()
+        if not not_corrupted_data:
+            res = self.out_object(None, stats=None, error_message='All corrupted')
+            # print(f"All corrupted {res}")
+            return res
+
+        stats = {'num_original': len(self.data),
+                 'num_corrupted': len(self.data) - len(not_corrupted_data),
+                 'num_not_corrupted': len(not_corrupted_data)}
+        true, pred, stats2 = self.true_pred(not_corrupted_data)
+        stats |= stats2
 
         result_other = None
         if self.score_type == F1_SCORE_KEY:
@@ -378,8 +388,40 @@ class TrueFalseStats(BaseStats):
             raise f"Unknown score_type {self.score_type}"
         return self.out_object(self.result, result_other, stats)
 
+class FreeAnswerStats(TrueFalseStats):
+    def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions, score_type):
+        super().__init__(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain, substitutions, score_type)
+        self.answer_type = FREE_ANSWER_TYPE
+        self.score_type = score_type
+        self.data = filter_multi_selector(data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain, self.answer_type, substitutions)
 
-class FreeAnswerStats(BaseStats):
+    @staticmethod
+    def prediction_selection_criteria(d, model_response_key=EVALUATED_FREE_ANSWER_RESPONSE_KEY):
+        return TrueFalseStats.prediction_selection_criteria(d, model_response_key)
+
+    def true_pred(self, not_corrupted_data):
+        true = []
+        pred = []
+        both_present = 0
+        both_absent = 0
+        for d in not_corrupted_data:
+            prediction = self.prediction_selection_criteria(d)
+            if prediction == self.BOTH_ARE_PRESENT_KEY:
+                both_present += 1
+            elif prediction == self.BOTH_ARE_ABSENT_KEY:
+                both_absent += 1
+            else:
+                pred.append(prediction)
+                true.append(TRUE_ANSWER)
+
+        stats = {self.BOTH_ARE_PRESENT_KEY: both_present,
+                  self.BOTH_ARE_ABSENT_KEY: both_absent,
+                  self.BOTH_ARE_PRESENT_KEY + '_%': both_present / len(not_corrupted_data),
+                  self.BOTH_ARE_ABSENT_KEY + '_%': both_absent / len(not_corrupted_data)}
+
+        return true, pred, stats
+
+class FreeAnswerStatsOld(BaseStats):
 
     def __init__(self, data_all, plan_length, question_category, ramifications, model_name, prompt_type, domain,
                  substitutions, model, tokenizer, device):
@@ -502,14 +544,15 @@ def calculate_stats(data_all, answer_response_type, domain, plan_length, questio
     if os.path.exists(file_path) and not override:
         return False
 
+    answer_response_type, tf_score_key = answer_response_type.split('.')
     if answer_response_type == FREE_ANSWER_TYPE:
-        assert model and tokenizer and device
         stats = FreeAnswerStats(data_all, plan_length, question_category, ramifications,
-                                model_name, prompt_type, domain, random_sub, model, tokenizer, device)
-    else:
-        tf_score_key = answer_response_type.split('.')[1]
+                               model_name, prompt_type, domain, random_sub, tf_score_key)
+    elif answer_response_type == TRUE_FALSE_ANSWER_TYPE:
         stats = TrueFalseStats(data_all, plan_length, question_category, ramifications,
                                model_name, prompt_type, domain, random_sub, tf_score_key)
+    else:
+        raise ValueError(f"Unknown answer_response_type {answer_response_type}")
 
     try:
         stats_compute = stats.compute()
@@ -584,8 +627,8 @@ def filter_multi_selector_modified(data_all, ramifications, model_name, prompt_t
 
 
 def clean_response(response):
-    keyword = '[ANSWER]'
-    ind = response.find(keyword)
+    keyword = '[ANSWER]'.lower()
+    ind = response.lower().find(keyword)
     if ind == -1:
         return response
     return response[ind+len(keyword):].strip()
@@ -601,7 +644,6 @@ def data_all_single_run(questions_by_id, model_results, substitution, ramificati
         result_d.update(deepcopy(extra_kv))
         result_d.update(questions_by_id[result_d[OUT_OBJ_ID]])
         result_d[SK_UNIQUE_ID] = f"{result_d[OUT_OBJ_ID]}::{model_name}::{prompt_type}::{ramification}::{substitution}"
-        result_d[MODEL_RESPONSE_CLEAN_KEY] = clean_response(result_d[MODEL_RESPONSE_KEY])
         data_all.append(result_d)
     return data_all
 
@@ -617,17 +659,30 @@ def calculate_stats_single_run(data_all, answer_response_type, ramification, sub
 if __name__ == '__main__':
     questions_by_id = {d[OUT_OBJ_ID]: d for d in open_jsonl(f'{DATA_PATH}/test_data.paraphrased.cleaned.jsonl')}
     override = True
+    answer_response_type = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}' #f'{FREE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}' #
+    stats_save_dir = f'{STATISTICS_PATH}'
 
-    model_name = 'gpt-4o'
+    model_name = 'gpt-4o' #'llama_8b.finetuned_free' #'llama_8b.finetuned_tf' #'llama_8b.finetuned_free' #'llama_70b'#
+
     substitution = WITHOUT_RANDOM_SUB
     ramification = WITHOUT_RAMIFICATIONS
     prompt_type = ZERO_SHOT_PROMPT_KEY
-    model_results_dir = f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}/{model_name}.jsonl'
-    model_results = open_jsonl(model_results_dir)
-    data_all = data_all_single_run(questions_by_id, model_results, substitution, ramification, model_name, prompt_type)
+    ## FREE ANSWERS
+    if answer_response_type.split('.')[0] == TRUE_FALSE_ANSWER_TYPE:
+        model_results_dir = f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}/{model_name}.jsonl'
+        model_results = open_jsonl(model_results_dir)
+        data_all = data_all_single_run(questions_by_id, model_results, substitution, ramification, model_name,prompt_type)
+        for d in data_all:
+            d[IS_RESPONSE_CORRECT_KEY] = TrueFalseStats.prediction_selection_criteria(d)
+        save_jsonl(data_all, model_name)
+    elif answer_response_type.split('.')[0] == FREE_ANSWER_TYPE:
+        save_dir = f'{PROJECT_PATH}/data/free_answers/{ramification}/{prompt_type}'
+        model_results = open_jsonl(os.path.join(save_dir, f'{model_name}.jsonl'))
+        data_all = data_all_single_run(questions_by_id, model_results, substitution, ramification, model_name,
+                                       prompt_type)
+    else:
+        raise ValueError(f"Unknown answer_response_type {answer_response_type}")
 
-    stats_save_dir = f'{STATISTICS_PATH}.trial_run3'
-    answer_response_type = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}'
     calculate_stats_single_run(data_all, answer_response_type, ramification, substitution, model_name, prompt_type, stats_save_dir, override)
 
     # questions_dir = f'{DATA_PATH}/questions'
