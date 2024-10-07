@@ -1,7 +1,7 @@
 
 # ActionReasoningBench
 
-Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
+Data and models are available at [gdrive](https://drive.google.com/drive/folders/1v8yhRmd2IhLLNpiJhoh4fyiaKEcaI9_B?usp=sharing)
 
 ## Directory Structure 
 - **init_goal_state_generation/**: PDDL instances are created, plan is computed and validated. Instances are automatically converted to ASP
@@ -33,4 +33,4 @@ To get started with this project, follow the steps below:
    ```
 3. **Download Data/Models**:
    
-   Data and models are available at [gdrive](https://drive.google.com/drive/folders/1HzDsG9_xS6u0Kb60-aVexIi7JTt12Ih6?usp=sharing)
+   Data and models are available at [gdrive](https://drive.google.com/drive/folders/1v8yhRmd2IhLLNpiJhoh4fyiaKEcaI9_B?usp=sharing)
