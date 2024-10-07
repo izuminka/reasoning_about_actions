@@ -659,22 +659,19 @@ def calculate_stats_single_run(data_all, answer_response_type, ramification, sub
 if __name__ == '__main__':
     questions_by_id = {d[OUT_OBJ_ID]: d for d in open_jsonl(f'{DATA_PATH}/test_data.paraphrased.cleaned.jsonl')}
     override = True
-    answer_response_type = f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}' #f'{FREE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}' #
-    stats_save_dir = f'{STATISTICS_PATH}'
+    answer_response_type = f'{FREE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}' #f'{TRUE_FALSE_ANSWER_TYPE}.{ACCURACY_SCORE_KEY}' #
+    stats_save_dir = f'{STATISTICS_PATH}.trial_run.ED'
 
-    model_name = 'gpt-4o' #'llama_8b.finetuned_free' #'llama_8b.finetuned_tf' #'llama_8b.finetuned_free' #'llama_70b'#
+    model_name = 'llama_8b' #'gpt-4o' #'llama_8b.finetuned_free' #'llama_8b.finetuned_tf' #'llama_8b.finetuned_free' #'llama_70b'#
 
     substitution = WITHOUT_RANDOM_SUB
     ramification = WITHOUT_RAMIFICATIONS
-    prompt_type = ZERO_SHOT_PROMPT_KEY
-    ## FREE ANSWERS
+    prompt_type = FEW_SHOT_3_PROMPT_KEY #ZERO_SHOT_PROMPT_KEY
+
     if answer_response_type.split('.')[0] == TRUE_FALSE_ANSWER_TYPE:
         model_results_dir = f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}/{model_name}.jsonl'
         model_results = open_jsonl(model_results_dir)
         data_all = data_all_single_run(questions_by_id, model_results, substitution, ramification, model_name,prompt_type)
-        for d in data_all:
-            d[IS_RESPONSE_CORRECT_KEY] = TrueFalseStats.prediction_selection_criteria(d)
-        save_jsonl(data_all, model_name)
     elif answer_response_type.split('.')[0] == FREE_ANSWER_TYPE:
         save_dir = f'{PROJECT_PATH}/data/free_answers/{ramification}/{prompt_type}'
         model_results = open_jsonl(os.path.join(save_dir, f'{model_name}.jsonl'))
