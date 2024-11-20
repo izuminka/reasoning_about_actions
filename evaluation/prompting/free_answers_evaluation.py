@@ -205,14 +205,21 @@ def process_data(data_d, free_answers_completed_ids, massive_dump_dir):
 if __name__ == '__main__':
     # parser = argparse.ArgumentParser()
     # args = parser.parse_args()
-    question_ids_file_name = 'test_data.paraphrased.cleaned'
 
-    model = 'llama_8b' #'gpt-4o' #'llama_70b' 'llama_8b''llama_70b' #'llama_8b.finetuned_free' #
+    # #TODO rm
+    # file_name = 'template_data_10_pct_gpt-4o'
+    # input_file_path = f'./responses_rebuttal/{file_name}.jsonl'
+    # save_dir = f'./responses_rebuttal_evaluated'
+    # massive_dump_dir = f'{save_dir}/{file_name}'
+
+    question_ids_file_name = 'test_data.paraphrased.cleaned'
     prompt_type = FEW_SHOT_3_PROMPT_KEY #ZERO_SHOT_PROMPT_KEY
     ramification = WITHOUT_RAMIFICATIONS
+    model = 'llama_8b' #'gpt-4o' #'llama_70b' 'llama_8b''llama_70b' #'llama_8b.finetuned_free' #
     save_dir = f'{PROJECT_PATH}/data/free_answers/{ramification}/{prompt_type}'
     massive_dump_dir = f'{save_dir}/{model}'
     os.makedirs(massive_dump_dir, exist_ok=True)
+
 
     free_answers_completed_ids = set([f.strip('.json') for f in os.listdir(massive_dump_dir) if f.endswith('.json')])
     print(len(free_answers_completed_ids))
@@ -224,6 +231,7 @@ if __name__ == '__main__':
 
     model_responses_dir = f'{PROJECT_PATH}/data/prompting_results/{ramification}/{prompt_type}'
     model_responses = open_jsonl(os.path.join(model_responses_dir, f'{model}.jsonl'))
+    # model_responses = open_jsonl(input_file_path)
     model_responses = [d | questions_by_id[d[OUT_OBJ_ID]] for d in model_responses if d[OUT_OBJ_ID] in selected_ids]
     random.shuffle(model_responses)
 
@@ -231,14 +239,14 @@ if __name__ == '__main__':
     #     if data_d[OUT_OBJ_ID] not in free_answers_completed_ids:
     #         process_data(data_d, free_answers_completed_ids, massive_dump_dir)
     # Multithreading: Using ThreadPoolExecutor
-    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = []
         for data_d in model_responses:
             if data_d[OUT_OBJ_ID] not in free_answers_completed_ids:
                 futures.append(executor.submit(process_data, data_d, free_answers_completed_ids, massive_dump_dir))
 
         # Iterate over the results to ensure all tasks complete
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(model_responses)):
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures)):
             try:
                 future.result()  # Get the result (or raise exceptions if any occurred)
             except Exception as e:
@@ -247,3 +255,4 @@ if __name__ == '__main__':
 
     collected_data = [open_json(f'{massive_dump_dir}/{f}') for f in os.listdir(massive_dump_dir) if f.endswith('.json')]
     save_jsonl(collected_data, f'{save_dir}/{model}.jsonl')
+    # save_jsonl(collected_data, f'{save_dir}/{file_name}.jsonl')
