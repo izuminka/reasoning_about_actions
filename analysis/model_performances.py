@@ -7,10 +7,10 @@ from tqdm import tqdm
 from collections import defaultdict
 import sys
 
-import torch
+# import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from torch.utils.data import DataLoader
-from datasets import Dataset
+# from torch.utils.data import DataLoader
+# from datasets import Dataset
 
 sys.path.insert(0, '../../')
 from questions_construction.main import QUESTION_CATEGORIES
