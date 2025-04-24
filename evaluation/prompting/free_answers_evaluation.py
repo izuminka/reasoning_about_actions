@@ -10,13 +10,6 @@ from analysis.model_performances import clean_response, EVALUATED_FREE_ANSWER_RE
 DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo" #"meta-llama/Llama-3-70b-chat-hf"
 OUTPUT_TOKEN_LIMIT = 5000
 
-# de74b851-4128-4925-822f-ae293ebfea33
-# 87a6d1f0-41ec-41d7-8a7e-7eb16bbdf667
-# b4b774e9-b795-48bd-a666-433cca536dee
-# 3b23da0f-228f-4cb3-a133-db983c86dbe5
-# 05bb6907-7037-4962-8495-f8ae22c296f0
-# f087c771-8f88-4c84-82f9-b9bcc637877d
-# a095c436-cbfe-41d6-b8ac-366e9b01ae6e
 def eval_free_answers_prompt(llm_response, true_response):
     return f"""Evaluate whether the LLM response and the ground truth response are semantically the same. Examine the responses, 
 provide reasoning for your evaluation, and then Write "True" if the responses are the same or "False" if they are different.
